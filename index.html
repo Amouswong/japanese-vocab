@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japanese SRS - Original Style</title>
+    <title>Japanese SRS - Pronounce & Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -15,6 +15,9 @@
         .card.is-flipped { transform: rotateY(180deg); }
         .card__face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 1rem; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; background: white; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         .card__face--back { background: #f8fafc; transform: rotateY(180deg); border: 2px solid #e2e8f0; }
+        
+        /* Stop clicks on buttons from flipping the card twice */
+        .no-flip { pointer-events: auto; }
     </style>
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
@@ -42,8 +45,7 @@
 
             <div class="bg-white rounded-xl p-6 border border-slate-200 text-center">
                 <h3 class="font-bold text-slate-700">Mastery Refresh (Stage 5)</h3>
-                <p class="text-sm text-slate-500 mb-4">Randomly test 10 mastered words. Fail = Back to Stage 4.</p>
-                <button onclick="app.startSession('master')" id="btn-master" class="bg-indigo-100 text-indigo-700 py-2 px-8 rounded-full text-sm font-bold hover:bg-indigo-600 hover:text-white transition disabled:opacity-50">
+                <button onclick="app.startSession('master')" id="btn-master" class="bg-indigo-100 text-indigo-700 py-2 px-8 rounded-full text-sm font-bold mt-4 hover:bg-indigo-600 hover:text-white transition disabled:opacity-50">
                     Test 10 Mastered Words
                 </button>
                 <div class="text-xs text-slate-400 mt-2">Total Mastered: <span id="master-count">0</span></div>
@@ -51,7 +53,6 @@
         </div>
 
         <div id="page-list" class="hidden space-y-6">
-            
             <div class="bg-white rounded-xl p-8 shadow-sm border border-slate-100">
                 <h2 class="text-xl font-bold mb-6">Add Single Card</h2>
                 <div class="flex flex-col md:flex-row gap-4 mb-4">
@@ -59,32 +60,27 @@
                     <input type="text" id="add-def" placeholder="Definition (e.g. Cat)" class="flex-1 border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
                     <input type="text" id="add-pos" placeholder="Part of Speech" class="flex-1 border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
                 </div>
-                <button onclick="app.addSingle()" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-indigo-700 transition">Add Card</button>
+                <button onclick="app.addSingle()" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-indigo-700">Add Card</button>
             </div>
 
             <div class="bg-white rounded-xl p-8 shadow-sm border border-slate-100">
                 <h2 class="text-xl font-bold mb-2">Bulk Upload</h2>
-                <p class="text-sm text-slate-500 mb-4">Format: Japanese, Definition, Part of Speech (one per line)</p>
-                <textarea id="bulk-input" rows="5" placeholder="猫, Cat, Noun&#10;食べる, To eat, Verb" class="w-full border border-slate-200 rounded-lg p-4 bg-slate-50 font-mono text-sm outline-none focus:ring-2 focus:ring-indigo-500 mb-4"></textarea>
-                <button onclick="app.addBulk()" class="bg-slate-800 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-slate-900 transition">Import List</button>
+                <textarea id="bulk-input" rows="4" placeholder="猫, Cat, Noun" class="w-full border border-slate-200 rounded-lg p-4 bg-slate-50 font-mono text-sm outline-none focus:ring-2 focus:ring-indigo-500 mb-4"></textarea>
+                <button onclick="app.addBulk()" class="bg-slate-800 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-slate-900">Import List</button>
             </div>
 
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold">Vocabulary Database</h2>
-                    <button onclick="app.exportJSON()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow hover:bg-green-700">
+                    <button onclick="app.exportJSON()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow">
                         <i class="fas fa-save mr-1"></i> Export Updated JSON
                     </button>
                 </div>
                 <div class="flex gap-2 mb-4">
-                    <input type="text" id="search-input" oninput="app.renderList()" placeholder="Search..." class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                    <select id="filter-level" onchange="app.renderList()" class="border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none bg-white">
+                    <input type="text" id="search-input" oninput="app.renderList()" placeholder="Search..." class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                    <select id="filter-level" onchange="app.renderList()" class="border border-slate-200 rounded-lg px-2 py-2 text-sm bg-white">
                         <option value="all">All Levels</option>
-                        <option value="1">Stage 1</option>
-                        <option value="2">Stage 2</option>
-                        <option value="3">Stage 3</option>
-                        <option value="4">Stage 4</option>
-                        <option value="5">Stage 5 (MAX)</option>
+                        <option value="1">Stage 1</option><option value="2">Stage 2</option><option value="3">Stage 3</option><option value="4">Stage 4</option><option value="5">Stage 5</option>
                     </select>
                 </div>
                 <div id="vocab-container" class="space-y-2"></div>
@@ -100,18 +96,24 @@
                 <div id="progress-bar" class="bg-indigo-600 h-1.5 rounded-full transition-all w-0"></div>
             </div>
 
-            <div class="scene" onclick="app.flipCard()">
-                <div class="card" id="flashcard">
+            <div class="scene">
+                <div class="card" id="flashcard" onclick="app.flipCard()">
                     <div class="card__face">
                         <h2 class="text-5xl font-bold jp-text text-center px-4" id="ui-front">...</h2>
-                        <p class="text-slate-300 mt-6 text-sm">Tap to Flip</p>
+                        <p class="text-slate-300 mt-8 text-sm">Tap to Flip</p>
                     </div>
                     <div class="card__face card__face--back">
-                        <h2 class="text-3xl font-bold text-indigo-700 mb-2 text-center px-4" id="ui-back-main">...</h2>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h2 class="text-3xl font-bold text-indigo-700 jp-text" id="ui-back-main">...</h2>
+                            <button onclick="app.speak(event)" class="no-flip text-indigo-400 hover:text-indigo-600 p-2">
+                                <i class="fas fa-volume-up text-2xl"></i>
+                            </button>
+                        </div>
                         <p class="text-slate-400 text-sm mb-8 italic" id="ui-back-pos"></p>
-                        <div class="flex gap-4 w-full px-6">
-                            <button onclick="app.handleResult(false, event)" class="flex-1 bg-red-100 text-red-700 font-bold py-4 rounded-xl hover:bg-red-200 transition">Forgot</button>
-                            <button onclick="app.handleResult(true, event)" class="flex-1 bg-green-100 text-green-700 font-bold py-4 rounded-xl hover:bg-green-200 transition">Correct</button>
+                        
+                        <div class="flex gap-4 w-full px-6 no-flip">
+                            <button onclick="app.handleResult(false, event)" class="flex-1 bg-red-100 text-red-700 font-bold py-4 rounded-xl hover:bg-red-200">Forgot</button>
+                            <button onclick="app.handleResult(true, event)" class="flex-1 bg-green-100 text-green-700 font-bold py-4 rounded-xl hover:bg-green-200">Correct</button>
                         </div>
                     </div>
                 </div>
@@ -124,14 +126,12 @@
             data: [],
             queue: [],
             currentIndex: 0,
-            sessionType: 'review',
+            isFlipped: false,
 
             async init() {
                 try {
                     const response = await fetch('./vocab.json?t=' + Date.now());
-                    if (response.ok) {
-                        this.data = await response.json();
-                    }
+                    if (response.ok) this.data = await response.json();
                 } catch (e) {
                     const local = localStorage.getItem('jp_srs_storage');
                     if (local) this.data = JSON.parse(local);
@@ -144,35 +144,20 @@
                 const jp = document.getElementById('add-jp').value.trim();
                 const def = document.getElementById('add-def').value.trim();
                 const pos = document.getElementById('add-pos').value.trim();
-                if(!jp || !def) return alert("Japanese and Definition are required.");
+                if(!jp || !def) return alert("Required fields missing.");
                 this.data.push({ japanese: jp, definition: def, pos: pos, stage: 1, nextReview: Date.now() });
-                this.save();
-                this.renderList();
-                document.getElementById('add-jp').value = '';
-                document.getElementById('add-def').value = '';
-                document.getElementById('add-pos').value = '';
+                this.save(); this.renderList();
+                document.getElementById('add-jp').value = ''; document.getElementById('add-def').value = '';
             },
 
             addBulk() {
                 const text = document.getElementById('bulk-input').value.trim();
                 if(!text) return;
-                const lines = text.split('\n');
-                lines.forEach(line => {
+                text.split('\n').forEach(line => {
                     const parts = line.split(/[,\t]+/).map(s => s.trim());
-                    if(parts.length >= 2) {
-                        this.data.push({ 
-                            japanese: parts[0], 
-                            definition: parts[1], 
-                            pos: parts[2] || '', 
-                            stage: 1, 
-                            nextReview: Date.now() 
-                        });
-                    }
+                    if(parts.length >= 2) this.data.push({ japanese: parts[0], definition: parts[1], pos: parts[2] || '', stage: 1, nextReview: Date.now() });
                 });
-                document.getElementById('bulk-input').value = '';
-                this.save();
-                this.renderList();
-                alert("Bulk Import Successful!");
+                document.getElementById('bulk-input').value = ''; this.save(); this.renderList();
             },
 
             save() {
@@ -187,7 +172,6 @@
                 document.getElementById('due-count').innerText = due;
                 document.getElementById('master-count').innerText = mastered;
                 document.getElementById('btn-start').disabled = due === 0;
-                document.getElementById('btn-master').disabled = mastered === 0;
             },
 
             showPage(id) {
@@ -198,107 +182,83 @@
 
             renderList() {
                 const container = document.getElementById('vocab-container');
-                const searchTerm = document.getElementById('search-input').value.toLowerCase();
-                const filterLevel = document.getElementById('filter-level').value;
-
-                const filtered = this.data.filter(item => {
-                    const textMatch = item.japanese.toLowerCase().includes(searchTerm) || 
-                                    (item.definition || item.meaning || "").toLowerCase().includes(searchTerm);
-                    const levelMatch = filterLevel === 'all' || (item.stage || 1).toString() === filterLevel;
-                    return textMatch && levelMatch;
+                const term = document.getElementById('search-input').value.toLowerCase();
+                const lvl = document.getElementById('filter-level').value;
+                const filtered = this.data.filter(i => {
+                    const match = i.japanese.includes(term) || (i.definition||"").toLowerCase().includes(term);
+                    return match && (lvl === 'all' || (i.stage||1).toString() === lvl);
                 });
-
-                container.innerHTML = filtered.map((item, idx) => `
-                    <div class="bg-white p-4 rounded-lg flex justify-between items-center border border-slate-100 hover:border-indigo-200 transition shadow-sm">
-                        <div>
-                            <div class="jp-text font-bold text-lg">${item.japanese}</div>
-                            <div class="text-xs text-slate-500 uppercase tracking-tight">${item.definition || item.meaning} ${item.pos ? '• ' + item.pos : ''}</div>
-                        </div>
+                container.innerHTML = filtered.map(i => `
+                    <div class="bg-white p-4 rounded-lg flex justify-between items-center border border-slate-100 shadow-sm">
+                        <div><div class="jp-text font-bold text-lg">${i.japanese}</div><div class="text-xs text-slate-500">${i.definition}</div></div>
                         <div class="flex items-center gap-4">
-                            <span class="text-[10px] font-bold px-2 py-1 rounded ${item.stage >= 5 ? 'bg-green-100 text-green-700' : 'bg-indigo-50 text-indigo-600'}">
-                                STAGE ${item.stage || 1}
-                            </span>
-                            <button onclick="app.deleteItem(${this.data.indexOf(item)})" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-trash-alt"></i></button>
+                            <span class="text-[10px] font-bold px-2 py-1 rounded ${i.stage>=5?'bg-green-100 text-green-700':'bg-indigo-50 text-indigo-600'}">STAGE ${i.stage||1}</span>
+                            <button onclick="app.deleteItem(${this.data.indexOf(i)})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`).join('');
             },
 
-            deleteItem(index) {
-                if(confirm("Delete this word?")) {
-                    this.data.splice(index, 1);
-                    this.save();
-                    this.renderList();
-                }
-            },
+            deleteItem(index) { if(confirm("Delete?")) { this.data.splice(index, 1); this.save(); this.renderList(); } },
 
             startSession(type) {
-                this.sessionType = type;
                 const now = Date.now();
                 if (type === 'review') {
                     this.queue = this.data.filter(i => (i.stage || 1) < 5 && (i.nextReview || 0) <= now).sort(() => 0.5 - Math.random());
-                    document.getElementById('session-title').innerText = "Daily Review";
                 } else {
-                    const pool = this.data.filter(i => (i.stage || 1) >= 5);
-                    this.queue = pool.sort(() => 0.5 - Math.random()).slice(0, 10);
-                    document.getElementById('session-title').innerText = "Mastery Refresh";
+                    this.queue = this.data.filter(i => (i.stage || 1) >= 5).sort(() => 0.5 - Math.random()).slice(0, 10);
                 }
                 if (this.queue.length === 0) return;
-                this.currentIndex = 0;
-                this.showPage('review');
-                this.loadCard();
+                this.currentIndex = 0; this.showPage('review'); this.loadCard();
             },
 
             loadCard() {
+                this.isFlipped = false;
                 const card = this.queue[this.currentIndex];
                 document.getElementById('ui-front').innerText = card.japanese;
                 document.getElementById('ui-back-main').innerText = card.definition || card.meaning;
                 document.getElementById('ui-back-pos').innerText = card.pos || '';
                 document.getElementById('flashcard').classList.remove('is-flipped');
-                const progress = ((this.currentIndex) / this.queue.length) * 100;
-                document.getElementById('progress-bar').style.width = progress + "%";
+                document.getElementById('progress-bar').style.width = ((this.currentIndex / this.queue.length) * 100) + "%";
                 document.getElementById('progress-text').innerText = `${this.currentIndex + 1} / ${this.queue.length}`;
             },
 
-            flipCard() { document.getElementById('flashcard').classList.add('is-flipped'); },
+            flipCard() {
+                if(this.isFlipped) return;
+                this.isFlipped = true;
+                document.getElementById('flashcard').classList.add('is-flipped');
+            },
+
+            speak(event) {
+                event.stopPropagation();
+                const text = this.queue[this.currentIndex].japanese;
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'ja-JP';
+                window.speechSynthesis.speak(msg);
+            },
 
             handleResult(correct, event) {
                 event.stopPropagation();
-                const currentCard = this.queue[this.currentIndex];
-                const dataIndex = this.data.findIndex(i => i.japanese === currentCard.japanese);
-
+                const cur = this.queue[this.currentIndex];
+                const idx = this.data.findIndex(i => i.japanese === cur.japanese);
                 if (correct) {
-                    if (this.sessionType === 'review') {
-                        this.data[dataIndex].stage = (this.data[dataIndex].stage || 1) + 1;
-                        const days = Math.pow(2, this.data[dataIndex].stage - 1);
-                        this.data[dataIndex].nextReview = Date.now() + (days * 24 * 60 * 60 * 1000);
+                    if (cur.stage < 5) {
+                        this.data[idx].stage = (this.data[idx].stage || 1) + 1;
+                        this.data[idx].nextReview = Date.now() + (Math.pow(2, this.data[idx].stage - 1) * 86400000);
                     }
                 } else {
-                    if (this.data[dataIndex].stage >= 5) { this.data[dataIndex].stage = 4; } 
-                    else { this.data[dataIndex].stage = 1; }
-                    this.data[dataIndex].nextReview = Date.now();
+                    this.data[idx].stage = cur.stage >= 5 ? 4 : 1;
+                    this.data[idx].nextReview = Date.now();
                 }
-
-                this.save();
-                this.currentIndex++;
-                if (this.currentIndex >= this.queue.length) {
-                    document.getElementById('progress-bar').style.width = "100%";
-                    setTimeout(() => { alert("Session Complete!"); this.showPage('dashboard'); }, 300);
-                } else {
-                    this.loadCard();
-                }
+                this.save(); this.currentIndex++;
+                if (this.currentIndex >= this.queue.length) { alert("Done!"); this.showPage('dashboard'); }
+                else this.loadCard();
             },
 
             exportJSON() {
                 const blob = new Blob([JSON.stringify(this.data, null, 2)], {type: 'application/json'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'vocab.json';
-                a.click();
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'vocab.json'; a.click();
             }
         };
-
         app.init();
     </script>
 </body>
