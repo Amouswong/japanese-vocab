@@ -1,349 +1,180 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Japanese SRS - Online</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japanese SRS - Sync Mode</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Inter:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <style>
-      body {
-        font-family: "Inter", sans-serif;
-        background-color: #f3f4f6;
-      }
-      .jp-text {
-        font-family: "Noto Sans JP", sans-serif;
-      }
-      .scene {
-        perspective: 1000px;
-        width: 100%;
-        height: 350px;
-      }
-      .card {
-        width: 100%;
-        height: 100%;
-        position: relative;
-        transition: transform 0.6s;
-        transform-style: preserve-3d;
-        cursor: pointer;
-      }
-      .card.is-flipped {
-        transform: rotateY(180deg);
-      }
-      .card__face {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        backface-visibility: hidden;
-        border-radius: 1rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 2rem;
-        background: white;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-      }
-      .card__face--back {
-        background: #f8fafc;
-        transform: rotateY(180deg);
-        border: 2px solid #e2e8f0;
-      }
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .jp-text { font-family: 'Noto Sans JP', sans-serif; }
+        .scene { perspective: 1000px; width: 100%; height: 350px; }
+        .card { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; }
+        .card.is-flipped { transform: rotateY(180deg); }
+        .card__face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 1rem; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; background: white; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .card__face--back { background: #f8fafc; transform: rotateY(180deg); border: 2px solid #e2e8f0; }
     </style>
-  </head>
-  <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+</head>
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+
     <header class="bg-indigo-600 text-white p-4 shadow-md z-10">
-      <div class="max-w-3xl mx-auto flex justify-between items-center">
-        <h1 class="text-xl font-bold flex items-center gap-2">
-          <i class="fas fa-torii-gate"></i> Japanese SRS
-        </h1>
-        <nav class="flex gap-4 text-sm font-semibold">
-          <button
-            onclick="app.showPage('dashboard')"
-            class="hover:text-indigo-200"
-          >
-            Dashboard
-          </button>
-          <button onclick="app.showPage('list')" class="hover:text-indigo-200">
-            Vocab List
-          </button>
-        </nav>
-      </div>
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold"><i class="fas fa-sync"></i> Nihongo SRS</h1>
+            <nav class="flex gap-4 text-sm font-semibold">
+                <button onclick="app.showPage('dashboard')">Home</button>
+                <button onclick="app.showPage('list')">Database</button>
+            </nav>
+        </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto relative w-full max-w-3xl mx-auto p-4">
-      <div id="page-dashboard" class="space-y-6">
-        <div
-          class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 text-center"
-        >
-          <h2 class="text-2xl font-bold text-slate-700 mb-2">
-            Ready to Study?
-          </h2>
-          <div class="text-5xl font-bold text-indigo-600 my-4" id="due-count">
-            0
-          </div>
-          <p class="text-slate-500 mb-6">Cards due for review</p>
-          <button
-            onclick="app.startSession()"
-            id="btn-start"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105"
-          >
-            Start Review Session
-          </button>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div
-            class="bg-white rounded-xl p-4 shadow-sm border border-slate-200"
-          >
-            <div class="text-slate-500 text-sm">Total in Database</div>
-            <div class="text-2xl font-bold" id="total-count">0</div>
-          </div>
-          <div
-            class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 text-green-600"
-          >
-            <div class="text-slate-500 text-sm">Mastered</div>
-            <div class="text-2xl font-bold" id="mastered-count">0</div>
-          </div>
-        </div>
-      </div>
-
-      <div id="page-list" class="hidden">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold">Vocabulary List</h2>
-          <button
-            onclick="app.resetData()"
-            class="text-xs text-red-500 underline"
-          >
-            Reset Local Progress
-          </button>
-        </div>
-        <div id="vocab-container" class="space-y-2"></div>
-      </div>
-
-      <div id="page-review" class="hidden flex flex-col h-full">
-        <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
-          <div
-            id="progress-bar"
-            class="bg-indigo-600 h-2 rounded-full transition-all w-0"
-          ></div>
-        </div>
-
-        <div class="scene" onclick="app.flipCard()">
-          <div class="card" id="flashcard">
-            <div class="card__face">
-              <span
-                class="absolute top-4 right-4 text-xs font-bold text-slate-300 uppercase"
-                >Stage <span id="ui-stage">1</span></span
-              >
-              <h2 class="text-5xl font-bold jp-text" id="ui-front">...</h2>
-              <p class="text-slate-400 mt-6 animate-bounce text-sm">
-                Tap to Flip
-              </p>
+    <main class="flex-1 overflow-y-auto w-full max-w-3xl mx-auto p-4">
+        
+        <div id="page-dashboard">
+            <div class="bg-white rounded-xl p-6 shadow-sm border text-center mb-6">
+                <h2 class="text-xl font-bold text-slate-500">Reviews Due</h2>
+                <div class="text-6xl font-bold text-indigo-600 my-4" id="due-count">0</div>
+                <button onclick="app.startSession()" id="btn-start" class="bg-indigo-600 text-white py-3 px-10 rounded-full font-bold shadow-lg">Start Now</button>
             </div>
-            <div class="card__face card__face--back text-center p-6">
-              <h2
-                class="text-3xl font-bold text-indigo-700 mb-2"
-                id="ui-back-main"
-              >
-                ...
-              </h2>
-              <p class="text-lg text-slate-500 italic" id="ui-back-sub">...</p>
-              <div class="flex gap-4 mt-10 w-full">
-                <button
-                  onclick="app.handleResult(false, event)"
-                  class="flex-1 bg-red-100 text-red-700 font-bold py-4 rounded-xl"
-                >
-                  Forgot
-                </button>
-                <button
-                  onclick="app.handleResult(true, event)"
-                  class="flex-1 bg-green-100 text-green-700 font-bold py-4 rounded-xl"
-                >
-                  Correct
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
 
-      <div id="page-complete" class="hidden text-center py-20">
-        <div class="text-6xl mb-4">🎉</div>
-        <h2 class="text-2xl font-bold mb-4">Session Complete!</h2>
-        <button
-          onclick="app.showPage('dashboard')"
-          class="bg-indigo-600 text-white px-8 py-2 rounded-full"
-        >
-          Return Home
-        </button>
-      </div>
+        <div id="page-list" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h2 class="text-xl font-bold">Level Records</h2>
+                <div class="flex gap-2">
+                    <button onclick="app.exportJSON()" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold shadow hover:bg-green-700">
+                        <i class="fas fa-download"></i> Export Updated JSON
+                    </button>
+                </div>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 bg-yellow-50 p-2 rounded border border-yellow-200">
+                <b>Note:</b> After studying, click "Export" and upload the file to GitHub to save your levels permanently.
+            </p>
+            <div id="vocab-container" class="space-y-2"></div>
+        </div>
+
+        <div id="page-review" class="hidden">
+            <div class="scene" onclick="app.flipCard()">
+                <div class="card" id="flashcard">
+                    <div class="card__face">
+                        <h2 class="text-5xl font-bold jp-text" id="ui-front">...</h2>
+                    </div>
+                    <div class="card__face card__face--back">
+                        <h2 class="text-3xl font-bold text-indigo-700 mb-2" id="ui-back-main">...</h2>
+                        <div class="flex gap-4 mt-10 w-full px-4">
+                            <button onclick="app.handleResult(false, event)" class="flex-1 bg-red-100 text-red-700 font-bold py-4 rounded-xl">Forgot</button>
+                            <button onclick="app.handleResult(true, event)" class="flex-1 bg-green-100 text-green-700 font-bold py-4 rounded-xl">Correct</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
-      const app = {
-        data: [],
-        queue: [],
-        currentIndex: 0,
+        const app = {
+            data: [],
+            queue: [],
+            currentIndex: 0,
 
-        async init() {
-          // 1. Load progress from browser storage
-          const local = localStorage.getItem("jp_srs_storage");
-          let localData = local ? JSON.parse(local) : [];
-
-          // 2. Fetch vocab.json from GitHub
-          try {
-            const response = await fetch("./vocab.json");
-            if (response.ok) {
-              const cloudData = await response.json();
-
-              // Merge: Add new words from JSON to local storage if they don't exist
-              const localWords = new Set(localData.map((i) => i.japanese));
-
-              cloudData.forEach((item) => {
-                if (!localWords.has(item.japanese)) {
-                  localData.push({
-                    japanese: item.japanese,
-                    definition:
-                      item.definition || item.meaning || "No definition",
-                    pos: item.pos || "",
-                    stage: 1,
-                    nextReview: Date.now(),
-                    mastered: false,
-                  });
+            async init() {
+                try {
+                    // Method 2: Always prioritize the vocab.json file for the source of truth
+                    const response = await fetch('./vocab.json?t=' + Date.now()); // Prevent caching
+                    if (response.ok) {
+                        this.data = await response.json();
+                    }
+                } catch (e) {
+                    console.error("Load failed. Using local cache.");
+                    const local = localStorage.getItem('jp_srs_storage');
+                    if (local) this.data = JSON.parse(local);
                 }
-              });
-            }
-          } catch (e) {
-            console.log("Note: vocab.json not found or not accessible yet.");
-          }
+                this.updateUI();
+                this.showPage('dashboard');
+            },
 
-          this.data = localData;
-          this.save();
-          this.showPage("dashboard");
-        },
+            save() {
+                // Temporary save in browser so you don't lose progress if you refresh
+                localStorage.setItem('jp_srs_storage', JSON.stringify(this.data));
+                this.updateUI();
+            },
 
-        save() {
-          localStorage.setItem("jp_srs_storage", JSON.stringify(this.data));
-          this.updateUI();
-        },
+            updateUI() {
+                const now = Date.now();
+                const due = this.data.filter(i => (i.stage || 1) < 6 && (i.nextReview || 0) <= now).length;
+                document.getElementById('due-count').innerText = due;
+                document.getElementById('btn-start').disabled = due === 0;
+            },
 
-        updateUI() {
-          const now = Date.now();
-          const due = this.data.filter(
-            (i) => !i.mastered && i.nextReview <= now,
-          ).length;
-          document.getElementById("due-count").innerText = due;
-          document.getElementById("total-count").innerText = this.data.length;
-          document.getElementById("mastered-count").innerText =
-            this.data.filter((i) => i.mastered).length;
-          document.getElementById("btn-start").disabled = due === 0;
-        },
+            showPage(id) {
+                document.querySelectorAll('main > div').forEach(div => div.classList.add('hidden'));
+                document.getElementById('page-' + id).classList.remove('hidden');
+                if(id === 'list') this.renderList();
+            },
 
-        showPage(id) {
-          document
-            .querySelectorAll("main > div")
-            .forEach((div) => div.classList.add("hidden"));
-          document.getElementById("page-" + id).classList.remove("hidden");
-          if (id === "list") this.renderList();
-        },
-
-        renderList() {
-          const container = document.getElementById("vocab-container");
-          container.innerHTML = this.data
-            .map(
-              (item) => `
-                    <div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center border border-slate-100">
-                        <div>
-                            <div class="font-bold jp-text text-lg">${item.japanese}</div>
-                            <div class="text-sm text-slate-500">${item.definition}</div>
-                        </div>
-                        <div class="text-xs font-bold px-2 py-1 rounded ${item.mastered ? "bg-green-100 text-green-700" : "bg-indigo-100 text-indigo-700"}">
-                            ${item.mastered ? "MASTERED" : "STAGE " + item.stage}
+            renderList() {
+                const container = document.getElementById('vocab-container');
+                container.innerHTML = this.data.map(item => `
+                    <div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center border border-slate-200">
+                        <div class="jp-text font-bold text-lg">${item.japanese}</div>
+                        <div class="text-xs font-bold px-3 py-1 rounded bg-indigo-100 text-indigo-700">
+                            STAGE ${item.stage || 1}
                         </div>
                     </div>
-                `,
-            )
-            .join("");
-        },
+                `).join('');
+            },
 
-        startSession() {
-          const now = Date.now();
-          this.queue = this.data
-            .filter((i) => !i.mastered && i.nextReview <= now)
-            .sort(() => Math.random() - 0.5);
-          if (this.queue.length === 0) return;
-          this.currentIndex = 0;
-          this.showPage("review");
-          this.loadCard();
-        },
+            startSession() {
+                const now = Date.now();
+                this.queue = this.data.filter(i => (i.stage || 1) < 6 && (i.nextReview || 0) <= now);
+                if (this.queue.length === 0) return;
+                this.currentIndex = 0;
+                this.showPage('review');
+                this.loadCard();
+            },
 
-        loadCard() {
-          const card = this.queue[this.currentIndex];
-          document.getElementById("ui-front").innerText = card.japanese;
-          document.getElementById("ui-back-main").innerText = card.definition;
-          document.getElementById("ui-back-sub").innerText = card.japanese;
-          document.getElementById("ui-stage").innerText = card.stage;
-          document.getElementById("flashcard").classList.remove("is-flipped");
+            loadCard() {
+                const card = this.queue[this.currentIndex];
+                document.getElementById('ui-front').innerText = card.japanese;
+                document.getElementById('ui-back-main').innerText = card.definition || card.meaning;
+                document.getElementById('flashcard').classList.remove('is-flipped');
+            },
 
-          const progress = (this.currentIndex / this.queue.length) * 100;
-          document.getElementById("progress-bar").style.width = progress + "%";
-        },
+            flipCard() { document.getElementById('flashcard').classList.add('is-flipped'); },
 
-        flipCard() {
-          document.getElementById("flashcard").classList.add("is-flipped");
-        },
+            handleResult(correct, event) {
+                event.stopPropagation();
+                const currentCard = this.queue[this.currentIndex];
+                const dataIndex = this.data.findIndex(i => i.japanese === currentCard.japanese);
 
-        handleResult(correct, event) {
-          event.stopPropagation(); // Prevents flipping card again
-          const currentCard = this.queue[this.currentIndex];
-          const dataIndex = this.data.findIndex(
-            (i) => i.japanese === currentCard.japanese,
-          );
+                if (correct) {
+                    this.data[dataIndex].stage = (this.data[dataIndex].stage || 1) + 1;
+                    const days = Math.pow(2, this.data[dataIndex].stage - 1);
+                    this.data[dataIndex].nextReview = Date.now() + (days * 24 * 60 * 60 * 1000);
+                } else {
+                    this.data[dataIndex].stage = 1;
+                    this.data[dataIndex].nextReview = Date.now();
+                }
 
-          if (correct) {
-            this.data[dataIndex].stage += 1;
-            // Exponential backoff: Stage 1 = 1 day, Stage 2 = 2 days, Stage 3 = 4 days, etc.
-            const days = Math.pow(2, this.data[dataIndex].stage - 1);
-            this.data[dataIndex].nextReview =
-              Date.now() + days * 24 * 60 * 60 * 1000;
-            if (this.data[dataIndex].stage >= 6)
-              this.data[dataIndex].mastered = true;
-          } else {
-            this.data[dataIndex].stage = 1; // Reset to stage 1 if forgotten
-            this.data[dataIndex].nextReview = Date.now();
-          }
+                this.save();
+                this.currentIndex++;
+                if (this.currentIndex >= this.queue.length) this.showPage('dashboard');
+                else this.loadCard();
+            },
 
-          this.save();
-          this.currentIndex++;
+            exportJSON() {
+                const dataStr = JSON.stringify(this.data, null, 2);
+                const blob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'vocab.json';
+                a.click();
+            }
+        };
 
-          if (this.currentIndex >= this.queue.length) {
-            this.showPage("complete");
-          } else {
-            this.loadCard();
-          }
-        },
-
-        resetData() {
-          if (
-            confirm(
-              "This will clear your study progress (stages). Your vocab.json words will remain. Continue?",
-            )
-          ) {
-            localStorage.removeItem("jp_srs_storage");
-            location.reload();
-          }
-        },
-      };
-
-      app.init();
+        app.init();
     </script>
-  </body>
+</body>
 </html>
