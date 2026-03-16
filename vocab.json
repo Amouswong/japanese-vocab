@@ -1,0 +1,1910 @@
+[
+  {
+    "id": 1770563832826.1682,
+    "japanese": "つけます",
+    "definition": "開 (電器、燈)",
+    "pos": "動詞 (Group 2)",
+    "stage": 5,
+    "nextReview": 1772028702128,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.084,
+    "japanese": "消します (けします)",
+    "definition": "關 (電器、燈)、抹去",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772028728345,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.245,
+    "japanese": "開けます (あけます)",
+    "definition": "打開 (門、窗、禮物)",
+    "pos": "動詞 (Group 2)",
+    "stage": 5,
+    "nextReview": 1772028795999,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.7979,
+    "japanese": "閉めます (しめます)",
+    "definition": "關上 (門、窗)",
+    "pos": "動詞 (Group 2)",
+    "stage": 5,
+    "nextReview": 1772029025671,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.363,
+    "japanese": "急ぎます (いそぎます)",
+    "definition": "趕快、急忙",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772029076151,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.4905,
+    "japanese": "待ちます (まちます)",
+    "definition": "等待",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772028810881,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.9106,
+    "japanese": "止めます (とめます)",
+    "definition": "停 (車)、固定",
+    "pos": "動詞 (Group 2)",
+    "stage": 5,
+    "nextReview": 1772028476863,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.087,
+    "japanese": "曲がります (まがります)",
+    "definition": "轉向 (右へ曲がります)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772028783037,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.2834,
+    "japanese": "持ちます (もちます)",
+    "definition": "持有、拿、攜帶",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772029358823,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.1436,
+    "japanese": "取ります (とります)",
+    "definition": "拿取、遞給 (請把鹽拿給我)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772029386601,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.785,
+    "japanese": "手伝います (てつだいます)",
+    "definition": "幫忙、協助",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772028965494,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.5366,
+    "japanese": "呼びます (よびます)",
+    "definition": "呼叫、叫 (名字/計程車)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772028689175,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.1353,
+    "japanese": "話します (はなします)",
+    "definition": "說話、講",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772029036472,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.81,
+    "japanese": "見せます (みせます)",
+    "definition": "展示、給...看",
+    "pos": "動詞 (Group 2)",
+    "stage": 5,
+    "nextReview": 1772029032578,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.127,
+    "japanese": "教えます (おしえます)",
+    "definition": "告訴 (地址)、教導",
+    "pos": "動詞 (Group 2)",
+    "stage": 5,
+    "nextReview": 1772029383844,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.5251,
+    "japanese": "始めます (はじめます)",
+    "definition": "開始",
+    "pos": "動詞 (Group 2)",
+    "stage": 5,
+    "nextReview": 1772029229109,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.2703,
+    "japanese": "降ります (ふります)",
+    "definition": "下 (雨、雪)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772029125890,
+    "mastered": true
+  },
+  {
+    "id": 1770563832827.1956,
+    "japanese": "コピーします",
+    "definition": "影印 (Copy)",
+    "pos": "動詞 (Group 3)",
+    "stage": 5,
+    "nextReview": 1772028691729,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.7852,
+    "japanese": "エアコン",
+    "definition": "冷暖氣機 (Air con)",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029236026,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.0715,
+    "japanese": "パスポート",
+    "definition": "護照 (Passport)",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772028785728,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.9646,
+    "japanese": "名前 (なまえ)",
+    "definition": "名字",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772028577947,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.0771,
+    "japanese": "住所 (じゅうしょ)",
+    "definition": "地址",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772028733742,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.7725,
+    "japanese": "地図 (ちず)",
+    "definition": "地圖",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772028543780,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.7263,
+    "japanese": "塩 (しお)",
+    "definition": "鹽",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029296450,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.7065,
+    "japanese": "砂糖 (さとう)",
+    "definition": "砂糖",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772028982670,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.4785,
+    "japanese": "読み方 (よみかた)",
+    "definition": "唸法、讀法",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772028947628,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.6035,
+    "japanese": "〜方 (かた)",
+    "definition": "〜的方法",
+    "pos": "接尾詞",
+    "stage": 5,
+    "nextReview": 1772028576048,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.5732,
+    "japanese": "ゆっくり",
+    "definition": "慢慢地、舒適地",
+    "pos": "副詞",
+    "stage": 5,
+    "nextReview": 1772029112701,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.3042,
+    "japanese": "すぐ",
+    "definition": "馬上",
+    "pos": "副詞",
+    "stage": 5,
+    "nextReview": 1772028812758,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.0164,
+    "japanese": "また",
+    "definition": "再、又",
+    "pos": "副詞",
+    "stage": 5,
+    "nextReview": 1772029103060,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.904,
+    "japanese": "あとで",
+    "definition": "等一下、稍後",
+    "pos": "副詞",
+    "stage": 5,
+    "nextReview": 1772028957253,
+    "mastered": true
+  },
+  {
+    "id": 1770563832828.0105,
+    "japanese": "もう 少し (もう すこし)",
+    "definition": "再多一點點",
+    "pos": "副詞/短句",
+    "stage": 5,
+    "nextReview": 1772029350526,
+    "mastered": true
+  },
+  {
+    "id": 1770563832829.847,
+    "japanese": "もう 〜",
+    "definition": "再〜 (如：再來一杯)",
+    "pos": "副詞",
+    "stage": 5,
+    "nextReview": 1772029048351,
+    "mastered": true
+  },
+  {
+    "id": 1770563832829.1353,
+    "japanese": "いいですよ",
+    "definition": "好啊、可以喔",
+    "pos": "短句",
+    "stage": 5,
+    "nextReview": 1772029139725,
+    "mastered": true
+  },
+  {
+    "id": 1770563832829.2583,
+    "japanese": "さあ",
+    "definition": "喂、來吧 (催促或勸誘)",
+    "pos": "感嘆詞",
+    "stage": 5,
+    "nextReview": 1772029152783,
+    "mastered": true
+  },
+  {
+    "id": 1770563832829.3557,
+    "japanese": "あれ？",
+    "definition": "咦？ (驚訝時)",
+    "pos": "感嘆詞",
+    "stage": 5,
+    "nextReview": 1772029135282,
+    "mastered": true
+  },
+  {
+    "id": 1770563832829.895,
+    "japanese": "信号を右へ曲がってください",
+    "definition": "請在紅綠燈處右轉",
+    "pos": "例句 (問路)",
+    "stage": 5,
+    "nextReview": 1772029107965,
+    "mastered": true
+  },
+  {
+    "id": 1770563832829.9019,
+    "japanese": "まっすぐ",
+    "definition": "直直地",
+    "pos": "副詞",
+    "stage": 5,
+    "nextReview": 1772028471236,
+    "mastered": true
+  },
+  {
+    "id": 1770563832829.9236,
+    "japanese": "お釣り (おつり)",
+    "definition": "找的零錢",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029224585,
+    "mastered": true
+  },
+  {
+    "id": 1770563927103.0635,
+    "japanese": "遊びます",
+    "definition": "あそびます",
+    "pos": "玩、遊玩",
+    "stage": 5,
+    "nextReview": 1772029264176,
+    "mastered": true
+  },
+  {
+    "id": 1770563927103.135,
+    "japanese": "泳ぎます",
+    "definition": "およぎます",
+    "pos": "游泳",
+    "stage": 5,
+    "nextReview": 1772029368523,
+    "mastered": true
+  },
+  {
+    "id": 1770563927103.041,
+    "japanese": "迎えます",
+    "definition": "むかえます",
+    "pos": "迎接",
+    "stage": 5,
+    "nextReview": 1772029261958,
+    "mastered": true
+  },
+  {
+    "id": 1770563927103.547,
+    "japanese": "疲れます",
+    "definition": "つかれます",
+    "pos": "疲累",
+    "stage": 5,
+    "nextReview": 1772029374541,
+    "mastered": true
+  },
+  {
+    "id": 1770563927103.4565,
+    "japanese": "出します",
+    "definition": "だします",
+    "pos": "寄（信）、發出",
+    "stage": 5,
+    "nextReview": 1772029676352,
+    "mastered": true
+  },
+  {
+    "id": 1770563927103.3833,
+    "japanese": "入ります",
+    "definition": "はいります",
+    "pos": "進入（咖啡廳等）",
+    "stage": 5,
+    "nextReview": 1772029170391,
+    "mastered": true
+  },
+  {
+    "id": 1770563927104.3552,
+    "japanese": "出ます",
+    "definition": "でます",
+    "pos": "離開（咖啡廳等）",
+    "stage": 5,
+    "nextReview": 1772028755832,
+    "mastered": true
+  },
+  {
+    "id": 1770563927104.126,
+    "japanese": "結婚します",
+    "definition": "けっこんします",
+    "pos": "結婚",
+    "stage": 5,
+    "nextReview": 1772029226792,
+    "mastered": true
+  },
+  {
+    "id": 1770563927104.6472,
+    "japanese": "買い物します",
+    "definition": "かいものします",
+    "pos": "買東西、購物",
+    "stage": 5,
+    "nextReview": 1772028749588,
+    "mastered": true
+  },
+  {
+    "id": 1770563927104.8408,
+    "japanese": "食事します",
+    "definition": "しょくじします",
+    "pos": "吃飯、用餐",
+    "stage": 5,
+    "nextReview": 1772029658999,
+    "mastered": true
+  },
+  {
+    "id": 1770563927104.3735,
+    "japanese": "散歩します",
+    "definition": "さんぽします",
+    "pos": "散步（在公園～）",
+    "stage": 5,
+    "nextReview": 1772028958954,
+    "mastered": true
+  },
+  {
+    "id": 1770563927104.7046,
+    "japanese": "大変",
+    "definition": "たいへん（な）",
+    "pos": "夠受的、辛苦的（那形容詞）",
+    "stage": 5,
+    "nextReview": 1772029154687,
+    "mastered": true
+  },
+  {
+    "id": 1770563927104.0981,
+    "japanese": "欲しい",
+    "definition": "ほしい（い）",
+    "pos": "想要的（以形容詞）",
+    "stage": 5,
+    "nextReview": 1772028704199,
+    "mastered": true
+  },
+  {
+    "id": 1770563927104.4592,
+    "japanese": "寂しい",
+    "definition": "さびしい（い）",
+    "pos": "寂寞的（以形容詞）",
+    "stage": 5,
+    "nextReview": 1772028465680,
+    "mastered": true
+  },
+  {
+    "id": 1770563927104.2385,
+    "japanese": "広い",
+    "definition": "ひろい（い）",
+    "pos": "寬廣的（以形容詞）",
+    "stage": 5,
+    "nextReview": 1772028716075,
+    "mastered": true
+  },
+  {
+    "id": 1770563927105.4756,
+    "japanese": "狭い",
+    "definition": "せまい（い）",
+    "pos": "狹窄的（以形容詞）",
+    "stage": 5,
+    "nextReview": 1772028952488,
+    "mastered": true
+  },
+  {
+    "id": 1770563927105.2214,
+    "japanese": "市役所",
+    "definition": "しやくしょ",
+    "pos": "市政府",
+    "stage": 5,
+    "nextReview": 1772029641971,
+    "mastered": true
+  },
+  {
+    "id": 1770563927105.2053,
+    "japanese": "プール",
+    "definition": "ぷーる",
+    "pos": "游泳池",
+    "stage": 5,
+    "nextReview": 1772029005744,
+    "mastered": true
+  },
+  {
+    "id": 1770563927105.7864,
+    "japanese": "川",
+    "definition": "かわ",
+    "pos": "河川",
+    "stage": 5,
+    "nextReview": 1772028769818,
+    "mastered": true
+  },
+  {
+    "id": 1770563927105.9011,
+    "japanese": "経済",
+    "definition": "けいざい",
+    "pos": "經濟",
+    "stage": 5,
+    "nextReview": 1772028998273,
+    "mastered": true
+  },
+  {
+    "id": 1770563927105.147,
+    "japanese": "美術",
+    "definition": "びじゅつ",
+    "pos": "美術",
+    "stage": 5,
+    "nextReview": 1772029376296,
+    "mastered": true
+  },
+  {
+    "id": 1770563927105.7534,
+    "japanese": "釣り",
+    "definition": "つり",
+    "pos": "釣魚",
+    "stage": 5,
+    "nextReview": 1772029294642,
+    "mastered": true
+  },
+  {
+    "id": 1770563927105.7314,
+    "japanese": "スキー",
+    "definition": "すきー",
+    "pos": "滑雪",
+    "stage": 5,
+    "nextReview": 1772029013566,
+    "mastered": true
+  },
+  {
+    "id": 1770563927105.896,
+    "japanese": "会議",
+    "definition": "かいぎ",
+    "pos": "會議",
+    "stage": 5,
+    "nextReview": 1772028787816,
+    "mastered": true
+  },
+  {
+    "id": 1770563927106.7383,
+    "japanese": "登録",
+    "definition": "とうろく",
+    "pos": "登記、註冊",
+    "stage": 5,
+    "nextReview": 1772029700427,
+    "mastered": true
+  },
+  {
+    "id": 1770563927106.2156,
+    "japanese": "週末",
+    "definition": "しゅうまつ",
+    "pos": "週末",
+    "stage": 5,
+    "nextReview": 1772028762960,
+    "mastered": true
+  },
+  {
+    "id": 1770563927106.3218,
+    "japanese": "（お）正月",
+    "definition": "（お）しょうがつ",
+    "pos": "新年、正月",
+    "stage": 5,
+    "nextReview": 1772029624264,
+    "mastered": true
+  },
+  {
+    "id": 1770563927106.8826,
+    "japanese": "〜ごろ",
+    "definition": "～左右（指時間）",
+    "pos": "",
+    "stage": 5,
+    "nextReview": 1772029003640,
+    "mastered": true
+  },
+  {
+    "id": 1770565081344.3225,
+    "japanese": "上 (うえ)",
+    "definition": "上面",
+    "pos": "名詞 (位置)",
+    "stage": 5,
+    "nextReview": 1772029334444,
+    "mastered": true
+  },
+  {
+    "id": 1770565081344.0327,
+    "japanese": "下 (した)",
+    "definition": "下面",
+    "pos": "名詞 (位置)",
+    "stage": 5,
+    "nextReview": 1772028473123,
+    "mastered": true
+  },
+  {
+    "id": 1770565081345.4148,
+    "japanese": "前 (まえ)",
+    "definition": "前面",
+    "pos": "名詞 (位置)",
+    "stage": 5,
+    "nextReview": 1772029090167,
+    "mastered": true
+  },
+  {
+    "id": 1770565081345.5483,
+    "japanese": "後ろ (うしろ)",
+    "definition": "後面",
+    "pos": "名詞 (位置)",
+    "stage": 5,
+    "nextReview": 1772028968204,
+    "mastered": true
+  },
+  {
+    "id": 1770565081345.3599,
+    "japanese": "右 (みぎ)",
+    "definition": "右邊",
+    "pos": "名詞 (位置)",
+    "stage": 5,
+    "nextReview": 1772029250472,
+    "mastered": true
+  },
+  {
+    "id": 1770565081345.9749,
+    "japanese": "左 (ひだり)",
+    "definition": "左邊",
+    "pos": "名詞 (位置)",
+    "stage": 5,
+    "nextReview": 1772029115167,
+    "mastered": true
+  },
+  {
+    "id": 1770565081345.5251,
+    "japanese": "中 (なか)",
+    "definition": "裡面、中間",
+    "pos": "名詞 (位置)",
+    "stage": 5,
+    "nextReview": 1772029388277,
+    "mastered": true
+  },
+  {
+    "id": 1770565081345.915,
+    "japanese": "外 (そと)",
+    "definition": "外面",
+    "pos": "名詞 (位置)",
+    "stage": 5,
+    "nextReview": 1772029149401,
+    "mastered": true
+  },
+  {
+    "id": 1770565081345.667,
+    "japanese": "隣 (となり)",
+    "definition": "隔壁 (指同類別的旁邊)",
+    "pos": "名詞 (位置)",
+    "stage": 5,
+    "nextReview": 1772029028234,
+    "mastered": true
+  },
+  {
+    "id": 1770565081346.6921,
+    "japanese": "近く (ちかく)",
+    "definition": "附近",
+    "pos": "名詞 (位置)",
+    "stage": 5,
+    "nextReview": 1772029208658,
+    "mastered": true
+  },
+  {
+    "id": 1770565081346.9692,
+    "japanese": "間 (あいだ)",
+    "definition": "中間 (A和B之間)",
+    "pos": "名詞 (位置)",
+    "stage": 5,
+    "nextReview": 1772029092443,
+    "mastered": true
+  },
+  {
+    "id": 1770565203064.8096,
+    "japanese": "押します (おします)",
+    "definition": "推、按 (按鈕)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772029315431,
+    "mastered": true
+  },
+  {
+    "id": 1770565203064.8066,
+    "japanese": "飲みます (のみます)",
+    "definition": "喝酒 (特指飲酒時)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772029313247,
+    "mastered": true
+  },
+  {
+    "id": 1770565203064.0315,
+    "japanese": "見学します (けんがくします)",
+    "definition": "參觀見習 (工廠等)",
+    "pos": "動詞 (Group 3)",
+    "stage": 5,
+    "nextReview": 1772029621689,
+    "mastered": true
+  },
+  {
+    "id": 1770565203065.7524,
+    "japanese": "電話します (でんわします)",
+    "definition": "打電話",
+    "pos": "動詞 (Group 3)",
+    "stage": 5,
+    "nextReview": 1772028746571,
+    "mastered": true
+  },
+  {
+    "id": 1770565203065.524,
+    "japanese": "若い (わかい)",
+    "definition": "年輕的",
+    "pos": "I 形容詞",
+    "stage": 5,
+    "nextReview": 1772029356564,
+    "mastered": true
+  },
+  {
+    "id": 1770565203065.4336,
+    "japanese": "長い (ながい)",
+    "definition": "長的",
+    "pos": "I 形容詞",
+    "stage": 5,
+    "nextReview": 1772029147354,
+    "mastered": true
+  },
+  {
+    "id": 1770565203065.6763,
+    "japanese": "短い (みじかい)",
+    "definition": "短的",
+    "pos": "I 形容詞",
+    "stage": 5,
+    "nextReview": 1772029702768,
+    "mastered": true
+  },
+  {
+    "id": 1770565203065.2136,
+    "japanese": "明るい (あかるい)",
+    "definition": "明亮的、個性開朗的",
+    "pos": "I 形容詞",
+    "stage": 5,
+    "nextReview": 1772029672212,
+    "mastered": true
+  },
+  {
+    "id": 1770565203066.2769,
+    "japanese": "暗い (くらい)",
+    "definition": "昏暗的",
+    "pos": "I 形容詞",
+    "stage": 5,
+    "nextReview": 1772028934408,
+    "mastered": true
+  },
+  {
+    "id": 1770565203066.2651,
+    "japanese": "頭がいい (あたまがいい)",
+    "definition": "聰明的 (頭腦好)",
+    "pos": "I 形容詞 (慣用句)",
+    "stage": 5,
+    "nextReview": 1772029042152,
+    "mastered": true
+  },
+  {
+    "id": 1770565203066.8328,
+    "japanese": "体 (からだ)",
+    "definition": "身體",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772379559384,
+    "mastered": true
+  },
+  {
+    "id": 1770565203066.8586,
+    "japanese": "頭 (あたま)",
+    "definition": "頭",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772029050737,
+    "mastered": true
+  },
+  {
+    "id": 1770565203067.3293,
+    "japanese": "髪 (かみ)",
+    "definition": "頭髮",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772029068542,
+    "mastered": true
+  },
+  {
+    "id": 1770565203067.519,
+    "japanese": "顔 (かお)",
+    "definition": "臉",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772029643995,
+    "mastered": true
+  },
+  {
+    "id": 1770565203067.836,
+    "japanese": "目 (め)",
+    "definition": "眼睛",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772028744982,
+    "mastered": true
+  },
+  {
+    "id": 1770565203067.464,
+    "japanese": "耳 (みみ)",
+    "definition": "耳朵",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772029319853,
+    "mastered": true
+  },
+  {
+    "id": 1770565203067.0186,
+    "japanese": "鼻 (はな)",
+    "definition": "鼻子",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772029110095,
+    "mastered": true
+  },
+  {
+    "id": 1770565203068.3381,
+    "japanese": "口 (くち)",
+    "definition": "嘴巴",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772029248672,
+    "mastered": true
+  },
+  {
+    "id": 1770565203068.6082,
+    "japanese": "歯 (は)",
+    "definition": "牙齒",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772028780103,
+    "mastered": true
+  },
+  {
+    "id": 1770565203068.613,
+    "japanese": "おなか",
+    "definition": "肚子",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772029634638,
+    "mastered": true
+  },
+  {
+    "id": 1770565203068.0132,
+    "japanese": "足 (あし)",
+    "definition": "腳、腿",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772029696840,
+    "mastered": true
+  },
+  {
+    "id": 1770565203068.8328,
+    "japanese": "背 (せ)",
+    "definition": "身高 (背が高い：個子高)",
+    "pos": "名詞 (身體)",
+    "stage": 5,
+    "nextReview": 1772029201647,
+    "mastered": true
+  },
+  {
+    "id": 1770565203069.4006,
+    "japanese": "サービス",
+    "definition": "服務 (Service)",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029259452,
+    "mastered": true
+  },
+  {
+    "id": 1770565203069.318,
+    "japanese": "ジョギング",
+    "definition": "慢跑 (Jogging)",
+    "pos": "名詞 (動作)",
+    "stage": 5,
+    "nextReview": 1772029122403,
+    "mastered": true
+  },
+  {
+    "id": 1770565203069.2605,
+    "japanese": "シャワー",
+    "definition": "淋浴 (Shower)",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029372629,
+    "mastered": true
+  },
+  {
+    "id": 1770565203069.0298,
+    "japanese": "緑 (みどり)",
+    "definition": "綠色、綠意/植物",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029318108,
+    "mastered": true
+  },
+  {
+    "id": 1770565203070.29,
+    "japanese": "お寺 (おてら)",
+    "definition": "寺廟 (佛教)",
+    "pos": "名詞 (場所)",
+    "stage": 5,
+    "nextReview": 1772029293021,
+    "mastered": true
+  },
+  {
+    "id": 1770565203070.211,
+    "japanese": "神社 (じんじゃ)",
+    "definition": "神社 (神道教)",
+    "pos": "名詞 (場所)",
+    "stage": 5,
+    "nextReview": 1772028928707,
+    "mastered": true
+  },
+  {
+    "id": 1770565203070.0422,
+    "japanese": "番 (ばん)",
+    "definition": "號碼 (如：1號月台)",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029046498,
+    "mastered": true
+  },
+  {
+    "id": 1770565203070.3008,
+    "japanese": "どうやって",
+    "definition": "怎麼做、如何 (詢問方法)",
+    "pos": "疑問詞",
+    "stage": 5,
+    "nextReview": 1772029197773,
+    "mastered": true
+  },
+  {
+    "id": 1770565203070.2764,
+    "japanese": "どの",
+    "definition": "哪一個 (+名詞) (3個以上)",
+    "pos": "連體詞",
+    "stage": 5,
+    "nextReview": 1772029055100,
+    "mastered": true
+  },
+  {
+    "id": 1770565203071.7002,
+    "japanese": "どれ",
+    "definition": "哪一個 (單獨使用)",
+    "pos": "代名詞",
+    "stage": 5,
+    "nextReview": 1772029008390,
+    "mastered": true
+  },
+  {
+    "id": 1770565203071.3994,
+    "japanese": "すごいですね",
+    "definition": "真厲害呀 / 好棒喔",
+    "pos": "短句",
+    "stage": 5,
+    "nextReview": 1772028806347,
+    "mastered": true
+  },
+  {
+    "id": 1770565203071.6438,
+    "japanese": "まだまだです",
+    "definition": "還差得遠呢 (謙虛)",
+    "pos": "短句",
+    "stage": 5,
+    "nextReview": 1772028751751,
+    "mastered": true
+  },
+  {
+    "id": 1770565203071.0017,
+    "japanese": "キャッシュカード",
+    "definition": "提款卡 (Cash card)",
+    "pos": "名詞 (ATM用語)",
+    "stage": 5,
+    "nextReview": 1772029088122,
+    "mastered": true
+  },
+  {
+    "id": 1770565203072.8762,
+    "japanese": "暗証番号 (あんしょうばんごう)",
+    "definition": "密碼",
+    "pos": "名詞 (ATM用語)",
+    "stage": 5,
+    "nextReview": 1772029011714,
+    "mastered": true
+  },
+  {
+    "id": 1770565203072.345,
+    "japanese": "金額 (きんがく)",
+    "definition": "金額",
+    "pos": "名詞 (ATM用語)",
+    "stage": 5,
+    "nextReview": 1772028718901,
+    "mastered": true
+  },
+  {
+    "id": 1770565203072.8606,
+    "japanese": "確認 (かくにん)",
+    "definition": "確認",
+    "pos": "名詞 (ATM用語)",
+    "stage": 5,
+    "nextReview": 1772029053071,
+    "mastered": true
+  },
+  {
+    "id": 1770565203072.947,
+    "japanese": "ボタン",
+    "definition": "按鈕 (Button)",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772028737496,
+    "mastered": true
+  },
+  {
+    "id": 1770733087585.5488,
+    "japanese": "立ちます (たちます)",
+    "definition": "站、站立",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772028758789,
+    "mastered": true
+  },
+  {
+    "id": 1770733087585.5342,
+    "japanese": "座ります (すわります)",
+    "definition": "坐、坐下",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772379419855,
+    "mastered": true
+  },
+  {
+    "id": 1770733087585.896,
+    "japanese": "使います (つかいます)",
+    "definition": "使用、用",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772466440459,
+    "mastered": true
+  },
+  {
+    "id": 1770733087585.8625,
+    "japanese": "置きます (おきます)",
+    "definition": "放、放置",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772028924691,
+    "mastered": true
+  },
+  {
+    "id": 1770733087586.8755,
+    "japanese": "作ります (つくります)",
+    "definition": "做、製造",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772029629787,
+    "mastered": true
+  },
+  {
+    "id": 1770733087586.1924,
+    "japanese": "売ります (うります)",
+    "definition": "賣、銷售",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772028798444,
+    "mastered": true
+  },
+  {
+    "id": 1770733087586.3147,
+    "japanese": "知ります (しります)",
+    "definition": "得知、認識 (狀態：知っています)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772029255772,
+    "mastered": true
+  },
+  {
+    "id": 1770733087586.5479,
+    "japanese": "住みます (すみます)",
+    "definition": "居住 (狀態：住んでいます)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772029095386,
+    "mastered": true
+  },
+  {
+    "id": 1770733087587.3235,
+    "japanese": "乗ります (のります)",
+    "definition": "搭乘、騎 (電車に〜)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1772029252230,
+    "mastered": true
+  },
+  {
+    "id": 1770733087587.8152,
+    "japanese": "降ります (おります)",
+    "definition": "下車 (電車を〜)",
+    "pos": "動詞 (Group 2 例外)",
+    "stage": 5,
+    "nextReview": 1772029290740,
+    "mastered": true
+  },
+  {
+    "id": 1770733087587.8713,
+    "japanese": "乗り換えます (のりかえます)",
+    "definition": "換車、轉乘",
+    "pos": "動詞 (Group 2)",
+    "stage": 5,
+    "nextReview": 1772028980783,
+    "mastered": true
+  },
+  {
+    "id": 1770733087588.0283,
+    "japanese": "浴びます (あびます)",
+    "definition": "淋 (浴) (シャワーを〜)",
+    "pos": "動詞 (Group 2 例外)",
+    "stage": 5,
+    "nextReview": 1772029081586,
+    "mastered": true
+  },
+  {
+    "id": 1770733087588.988,
+    "japanese": "思い出します (おもいだします)",
+    "definition": "想起、回憶起",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1773064217419,
+    "mastered": true
+  },
+  {
+    "id": 1770733087588.0452,
+    "japanese": "留学生 (りゅうがくせい)",
+    "definition": "留學生",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772028944986,
+    "mastered": true
+  },
+  {
+    "id": 1770733087589.9414,
+    "japanese": "資料 (しりょう)",
+    "definition": "資料、數據",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772379517834,
+    "mastered": true
+  },
+  {
+    "id": 1770733087589.8694,
+    "japanese": "カタログ",
+    "definition": "目錄 (Catalog)",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772028461929,
+    "mastered": true
+  },
+  {
+    "id": 1770733087589.8098,
+    "japanese": "時刻表 (じこくひょう)",
+    "definition": "時刻表",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029187552,
+    "mastered": true
+  },
+  {
+    "id": 1770733087590.9888,
+    "japanese": "服 (ふく)",
+    "definition": "衣服",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772379482209,
+    "mastered": true
+  },
+  {
+    "id": 1770733087590.9453,
+    "japanese": "製品 (せいひん)",
+    "definition": "產品",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029001751,
+    "mastered": true
+  },
+  {
+    "id": 1770733087590.7754,
+    "japanese": "ソフト",
+    "definition": "軟體 (Software)",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029245953,
+    "mastered": true
+  },
+  {
+    "id": 1770733087591.9001,
+    "japanese": "専門 (せんもん)",
+    "definition": "專門、專業",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029063753,
+    "mastered": true
+  },
+  {
+    "id": 1770733087591.5637,
+    "japanese": "歯医者 (はいしゃ)",
+    "definition": "牙醫、牙科診所",
+    "pos": "名詞 (職業/場所)",
+    "stage": 5,
+    "nextReview": 1772029309783,
+    "mastered": true
+  },
+  {
+    "id": 1770733087592.0454,
+    "japanese": "床屋 (とこや)",
+    "definition": "理髮廳、理髮師 (舊式)",
+    "pos": "名詞 (場所)",
+    "stage": 5,
+    "nextReview": 1772029059241,
+    "mastered": true
+  },
+  {
+    "id": 1770733087592.0537,
+    "japanese": "独身 (どくしん)",
+    "definition": "單身",
+    "pos": "名詞",
+    "stage": 5,
+    "nextReview": 1772029370287,
+    "mastered": true
+  },
+  {
+    "id": 1771773993887.7075,
+    "japanese": "じしょ (辞書)",
+    "definition": "字典",
+    "pos": "名詞 (物品)",
+    "stage": 5,
+    "nextReview": 1773063977828,
+    "mastered": true
+  },
+  {
+    "id": 1771773993888.5012,
+    "japanese": "おきます (起きます)",
+    "definition": "起床",
+    "pos": "動詞 (Group 2)",
+    "stage": 5,
+    "nextReview": 1773063925633,
+    "mastered": true
+  },
+  {
+    "id": 1771773993888.5684,
+    "japanese": "ねます (寝ます)",
+    "definition": "睡覺",
+    "pos": "動詞 (Group 2)",
+    "stage": 5,
+    "nextReview": 1773063889285,
+    "mastered": true
+  },
+  {
+    "id": 1771773993888.9077,
+    "japanese": "はたらきます (働きます)",
+    "definition": "工作",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1773064059761,
+    "mastered": true
+  },
+  {
+    "id": 1771773993889.465,
+    "japanese": "おわります (終わります)",
+    "definition": "結束",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1773064132896,
+    "mastered": true
+  },
+  {
+    "id": 1771773993889.414,
+    "japanese": "きます (来ます)",
+    "definition": "來",
+    "pos": "動詞 (Group 3)",
+    "stage": 5,
+    "nextReview": 1773064084655,
+    "mastered": true
+  },
+  {
+    "id": 1771773993889.9375,
+    "japanese": "かえります (帰ります)",
+    "definition": "回家、回國",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1773063862431,
+    "mastered": true
+  },
+  {
+    "id": 1771773993890.9246,
+    "japanese": "すいます (吸います)",
+    "definition": "吸(菸)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1773063906295,
+    "mastered": true
+  },
+  {
+    "id": 1771773993890.374,
+    "japanese": "ききます (聞きます)",
+    "definition": "聽",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1773063908208,
+    "mastered": true
+  },
+  {
+    "id": 1771773993890.3352,
+    "japanese": "きります (切ります)",
+    "definition": "切、剪",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1773064144035,
+    "mastered": true
+  },
+  {
+    "id": 1772202255750.1821,
+    "japanese": "覚えます (おぼえます)",
+    "definition": "記住、記憶",
+    "pos": "",
+    "stage": 5,
+    "nextReview": 1774089934930,
+    "mastered": false
+  },
+  {
+    "id": 1772202255750.8074,
+    "japanese": "忘れます (わすれます)",
+    "definition": "忘記",
+    "pos": "",
+    "stage": 5,
+    "nextReview": 1774090117678,
+    "mastered": false
+  },
+  {
+    "id": 1772202255751.0652,
+    "japanese": "なくします",
+    "definition": "弄丟、遺失",
+    "pos": "",
+    "stage": 5,
+    "nextReview": 1774090131260,
+    "mastered": false
+  },
+  {
+    "id": 1772202255751.909,
+    "japanese": "払います (はらいます)",
+    "definition": "支付、付款 (お金を〜)",
+    "pos": "",
+    "stage": 5,
+    "nextReview": 1774089947193,
+    "mastered": false
+  },
+  {
+    "id": 1772202255751.0408,
+    "japanese": "返します (かえします)",
+    "definition": "歸還",
+    "pos": "",
+    "stage": 5,
+    "nextReview": 1774089711962,
+    "mastered": false
+  },
+  {
+    "id": 1772202517787.0244,
+    "japanese": "出かけます (でかけます)",
+    "definition": "出門、外出",
+    "pos": "動詞 (Group 2)",
+    "stage": 5,
+    "nextReview": 1774089702786,
+    "mastered": false
+  },
+  {
+    "id": 1772202517787.7783,
+    "japanese": "脱ぎます (ぬぎます)",
+    "definition": "脫 (衣服、鞋子)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1774089754666,
+    "mastered": false
+  },
+  {
+    "id": 1772202517787.189,
+    "japanese": "持って 行きます (もって いきます)",
+    "definition": "帶去 (某物)",
+    "pos": "動詞 (Group 1)",
+    "stage": 5,
+    "nextReview": 1774089993826,
+    "mastered": false
+  },
+  {
+    "id": 1772202517788.894,
+    "japanese": "持って 来ます (もって きます)",
+    "definition": "帶來 (某物)",
+    "pos": "動詞 (Group 3)",
+    "stage": 5,
+    "nextReview": 1774089846211,
+    "mastered": false
+  },
+  {
+    "id": 1772202517788.5637,
+    "japanese": "心配します (しんぱいします)",
+    "definition": "擔心",
+    "pos": "動詞 (Group 3)",
+    "stage": 5,
+    "nextReview": 1774089838200,
+    "mastered": false
+  },
+  {
+    "id": 1772202517788.3857,
+    "japanese": "残業します (ざんぎょうします)",
+    "definition": "加班",
+    "pos": "動詞 (Group 3)",
+    "stage": 5,
+    "nextReview": 1774095706559,
+    "mastered": false
+  },
+  {
+    "id": 1772202517789.9585,
+    "japanese": "出張します (しゅっちょうします)",
+    "definition": "出差",
+    "pos": "動詞 (Group 3)",
+    "stage": 5,
+    "nextReview": 1774095640558,
+    "mastered": false
+  },
+  {
+    "id": 1772550991962.5847,
+    "japanese": "飲みます (のみます)",
+    "definition": "吃 (藥) ※日文吃藥用「喝」",
+    "pos": "動詞 (Group 1)",
+    "stage": 4,
+    "nextReview": 1773916914087,
+    "mastered": false
+  },
+  {
+    "id": 1772550991962.6538,
+    "japanese": "入ります (はいります)",
+    "definition": "泡 (澡) ※おふろに入ります",
+    "pos": "動詞 (Group 1)",
+    "stage": 4,
+    "nextReview": 1773917185843,
+    "mastered": false
+  },
+  {
+    "id": 1772550991962.8203,
+    "japanese": "大切 [な] (たいせつ)",
+    "definition": "重要的",
+    "pos": "Na 形容詞",
+    "stage": 4,
+    "nextReview": 1773917324383,
+    "mastered": false
+  },
+  {
+    "id": 1772550991962.047,
+    "japanese": "大丈夫 [な] (だいじょうぶ)",
+    "definition": "沒問題的、沒事的",
+    "pos": "Na 形容詞",
+    "stage": 4,
+    "nextReview": 1773916956650,
+    "mastered": false
+  },
+  {
+    "id": 1772550991963.27,
+    "japanese": "危ない (あぶない)",
+    "definition": "危險的",
+    "pos": "I 形容詞",
+    "stage": 4,
+    "nextReview": 1773916880303,
+    "mastered": false
+  },
+  {
+    "id": 1772550991963.666,
+    "japanese": "禁煙 (きんえん)",
+    "definition": "禁菸",
+    "pos": "名詞",
+    "stage": 4,
+    "nextReview": 1773917156128,
+    "mastered": false
+  },
+  {
+    "id": 1772550991963.6953,
+    "japanese": "[健康]保険証 (けんこうほけんしょう)",
+    "definition": "[健康]保險證",
+    "pos": "名詞",
+    "stage": 4,
+    "nextReview": 1773917131363,
+    "mastered": false
+  },
+  {
+    "id": 1772550991963.2615,
+    "japanese": "熱 (ねつ)",
+    "definition": "發燒、熱度 (熱があります)",
+    "pos": "名詞",
+    "stage": 4,
+    "nextReview": 1773917190717,
+    "mastered": false
+  },
+  {
+    "id": 1772550991963.5935,
+    "japanese": "病気 (びょうき)",
+    "definition": "生病、疾病",
+    "pos": "名詞",
+    "stage": 4,
+    "nextReview": 1773917231614,
+    "mastered": false
+  },
+  {
+    "id": 1772550991963.5383,
+    "japanese": "薬 (くすり)",
+    "definition": "藥",
+    "pos": "名詞",
+    "stage": 4,
+    "nextReview": 1773916958345,
+    "mastered": false
+  },
+  {
+    "id": 1772550991964.3142,
+    "japanese": "おふろ",
+    "definition": "洗澡、浴缸",
+    "pos": "名詞",
+    "stage": 4,
+    "nextReview": 1773917119679,
+    "mastered": false
+  },
+  {
+    "id": 1772551152337.7612,
+    "japanese": "上着 (うわぎ)",
+    "definition": "外套、上衣",
+    "pos": "名詞",
+    "stage": 4,
+    "nextReview": 1773917159748,
+    "mastered": false
+  },
+  {
+    "id": 1772551152337.381,
+    "japanese": "下着 (したぎ)",
+    "definition": "內衣",
+    "pos": "名詞",
+    "stage": 4,
+    "nextReview": 1773916938511,
+    "mastered": false
+  },
+  {
+    "id": 1772551205616.7302,
+    "japanese": "〜までに",
+    "definition": "在〜之前 (表示期限)",
+    "pos": "助詞",
+    "stage": 4,
+    "nextReview": 1773917177592,
+    "mastered": false
+  },
+  {
+    "id": 1772551205616.2754,
+    "japanese": "ですから",
+    "definition": "所以、因此",
+    "pos": "接續詞",
+    "stage": 4,
+    "nextReview": 1773916941099,
+    "mastered": false
+  },
+  {
+    "id": 1772551205616.9976,
+    "japanese": "どうしましたか",
+    "definition": "怎麼了？(醫生問診時常說)",
+    "pos": "短句",
+    "stage": 4,
+    "nextReview": 1773916951265,
+    "mastered": false
+  },
+  {
+    "id": 1772551205616.6045,
+    "japanese": "[〜が] 痛いです (いたいです)",
+    "definition": "[〜] 會痛",
+    "pos": "短句",
+    "stage": 4,
+    "nextReview": 1773916906224,
+    "mastered": false
+  },
+  {
+    "id": 1772551205616.353,
+    "japanese": "のど",
+    "definition": "喉嚨",
+    "pos": "名詞 (身體)",
+    "stage": 4,
+    "nextReview": 1773917036191,
+    "mastered": false
+  },
+  {
+    "id": 1772551205617.4485,
+    "japanese": "お大事に (おだいじに)",
+    "definition": "請保重 (對病人說的話)",
+    "pos": "短句",
+    "stage": 4,
+    "nextReview": 1773917049824,
+    "mastered": false
+  },
+  {
+    "id": 1773066399316.3574,
+    "japanese": "いいます",
+    "definition": "Speaking",
+    "pos": "動詞 (Group 1)",
+    "stage": 3,
+    "nextReview": 1773830750628,
+    "mastered": false
+  },
+  {
+    "id": 1773066916915.2395,
+    "japanese": "できます",
+    "definition": "會、能夠、可以",
+    "pos": "動詞 (Group 2)",
+    "stage": 3,
+    "nextReview": 1773830952991,
+    "mastered": false
+  },
+  {
+    "id": 1773066916915.0789,
+    "japanese": "洗います (あらいます)",
+    "definition": "洗 (洗手、洗車)",
+    "pos": "動詞 (Group 1)",
+    "stage": 3,
+    "nextReview": 1773830843874,
+    "mastered": false
+  },
+  {
+    "id": 1773066916916.9092,
+    "japanese": "弾きます (ひきます)",
+    "definition": "彈奏 (鋼琴、吉他等弦樂器)",
+    "pos": "動詞 (Group 1)",
+    "stage": 3,
+    "nextReview": 1773836552760,
+    "mastered": false
+  },
+  {
+    "id": 1773066916916.7266,
+    "japanese": "歌います (うたいます)",
+    "definition": "唱歌",
+    "pos": "動詞 (Group 1)",
+    "stage": 3,
+    "nextReview": 1773830989553,
+    "mastered": false
+  },
+  {
+    "id": 1773066916917.3018,
+    "japanese": "集めます (あつめます)",
+    "definition": "收集 (郵票、資料)",
+    "pos": "動詞 (Group 2)",
+    "stage": 3,
+    "nextReview": 1773830956162,
+    "mastered": false
+  },
+  {
+    "id": 1773067034087.2234,
+    "japanese": "捨てます (すてます)",
+    "definition": "丟棄、扔掉",
+    "pos": "動詞 (Group 2)",
+    "stage": 3,
+    "nextReview": 1773830985258,
+    "mastered": false
+  },
+  {
+    "id": 1773067034088.9163,
+    "japanese": "換えます (かえます)",
+    "definition": "交換、換 (換錢、換電池)",
+    "pos": "動詞 (Group 2)",
+    "stage": 3,
+    "nextReview": 1773830676644,
+    "mastered": false
+  },
+  {
+    "id": 1773067034088.7585,
+    "japanese": "運転します (うんてんします)",
+    "definition": "駕駛、開車",
+    "pos": "動詞 (Group 3)",
+    "stage": 3,
+    "nextReview": 1773830946480,
+    "mastered": false
+  },
+  {
+    "id": 1773067034088.9478,
+    "japanese": "予約します (よやくします)",
+    "definition": "預約",
+    "pos": "動詞 (Group 3)",
+    "stage": 3,
+    "nextReview": 1773830855915,
+    "mastered": false
+  },
+  {
+    "id": 1773067034088.36,
+    "japanese": "ピアノ",
+    "definition": "鋼琴",
+    "pos": "名詞 (樂器)",
+    "stage": 3,
+    "nextReview": 1773830942937,
+    "mastered": false
+  },
+  {
+    "id": 1773658532724.73,
+    "japanese": "〜メートル",
+    "definition": "〜公尺 (Meter)",
+    "pos": "名詞 (單位)",
+    "stage": 2,
+    "nextReview": 1773750079104,
+    "mastered": false
+  },
+  {
+    "id": 1773658532725.7246,
+    "japanese": "現金 (げんきん)",
+    "definition": "現金",
+    "pos": "名詞",
+    "stage": 2,
+    "nextReview": 1773750045043,
+    "mastered": false
+  },
+  {
+    "id": 1773658532726.667,
+    "japanese": "趣味 (しゅみ)",
+    "definition": "興趣、嗜好",
+    "pos": "名詞",
+    "stage": 2,
+    "nextReview": 1773750142417,
+    "mastered": false
+  },
+  {
+    "id": 1773658532726.814,
+    "japanese": "日記 (にっき)",
+    "definition": "日記",
+    "pos": "名詞",
+    "stage": 1,
+    "nextReview": 1773658532726,
+    "mastered": false
+  },
+  {
+    "id": 1773658532726.49,
+    "japanese": "お祈り (おいのり)",
+    "definition": "祈禱 (〜を します：祈禱)",
+    "pos": "名詞 (動作性)",
+    "stage": 2,
+    "nextReview": 1773750160412,
+    "mastered": false
+  },
+  {
+    "id": 1773658532727.5286,
+    "japanese": "課長 (かちょう)",
+    "definition": "課長 (部門主管)",
+    "pos": "名詞 (職稱)",
+    "stage": 2,
+    "nextReview": 1773750133949,
+    "mastered": false
+  },
+  {
+    "id": 1773658532727.9353,
+    "japanese": "部長 (ぶちょう)",
+    "definition": "部長 (經理)",
+    "pos": "名詞 (職稱)",
+    "stage": 2,
+    "nextReview": 1773750154895,
+    "mastered": false
+  },
+  {
+    "id": 1773658532728.125,
+    "japanese": "社長 (しゃちょう)",
+    "definition": "社長 (總經理/董事長)",
+    "pos": "名詞 (職稱)",
+    "stage": 2,
+    "nextReview": 1773750074519,
+    "mastered": false
+  },
+  {
+    "id": 1773658532728.3635,
+    "japanese": "動物 (どうぶつ)",
+    "definition": "動物",
+    "pos": "名詞",
+    "stage": 2,
+    "nextReview": 1773750111091,
+    "mastered": false
+  },
+  {
+    "id": 1773658532728.9375,
+    "japanese": "馬 (うま)",
+    "definition": "馬",
+    "pos": "名詞 (動物)",
+    "stage": 2,
+    "nextReview": 1773750056861,
+    "mastered": false
+  },
+  {
+    "id": 1773658532729.1953,
+    "japanese": "インターネット",
+    "definition": "網際網路 (Internet)",
+    "pos": "名詞",
+    "stage": 2,
+    "nextReview": 1773750148042,
+    "mastered": false
+  },
+  {
+    "id": 1773663631097.6636,
+    "japanese": "テニス",
+    "definition": "網球 (Tennis)",
+    "pos": "名詞 (運動)",
+    "stage": 2,
+    "nextReview": 1773750131632,
+    "mastered": false
+  },
+  {
+    "id": 1773663631098.9033,
+    "japanese": "嫌い [な] (きらい)",
+    "definition": "討厭的、不喜歡的 (Hate/Dislike)",
+    "pos": "Na 形容詞",
+    "stage": 2,
+    "nextReview": 1773750121408,
+    "mastered": false
+  },
+  {
+    "id": 1773663631098.1833,
+    "japanese": "安い (やすい)",
+    "definition": "便宜的 (Cheap)",
+    "pos": "I 形容詞",
+    "stage": 2,
+    "nextReview": 1773750168780,
+    "mastered": false
+  },
+  {
+    "id": 1773663631099.5725,
+    "japanese": "短い (みじかい)",
+    "definition": "短的 (長度短 / Short in length)",
+    "pos": "I 形容詞",
+    "stage": 2,
+    "nextReview": 1773750126510,
+    "mastered": false
+  },
+  {
+    "id": 1773663631099.1592,
+    "japanese": "低い (ひくい)",
+    "definition": "矮的、低的 (身高矮 / Short in height)",
+    "pos": "I 形容詞",
+    "stage": 2,
+    "nextReview": 1773750117192,
+    "mastered": false
+  },
+  {
+    "id": 1773663631099.1853,
+    "japanese": "ダンス",
+    "definition": "舞蹈 (Dance)",
+    "pos": "名詞 (動作性)",
+    "stage": 2,
+    "nextReview": 1773750138220,
+    "mastered": false
+  },
+  {
+    "id": 1773663631100.1545,
+    "japanese": "クリスマス",
+    "definition": "聖誕節 (Christmas)",
+    "pos": "名詞 (節慶)",
+    "stage": 2,
+    "nextReview": 1773750091236,
+    "mastered": false
+  },
+  {
+    "id": 1773663631100.9648,
+    "japanese": "話します (はなします)",
+    "definition": "說話、講話 (Speak / Talk)",
+    "pos": "動詞 (Group 1)",
+    "stage": 2,
+    "nextReview": 1773750061268,
+    "mastered": false
+  }
+]

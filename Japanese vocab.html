@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japanese SRS Master (Auto-Sync Fixed)</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Noto Sans JP -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .jp-text {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        
+        /* Flip Card CSS */
+        .scene {
+            perspective: 1000px;
+            width: 100%;
+            height: 350px;
+        }
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .card__face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: white;
+        }
+        .card__face--back {
+            background: #f8fafc;
+            transform: rotateY(180deg);
+            border: 2px solid #e2e8f0;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white p-4 shadow-md z-10">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <i class="fas fa-torii-gate"></i> Japanese SRS
+            </h1>
+            <nav class="flex gap-4 text-sm font-semibold">
+                <button onclick="app.showPage('dashboard')" class="hover:text-indigo-200 transition">Dashboard</button>
+                <button onclick="app.showPage('add')" class="hover:text-indigo-200 transition">Add Vocab</button>
+                <button onclick="app.showPage('list')" class="hover:text-indigo-200 transition">List</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative w-full max-w-3xl mx-auto p-4">
+        
+        <!-- Status Bar for Auto-Sync -->
+        <div id="sync-status" class="hidden mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex justify-between items-center text-sm text-blue-800">
+            <span id="sync-msg"><i class="fas fa-sync fa-spin mr-2"></i> Auto-Sync Active</span>
+            <button onclick="fileSystem.disconnect()" class="text-xs underline hover:text-blue-600">Disconnect</button>
+        </div>
+
+        <!-- PAGE: DASHBOARD -->
+        <div id="page-dashboard" class="space-y-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 text-center">
+                <h2 class="text-2xl font-bold text-slate-700 mb-2">Ready to Study?</h2>
+                <div class="text-5xl font-bold text-indigo-600 my-4" id="due-count">0</div>
+                <p class="text-slate-500 mb-6">Cards due for review</p>
+                <button onclick="app.startSession()" id="btn-start" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Start Review Session
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+                    <div class="text-slate-500 text-sm">Total Cards</div>
+                    <div class="text-2xl font-bold" id="total-count">0</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+                    <div class="text-slate-500 text-sm">Mastered (Stage 6)</div>
+                    <div class="text-2xl font-bold text-green-600" id="mastered-count">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: ADD VOCAB -->
+        <div id="page-add" class="hidden space-y-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold mb-4">Add Single Card</h2>
+                <form id="single-form" class="space-y-4" onsubmit="app.addSingle(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="text" id="inp-jp" placeholder="Japanese (e.g. 猫)" class="border p-2 rounded w-full jp-text" required>
+                        <input type="text" id="inp-def" placeholder="Definition (e.g. Cat)" class="border p-2 rounded w-full" required>
+                        <input type="text" id="inp-pos" placeholder="Part of Speech (e.g. Noun)" class="border p-2 rounded w-full">
+                    </div>
+                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 w-full md:w-auto">Add Card</button>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold mb-2">Bulk Upload</h2>
+                <p class="text-sm text-slate-500 mb-2">Format: Japanese, Definition, Part of Speech (one per line)</p>
+                <textarea id="inp-bulk" rows="5" class="w-full border p-3 rounded font-mono text-sm" placeholder="猫, Cat, Noun&#10;食べる, To eat, Verb&#10;美味しい, Delicious, Adjective"></textarea>
+                <button onclick="app.addBulk()" class="mt-4 bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800 w-full md:w-auto">Import List</button>
+            </div>
+        </div>
+
+        <!-- PAGE: LIST -->
+        <div id="page-list" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Your Vocabulary</h2>
+                <div class="space-x-2">
+                    <button onclick="document.getElementById('data-management').classList.toggle('hidden')" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded shadow">
+                        <i class="fas fa-save"></i> Data Options
+                    </button>
+                    <button onclick="app.resetData()" class="text-xs text-red-500 hover:text-red-700 underline px-2">Reset All</button>
+                </div>
+            </div>
+
+            <!-- Data Management Panel -->
+            <div id="data-management" class="hidden bg-slate-800 text-white p-4 rounded-xl shadow-lg mb-6">
+                <h3 class="font-bold text-lg mb-2 text-indigo-200"><i class="fas fa-database"></i> Backup & Sync</h3>
+                <p class="text-slate-400 text-sm mb-4">Choose how you want to save your data.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Option 1: Auto Sync (New) -->
+                    <div class="bg-indigo-900 p-3 rounded-lg border border-indigo-500 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-yellow-500 text-black text-xs font-bold px-2 py-1">NEW</div>
+                        <h4 class="font-bold text-sm mb-1 text-indigo-200">1. Auto-Sync to File</h4>
+                        <p class="text-xs text-indigo-300 mb-3">Links to a file on your computer and saves automatically. (Chrome/Edge only)</p>
+                        <button onclick="fileSystem.setup()" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white py-2 rounded text-sm font-bold transition">
+                            <i class="fas fa-link"></i> Connect File
+                        </button>
+                    </div>
+
+                    <!-- Option 2: Standalone HTML -->
+                    <div class="bg-slate-700 p-3 rounded-lg border border-slate-600">
+                        <h4 class="font-bold text-sm mb-1 text-green-300">2. Save App + Data</h4>
+                        <p class="text-xs text-slate-300 mb-3">Downloads a new copy of this app with data inside.</p>
+                        <button onclick="app.downloadStandalone()" class="w-full bg-green-600 hover:bg-green-500 text-white py-2 rounded text-sm font-bold transition">
+                            <i class="fas fa-download"></i> Download HTML
+                        </button>
+                    </div>
+
+                    <!-- Option 3: JSON -->
+                    <div class="bg-slate-700 p-3 rounded-lg border border-slate-600">
+                        <h4 class="font-bold text-sm mb-1 text-blue-300">3. JSON Backup</h4>
+                        <p class="text-xs text-slate-300 mb-3">Manual export/import of data.</p>
+                        <div class="flex gap-2">
+                            <button onclick="app.exportJSON()" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-2 rounded text-sm transition">
+                                Export
+                            </button>
+                            <label class="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-2 rounded text-sm transition text-center cursor-pointer">
+                                Import
+                                <input type="file" id="import-file" class="hidden" accept=".json" onchange="app.importJSON(this)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                 <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+                    <input type="text" id="filter-text" placeholder="Search..." 
+                           class="w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                           oninput="app.renderList()">
+                 </div>
+                 <input type="text" id="filter-pos" placeholder="Filter POS..." 
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                        oninput="app.renderList()">
+                 <select id="filter-stage" 
+                         class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-sm" 
+                         onchange="app.renderList()">
+                    <option value="all">All Stages</option>
+                    <option value="active">Active</option>
+                    <option value="mastered">Mastered</option>
+                    <option value="1">Stage 1</option>
+                    <option value="2">Stage 2</option>
+                    <option value="3">Stage 3</option>
+                    <option value="4">Stage 4</option>
+                    <option value="5">Stage 5</option>
+                 </select>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-slate-500 uppercase">
+                            <tr>
+                                <th class="px-4 py-3">Japanese</th>
+                                <th class="px-4 py-3">Def</th>
+                                <th class="px-4 py-3">POS</th>
+                                <th class="px-4 py-3">Stage</th>
+                                <th class="px-4 py-3">Next</th>
+                                <th class="px-4 py-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vocab-table-body" class="divide-y divide-slate-100">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: REVIEW MODE -->
+        <div id="page-review" class="hidden flex flex-col h-full relative">
+            <div class="flex justify-between items-center mb-6 pt-2">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mr-4 relative">
+                    <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <button onclick="app.showPage('dashboard')" class="text-slate-400 hover:text-red-500 font-bold text-sm whitespace-nowrap px-3 py-1 border border-slate-300 rounded hover:bg-white transition">
+                    <i class="fas fa-times"></i> Quit
+                </button>
+            </div>
+            <div id="card-wrapper" class="flex-1 flex flex-col justify-center transition-opacity duration-300 opacity-100">
+                <div class="scene mb-8" onclick="app.flipCard()">
+                    <div class="card" id="flashcard">
+                        <div class="card__face card__face--front">
+                            <div class="absolute top-4 right-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                Stage <span id="card-stage">1</span>
+                            </div>
+                            <div class="text-center w-full px-4">
+                                <p class="text-sm text-slate-400 mb-2 uppercase tracking-wide" id="front-label">Japanese</p>
+                                <h2 class="text-4xl md:text-5xl font-bold text-slate-800 jp-text break-words" id="card-front-text">...</h2>
+                                <button id="btn-speak-front" onclick="app.speak(event)" class="mt-6 mx-auto text-indigo-500 hover:text-indigo-600 w-12 h-12 rounded-full hover:bg-indigo-50 transition-colors flex items-center justify-center hidden shadow-sm border border-transparent hover:border-indigo-100 ring-1 ring-indigo-50">
+                                    <i class="fas fa-volume-high text-xl"></i>
+                                </button>
+                            </div>
+                            <div class="absolute bottom-4 text-slate-400 text-sm animate-bounce">
+                                Tap to flip
+                            </div>
+                        </div>
+                        <div class="card__face card__face--back">
+                            <div class="text-center space-y-4 w-full px-4">
+                                <div>
+                                    <p class="text-xs text-slate-400 uppercase">Answer</p>
+                                    <div class="flex flex-col items-center justify-center gap-2">
+                                        <h2 class="text-3xl font-bold text-indigo-700 break-words" id="card-back-main">...</h2>
+                                        <button id="btn-speak-back-main" onclick="app.speak(event)" class="text-indigo-400 hover:text-indigo-600 w-8 h-8 rounded-full hover:bg-indigo-50 transition-colors flex items-center justify-center hidden">
+                                            <i class="fas fa-volume-high text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <hr class="border-slate-200 w-16 mx-auto">
+                                <div>
+                                    <p class="text-xs text-slate-400 uppercase">Context</p>
+                                    <div class="flex flex-col items-center justify-center gap-1">
+                                        <p class="text-lg text-slate-600 break-words" id="card-back-sub">...</p>
+                                        <button id="btn-speak-back-sub" onclick="app.speak(event)" class="text-slate-400 hover:text-indigo-500 w-8 h-8 rounded-full hover:bg-slate-100 transition-colors flex items-center justify-center hidden">
+                                            <i class="fas fa-volume-high text-sm"></i>
+                                        </button>
+                                    </div>
+                                    <span class="inline-block mt-3 px-2 py-1 bg-slate-100 text-slate-500 text-xs rounded" id="card-pos">...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="action-buttons" class="grid grid-cols-2 gap-4 opacity-0 pointer-events-none transition-opacity duration-300">
+                    <button onclick="app.handleResult(false)" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold py-4 rounded-xl flex flex-col items-center gap-1 transition transform active:scale-95">
+                        <i class="fas fa-times text-xl"></i> <span>Incorrect</span>
+                    </button>
+                    <button onclick="app.handleResult(true)" class="bg-green-100 hover:bg-green-200 text-green-700 font-bold py-4 rounded-xl flex flex-col items-center gap-1 transition transform active:scale-95">
+                        <i class="fas fa-check text-xl"></i> <span>Correct</span> <span class="text-xs font-normal opacity-75" id="next-interval-label">+1 Day</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="review-complete" class="hidden absolute inset-0 bg-white z-20 flex flex-col items-center justify-center text-center p-6">
+            <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fas fa-trophy"></i></div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Session Complete!</h2>
+            <p class="text-slate-500 mb-6">You've reviewed all pending cards for now.</p>
+            <button onclick="app.showPage('dashboard')" class="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition">Back to Dashboard</button>
+        </div>
+    </main>
+
+    <script>
+        // --- FILE SYSTEM ACCESS API & INDEXED DB (Raw) ---
+        const dbName = "JpSrsDB";
+        const storeName = "fileHandle";
+        
+        const fileSystem = {
+            fileHandle: null,
+            
+            // Open DB helper
+            getDB: () => {
+                return new Promise((resolve, reject) => {
+                    const req = indexedDB.open(dbName, 1);
+                    req.onupgradeneeded = (e) => {
+                        e.target.result.createObjectStore(storeName);
+                    };
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            },
+
+            // Setup: Ask user to pick file, store handle in IndexedDB
+            async setup() {
+                try {
+                    if (!window.showOpenFilePicker) return alert("Your browser doesn't support Auto-Sync (Try Chrome or Edge).");
+                    
+                    const [handle] = await window.showOpenFilePicker({
+                        types: [{ description: 'JSON Files', accept: { 'application/json': ['.json'] } }],
+                    });
+                    this.fileHandle = handle;
+                    
+                    // Save handle to IndexedDB
+                    const db = await this.getDB();
+                    const tx = db.transaction(storeName, "readwrite");
+                    tx.objectStore(storeName).put(handle, "vocabHandle");
+                    
+                    // Initial load from file
+                    await this.loadFromFile();
+                } catch (err) {
+                    console.error("Sync Setup Failed:", err);
+                    // Don't alert on user cancel
+                    if(err.name !== 'AbortError') alert("Could not connect to file.");
+                }
+            },
+
+            // Check if we have a stored handle on load
+            async init() {
+                try {
+                    const db = await this.getDB();
+                    const tx = db.transaction(storeName, "readonly");
+                    const req = tx.objectStore(storeName).get("vocabHandle");
+                    
+                    req.onsuccess = async () => {
+                        if (req.result) {
+                            this.fileHandle = req.result;
+                            // We have a handle, but need permission again on new session
+                            const perm = await this.fileHandle.queryPermission({ mode: 'readwrite' });
+                            if (perm === 'granted') {
+                                this.loadFromFile();
+                            } else {
+                                // Request permission UI
+                                if(confirm("Reconnect to your Auto-Sync vocabulary file?")) {
+                                    const newPerm = await this.fileHandle.requestPermission({ mode: 'readwrite' });
+                                    if(newPerm === 'granted') {
+                                        this.loadFromFile();
+                                    } else {
+                                        this.disconnect();
+                                    }
+                                }
+                            }
+                        }
+                    };
+                } catch (e) { console.log("DB Init error", e); }
+            },
+
+            async loadFromFile() {
+                if (!this.fileHandle) return;
+                try {
+                    const file = await this.fileHandle.getFile();
+                    const text = await file.text();
+                    
+                    // FIX: Handle new/empty files gracefully
+                    if (!text.trim()) {
+                        // File is empty. This is likely a first-time setup.
+                        // Write the current data (if any) to this new file.
+                        console.log("File is empty, initializing with current data.");
+                        await this.writeToFile(app.data);
+                        app.updateSyncUI(true);
+                        alert("Connected to new file! Your data will now be synced.");
+                        return;
+                    }
+
+                    const json = JSON.parse(text);
+                    if (Array.isArray(json)) {
+                        app.data = json;
+                        app.save(true); // Save to localstorage, skip write back to avoid loop
+                        app.updateSyncUI(true);
+                        app.showPage('dashboard');
+                    } else {
+                         throw new Error("File content is not a list.");
+                    }
+                } catch (err) {
+                    console.error("Load failed", err);
+                    if (err instanceof SyntaxError) {
+                         alert("Error: The file is not valid JSON. If this is a new file, please make sure it is completely empty (0 bytes).");
+                    } else {
+                         alert("Failed to read connected file: " + err.message);
+                    }
+                    this.disconnect();
+                }
+            },
+
+            async writeToFile(data) {
+                if (!this.fileHandle) return;
+                try {
+                    const writable = await this.fileHandle.createWritable();
+                    await writable.write(JSON.stringify(data, null, 2));
+                    await writable.close();
+                    // console.log("Auto-saved to file");
+                } catch (err) {
+                    console.error("Auto-save failed", err);
+                    app.updateSyncUI(false);
+                    alert("Auto-Sync lost permission. Please reconnect in Data Options.");
+                }
+            },
+
+            async disconnect() {
+                this.fileHandle = null;
+                const db = await this.getDB();
+                const tx = db.transaction(storeName, "readwrite");
+                tx.objectStore(storeName).delete("vocabHandle");
+                app.updateSyncUI(false);
+                alert("Auto-Sync disconnected.");
+            }
+        };
+
+        // --- MAIN APP ---
+        window.embeddedData = null;
+
+        const app = {
+            data: [],
+            sessionQueue: [],
+            currentCard: null,
+            isFlipped: false,
+
+            init() {
+                // Try LocalStorage first for speed
+                const stored = localStorage.getItem('jp_srs_data');
+                // Embedded data fallback
+                const embedded = window.embeddedData;
+
+                if (stored) {
+                    this.data = JSON.parse(stored);
+                } else if (embedded && Array.isArray(embedded) && embedded.length > 0) {
+                    this.data = embedded;
+                    this.save();
+                }
+
+                // Initialize Auto-Sync logic
+                fileSystem.init();
+                
+                this.updateDashboard();
+            },
+
+            updateSyncUI(active) {
+                const statusDiv = document.getElementById('sync-status');
+                const msg = document.getElementById('sync-msg');
+                if (active) {
+                    statusDiv.classList.remove('hidden');
+                    msg.innerHTML = '<i class="fas fa-sync fa-spin mr-2"></i> Auto-Sync Active';
+                } else {
+                    statusDiv.classList.add('hidden');
+                }
+            },
+
+            save(skipFileWrite = false) {
+                // 1. Save to LocalStorage (Immediate cache)
+                localStorage.setItem('jp_srs_data', JSON.stringify(this.data));
+                
+                // 2. Save to File System (If connected)
+                if (!skipFileWrite && fileSystem.fileHandle) {
+                    fileSystem.writeToFile(this.data);
+                }
+                
+                this.updateDashboard();
+            },
+
+            // --- Download/Export Logic ---
+            downloadStandalone() {
+                const clone = document.documentElement.cloneNode(true);
+                clone.querySelectorAll('[id^="page-"]').forEach(el => el.classList.add('hidden'));
+                const dash = clone.querySelector('#page-dashboard');
+                if(dash) dash.classList.remove('hidden');
+                const tbody = clone.querySelector('#vocab-table-body');
+                if(tbody) tbody.innerHTML = '';
+                const dm = clone.querySelector('#data-management');
+                if(dm) dm.classList.add('hidden');
+                const status = clone.querySelector('#sync-status'); // Hide sync status in download
+                if(status) status.classList.add('hidden');
+
+                const dataJson = JSON.stringify(this.data);
+                let htmlContent = clone.outerHTML;
+                const regex = /window\.embeddedData\s*=\s*[\s\S]*?;/;
+                
+                if (regex.test(htmlContent)) {
+                    htmlContent = htmlContent.replace(regex, `window.embeddedData = ${dataJson};`);
+                    const blob = new Blob(['<!DOCTYPE html>\n' + htmlContent], {type: 'text/html'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `japanese_srs_app_${new Date().toISOString().slice(0,10)}.html`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } else {
+                    alert("Error exporting standalone file.");
+                }
+            },
+
+            exportJSON() {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.data));
+                const a = document.createElement('a');
+                a.href = dataStr;
+                a.download = "vocab_data.json";
+                a.click();
+            },
+
+            importJSON(input) {
+                const file = input.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const json = JSON.parse(e.target.result);
+                        if (Array.isArray(json)) {
+                            if(confirm(`Found ${json.length} cards. Overwrite current data?`)) {
+                                this.data = json;
+                                this.save();
+                                alert("Data imported!");
+                                this.showPage('list');
+                            }
+                        }
+                    } catch (err) { alert("Invalid JSON"); }
+                };
+                reader.readAsText(file);
+                input.value = ''; 
+            },
+
+            // --- UI Nav ---
+            showPage(pageId) {
+                document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.add('hidden'));
+                document.getElementById('review-complete').classList.add('hidden');
+                document.getElementById(`page-${pageId}`).classList.remove('hidden');
+                if(pageId === 'dashboard') this.updateDashboard();
+                if(pageId === 'list') this.renderList();
+            },
+
+            // --- Adding Data ---
+            addSingle(e) {
+                e.preventDefault();
+                const jp = document.getElementById('inp-jp').value.trim();
+                const def = document.getElementById('inp-def').value.trim();
+                const pos = document.getElementById('inp-pos').value.trim();
+                if (jp && def) {
+                    this.createCard(jp, def, pos);
+                    e.target.reset();
+                    alert('Card added!');
+                }
+            },
+
+            addBulk() {
+                const text = document.getElementById('inp-bulk').value;
+                if (!text) return;
+                const lines = text.split('\n');
+                let count = 0;
+                lines.forEach(line => {
+                    const parts = line.split(/[,\t]+/).map(s => s.trim());
+                    if (parts.length >= 2) {
+                        this.createCard(parts[0], parts[1], parts[2] || '');
+                        count++;
+                    }
+                });
+                document.getElementById('inp-bulk').value = '';
+                alert(`Added ${count} cards.`);
+                this.save();
+            },
+
+            createCard(japanese, definition, pos) {
+                this.data.push({
+                    id: Date.now() + Math.random(),
+                    japanese, definition, pos,
+                    stage: 1, nextReview: Date.now(),
+                    mastered: false
+                });
+                this.save();
+            },
+            
+            // --- SRS Logic ---
+            getIntervalDays(stage) {
+                switch(stage) {
+                    case 1: return 1;
+                    case 2: return 2;
+                    case 3: return 3;
+                    case 4: return 5;
+                    default: return 0;
+                }
+            },
+
+            speak(e) {
+                e.stopPropagation();
+                if (!this.currentCard || !this.currentCard.japanese) return;
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(this.currentCard.japanese);
+                utterance.lang = 'ja-JP'; 
+                utterance.rate = 0.8; 
+                const voices = window.speechSynthesis.getVoices();
+                const jpVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+                if (jpVoice) utterance.voice = jpVoice;
+                window.speechSynthesis.speak(utterance);
+            },
+
+            updateDashboard() {
+                const now = new Date().getTime();
+                const due = this.data.filter(item => !item.mastered && item.nextReview <= now).length;
+                document.getElementById('due-count').innerText = due;
+                document.getElementById('total-count').innerText = this.data.length;
+                document.getElementById('mastered-count').innerText = this.data.filter(item => item.mastered).length;
+                
+                const startBtn = document.getElementById('btn-start');
+                startBtn.disabled = due === 0;
+                if(due === 0) {
+                    startBtn.innerText = "No Reviews Due";
+                    startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    startBtn.innerText = "Start Review Session";
+                    startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            },
+
+            renderList() {
+                const tbody = document.getElementById('vocab-table-body');
+                tbody.innerHTML = '';
+                
+                const searchText = document.getElementById('filter-text').value.toLowerCase();
+                const posText = document.getElementById('filter-pos').value.toLowerCase();
+                const stageVal = document.getElementById('filter-stage').value;
+
+                let filtered = this.data.filter(item => {
+                    const matchesText = (item.japanese.toLowerCase().includes(searchText) || item.definition.toLowerCase().includes(searchText));
+                    const matchesPos = item.pos.toLowerCase().includes(posText);
+                    let matchesStage = true;
+                    if (stageVal === 'mastered') matchesStage = item.mastered;
+                    else if (stageVal === 'active') matchesStage = !item.mastered;
+                    else if (stageVal !== 'all') matchesStage = (item.stage.toString() === stageVal && !item.mastered);
+                    return matchesText && matchesPos && matchesStage;
+                });
+                
+                filtered.sort((a,b) => a.nextReview - b.nextReview);
+
+                if (filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">No vocabulary found.</td></tr>';
+                    return;
+                }
+
+                filtered.forEach(item => {
+                    const dateObj = new Date(item.nextReview);
+                    const dateStr = item.mastered ? 'Mastered' : dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 font-bold jp-text text-slate-800">${item.japanese}</td>
+                        <td class="px-4 py-3 text-slate-600">${item.definition}</td>
+                        <td class="px-4 py-3 text-xs text-slate-500 italic">${item.pos}</td>
+                        <td class="px-4 py-3"><span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${item.mastered ? 'MAX' : item.stage}</span></td>
+                        <td class="px-4 py-3 text-xs text-slate-500">${dateStr}</td>
+                        <td class="px-4 py-3"><button onclick="app.deleteCard(${item.id})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            },
+
+            deleteCard(id) {
+                if(confirm('Delete this card?')) {
+                    this.data = this.data.filter(d => d.id !== id);
+                    this.save();
+                    this.renderList();
+                }
+            },
+            
+            resetData() {
+                if(confirm("Delete ALL data?")) {
+                    localStorage.removeItem('jp_srs_data');
+                    this.data = [];
+                    this.save(); // Also clears sync file if connected
+                    this.init();
+                    this.showPage('dashboard');
+                }
+            },
+
+            // --- Session Logic ---
+            startSession() {
+                const now = new Date().getTime();
+                this.sessionQueue = this.data.filter(item => !item.mastered && item.nextReview <= now);
+                this.sessionQueue.sort(() => Math.random() - 0.5);
+                if (this.sessionQueue.length > 0) {
+                    this.showPage('review');
+                    this.loadNextCard();
+                }
+            },
+
+            loadNextCard() {
+                if (this.sessionQueue.length === 0) {
+                    document.getElementById('review-complete').classList.remove('hidden');
+                    return;
+                }
+                const totalDue = parseInt(document.getElementById('due-count').innerText) || this.sessionQueue.length; 
+                const done = totalDue - this.sessionQueue.length;
+                const pct = Math.min(100, (done / totalDue) * 100); 
+                document.getElementById('progress-bar').style.width = `${pct}%`;
+
+                this.currentCard = this.sessionQueue[0];
+                this.isFlipped = false;
+                
+                const card = document.getElementById('flashcard');
+                card.style.transition = 'none';
+                card.classList.remove('is-flipped');
+                setTimeout(() => { card.style.transition = ''; }, 50);
+                
+                const btnContainer = document.getElementById('action-buttons');
+                btnContainer.style.opacity = '0';
+                btnContainer.style.pointerEvents = 'none';
+
+                const isOddStage = this.currentCard.stage % 2 !== 0;
+                const frontLabel = document.getElementById('front-label');
+                const frontText = document.getElementById('card-front-text');
+                const backMain = document.getElementById('card-back-main');
+                const backSub = document.getElementById('card-back-sub');
+                const pos = document.getElementById('card-pos');
+                const stageLabel = document.getElementById('card-stage');
+                const nextIntervalLabel = document.getElementById('next-interval-label');
+                const btnFront = document.getElementById('btn-speak-front');
+                const btnBackMain = document.getElementById('btn-speak-back-main');
+                const btnBackSub = document.getElementById('btn-speak-back-sub');
+
+                stageLabel.innerText = this.currentCard.stage;
+
+                if (isOddStage) { // Jap -> Eng
+                    frontLabel.innerText = "Japanese";
+                    frontText.innerText = this.currentCard.japanese;
+                    frontText.classList.add('jp-text');
+                    btnFront.classList.remove('hidden');
+                    
+                    backMain.innerText = this.currentCard.definition;
+                    backMain.classList.remove('jp-text'); 
+                    backSub.innerText = this.currentCard.japanese; 
+                    backSub.classList.add('jp-text');
+                    
+                    btnBackMain.classList.add('hidden');
+                    btnBackSub.classList.remove('hidden');
+                } else { // Eng -> Jap
+                    frontLabel.innerText = "Definition";
+                    frontText.innerText = this.currentCard.definition;
+                    frontText.classList.remove('jp-text');
+                    btnFront.classList.add('hidden');
+
+                    backMain.innerText = this.currentCard.japanese;
+                    backMain.classList.add('jp-text');
+                    backSub.innerText = this.currentCard.definition; 
+                    backSub.classList.remove('jp-text');
+
+                    btnBackMain.classList.remove('hidden');
+                    btnBackSub.classList.add('hidden');
+                }
+                
+                pos.innerText = this.currentCard.pos || "N/A";
+                const days = this.getIntervalDays(this.currentCard.stage);
+                nextIntervalLabel.innerText = this.currentCard.stage >= 5 ? "Mastered!" : `+${days} Day(s)`;
+            },
+
+            flipCard() {
+                if (this.isFlipped) return; 
+                this.isFlipped = true;
+                document.getElementById('flashcard').classList.add('is-flipped');
+                setTimeout(() => {
+                    document.getElementById('action-buttons').style.opacity = '1';
+                    document.getElementById('action-buttons').style.pointerEvents = 'auto';
+                }, 300);
+            },
+
+            handleResult(isCorrect) {
+                if (!this.currentCard) return;
+                const wrapper = document.getElementById('card-wrapper');
+                wrapper.classList.remove('opacity-100');
+                wrapper.classList.add('opacity-0');
+
+                setTimeout(() => {
+                    if (isCorrect) {
+                        const daysToAdd = this.getIntervalDays(this.currentCard.stage);
+                        const dataIndex = this.data.findIndex(d => d.id === this.currentCard.id);
+                        if (dataIndex !== -1) {
+                            if (this.currentCard.stage >= 5) {
+                                this.data[dataIndex].mastered = true;
+                                this.data[dataIndex].nextReview = Date.now();
+                            } else {
+                                this.data[dataIndex].stage += 1;
+                                this.data[dataIndex].nextReview = Date.now() + (daysToAdd * 24 * 60 * 60 * 1000);
+                            }
+                        }
+                        this.save();
+                        this.sessionQueue.shift();
+                    } else {
+                        const failedCard = this.sessionQueue.shift();
+                        this.sessionQueue.push(failedCard);
+                    }
+                    this.loadNextCard();
+                    setTimeout(() => {
+                        wrapper.classList.remove('opacity-0');
+                        wrapper.classList.add('opacity-100');
+                    }, 50);
+                }, 300);
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
