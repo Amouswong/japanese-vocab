@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japanese SRS - Stage 5 Master</title>
+    <title>Japanese SRS - Full Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -49,16 +49,25 @@
         </div>
 
         <div id="page-list" class="hidden">
+            <div class="bg-indigo-900 text-white p-5 rounded-xl shadow-lg mb-6">
+                <h3 class="font-bold mb-3 text-sm flex items-center gap-2"><i class="fas fa-plus-circle text-indigo-300"></i> Add New Vocabulary</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input type="text" id="add-jp" placeholder="Japanese (e.g. 食べる)" class="bg-indigo-800 border-none rounded-lg p-2 text-sm placeholder-indigo-400 focus:ring-2 focus:ring-white outline-none">
+                    <input type="text" id="add-def" placeholder="Meaning (e.g. To eat)" class="bg-indigo-800 border-none rounded-lg p-2 text-sm placeholder-indigo-400 focus:ring-2 focus:ring-white outline-none">
+                </div>
+                <button onclick="app.addVocab()" class="w-full mt-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold py-2 rounded-lg text-sm transition">Add to Local Database</button>
+            </div>
+
             <div class="bg-white p-4 rounded-xl shadow-sm mb-6 border border-slate-200">
                 <div class="flex flex-col gap-4">
                     <div class="flex justify-between items-center">
-                        <h2 class="text-xl font-bold">Vocabulary</h2>
+                        <h2 class="text-xl font-bold text-slate-700">Database</h2>
                         <button onclick="app.exportJSON()" class="bg-green-600 text-white px-3 py-1.5 rounded text-xs font-bold shadow hover:bg-green-700">
-                            <i class="fas fa-download"></i> Export JSON
+                            <i class="fas fa-save"></i> Export Updated vocab.json
                         </button>
                     </div>
                     <div class="flex gap-2">
-                        <input type="text" id="search-input" oninput="app.renderList()" placeholder="Search..." class="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" id="search-input" oninput="app.renderList()" placeholder="Search Japanese or English..." class="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                         <select id="filter-level" onchange="app.renderList()" class="border rounded-lg px-2 py-2 text-sm outline-none">
                             <option value="all">All Levels</option>
                             <option value="1">Stage 1</option>
@@ -121,6 +130,26 @@
                 this.showPage('dashboard');
             },
 
+            addVocab() {
+                const jp = document.getElementById('add-jp').value.trim();
+                const def = document.getElementById('add-def').value.trim();
+                if(!jp || !def) return alert("Please fill both fields");
+
+                const newItem = {
+                    japanese: jp,
+                    definition: def,
+                    stage: 1,
+                    nextReview: Date.now()
+                };
+
+                this.data.push(newItem);
+                this.save();
+                this.renderList();
+                document.getElementById('add-jp').value = '';
+                document.getElementById('add-def').value = '';
+                alert("Word Added Locally!");
+            },
+
             save() {
                 localStorage.setItem('jp_srs_storage', JSON.stringify(this.data));
                 this.updateUI();
@@ -155,17 +184,28 @@
                     return textMatch && levelMatch;
                 });
 
-                container.innerHTML = filtered.map(item => `
+                container.innerHTML = filtered.map((item, idx) => `
                     <div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center border border-slate-200">
                         <div>
                             <div class="jp-text font-bold text-lg">${item.japanese}</div>
                             <div class="text-sm text-slate-500">${item.definition || item.meaning}</div>
                         </div>
-                        <div class="text-xs font-bold px-3 py-1 rounded ${item.stage >= 5 ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}">
-                            STAGE ${item.stage || 1}
+                        <div class="flex items-center gap-3">
+                            <div class="text-xs font-bold px-3 py-1 rounded ${item.stage >= 5 ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}">
+                                STAGE ${item.stage || 1}
+                            </div>
+                            <button onclick="app.deleteItem(${this.data.indexOf(item)})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
                 `).join('');
+            },
+
+            deleteItem(index) {
+                if(confirm("Delete this word?")) {
+                    this.data.splice(index, 1);
+                    this.save();
+                    this.renderList();
+                }
             },
 
             startSession(type) {
@@ -173,10 +213,8 @@
                 const now = Date.now();
                 
                 if (type === 'review') {
-                    document.getElementById('session-title').innerText = "Daily Review";
                     this.queue = this.data.filter(i => (i.stage || 1) < 5 && (i.nextReview || 0) <= now);
                 } else {
-                    document.getElementById('session-title').innerText = "Mastery Test";
                     const pool = this.data.filter(i => (i.stage || 1) >= 5);
                     this.queue = pool.sort(() => 0.5 - Math.random()).slice(0, 10);
                 }
@@ -192,8 +230,6 @@
                 document.getElementById('ui-front').innerText = card.japanese;
                 document.getElementById('ui-back-main').innerText = card.definition || card.meaning;
                 document.getElementById('flashcard').classList.remove('is-flipped');
-                
-                // Update Progress
                 const progress = ((this.currentIndex) / this.queue.length) * 100;
                 document.getElementById('progress-bar').style.width = progress + "%";
                 document.getElementById('progress-text').innerText = `${this.currentIndex + 1} / ${this.queue.length}`;
@@ -213,10 +249,8 @@
                         this.data[dataIndex].nextReview = Date.now() + (days * 24 * 60 * 60 * 1000);
                     }
                 } else {
-                    // Logic: Drop back to Level 4 if a Level 5 word is missed
                     if (this.data[dataIndex].stage >= 5) {
                         this.data[dataIndex].stage = 4;
-                        alert("Moved back to Stage 4 for review.");
                     } else {
                         this.data[dataIndex].stage = 1;
                     }
