@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japanese SRS - Structured Levels</title>
+    <title>Japanese SRS - Answer Hide Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -14,7 +14,9 @@
         .card { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; }
         .card.is-flipped { transform: rotateY(180deg); }
         .card__face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 1rem; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; background: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; }
-        .card__face--back { background: #f8fafc; transform: rotateY(180deg); }
+        .card__face--back { background: #f8fafc; transform: rotateY(180deg); opacity: 0; transition: opacity 0.2s; }
+        /* Only show the back content when the card is actually flipped */
+        .card.is-flipped .card__face--back { opacity: 1; }
         .no-flip { pointer-events: auto; }
     </style>
 </head>
@@ -31,7 +33,6 @@
     </header>
 
     <main class="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-4">
-        
         <div id="page-dashboard">
             <div class="bg-white rounded-xl p-8 shadow-sm border text-center mb-6">
                 <h2 class="text-xl font-bold text-slate-500 italic mb-2">Next Review Session</h2>
@@ -53,25 +54,17 @@
                     <input type="text" id="add-def" placeholder="Explanation" class="flex-1 border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
                     <input type="text" id="add-pos" placeholder="POS" class="flex-1 border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
                 </div>
-                <button onclick="app.addSingle()" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-indigo-700">Add Single</button>
+                <button onclick="app.addSingle()" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-indigo-700">Add Card</button>
             </div>
-
             <div class="bg-white rounded-xl p-8 shadow-sm border">
                 <h2 class="text-xl font-bold mb-2">Bulk Upload</h2>
                 <textarea id="bulk-input" rows="3" placeholder="猫, Cat, Noun" class="w-full border border-slate-200 rounded-lg p-4 bg-slate-50 font-mono text-sm mb-4"></textarea>
                 <button onclick="app.addBulk()" class="bg-slate-800 text-white px-8 py-3 rounded-lg font-bold">Import Bulk</button>
             </div>
-
             <div class="bg-white p-6 rounded-xl shadow-sm border">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold">Vocab Database</h2>
-                    <button onclick="app.exportJSON()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow"><i class="fas fa-save mr-1"></i> Export JSON</button>
-                </div>
-                <div class="flex gap-2 mb-4">
-                    <input type="text" id="search-input" oninput="app.renderList()" placeholder="Search..." class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                    <select id="filter-level" onchange="app.renderList()" class="border border-slate-200 rounded-lg px-2 py-2 text-sm bg-white">
-                        <option value="all">All Levels</option><option value="1">Level 1</option><option value="5">Level 5</option>
-                    </select>
+                    <button onclick="app.exportJSON()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow">Export JSON</button>
                 </div>
                 <div id="vocab-container" class="space-y-2"></div>
             </div>
@@ -112,7 +105,6 @@
     <script>
         const app = {
             data: [], queue: [], currentIndex: 0, isFlipped: false,
-
             async init() {
                 try {
                     const resp = await fetch('./vocab.json?t=' + Date.now());
@@ -123,7 +115,6 @@
                 }
                 this.updateUI(); this.showPage('dashboard');
             },
-
             addSingle() {
                 const jp = document.getElementById('add-jp').value.trim();
                 const def = document.getElementById('add-def').value.trim();
@@ -133,7 +124,6 @@
                 this.save(); this.renderList();
                 document.getElementById('add-jp').value = ''; document.getElementById('add-def').value = '';
             },
-
             addBulk() {
                 document.getElementById('bulk-input').value.trim().split('\n').forEach(line => {
                     const parts = line.split(/[,\t]+/).map(s => s.trim());
@@ -141,9 +131,7 @@
                 });
                 this.save(); this.renderList(); document.getElementById('bulk-input').value = '';
             },
-
             save() { localStorage.setItem('jp_srs_storage', JSON.stringify(this.data)); this.updateUI(); },
-
             updateUI() {
                 const now = Date.now();
                 const due = this.data.filter(i => (i.stage||1) < 5 && (i.nextReview||0) <= now).length;
@@ -152,27 +140,19 @@
                 document.getElementById('master-count').innerText = mastered;
                 document.getElementById('btn-start').disabled = due === 0;
             },
-
             showPage(id) {
                 document.querySelectorAll('main > div').forEach(div => div.classList.add('hidden'));
                 document.getElementById('page-' + id).classList.remove('hidden');
                 if(id === 'list') this.renderList();
             },
-
             renderList() {
-                const term = document.getElementById('search-input').value.toLowerCase();
-                const lvl = document.getElementById('filter-level').value;
-                document.getElementById('vocab-container').innerHTML = this.data.filter(i => {
-                    return (i.japanese.includes(term) || (i.definition||"").toLowerCase().includes(term)) && (lvl === 'all' || (i.stage||1).toString() === lvl);
-                }).map(i => `<div class="bg-white p-4 rounded-lg flex justify-between border border-slate-100 shadow-sm">
+                document.getElementById('vocab-container').innerHTML = this.data.map(i => `<div class="bg-white p-4 rounded-lg flex justify-between border border-slate-100">
                     <div><div class="jp-text font-bold text-lg">${i.japanese}</div><div class="text-xs text-slate-500">${i.definition}</div></div>
                     <div class="flex items-center gap-4"><span class="text-[10px] font-bold px-2 py-1 rounded bg-indigo-50 text-indigo-600">STAGE ${i.stage||1}</span>
                     <button onclick="app.deleteItem(${this.data.indexOf(i)})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></div>
                 </div>`).join('');
             },
-
             deleteItem(index) { if(confirm("Delete?")) { this.data.splice(index, 1); this.save(); this.renderList(); } },
-
             startSession(type) {
                 const now = Date.now();
                 if (type === 'review') this.queue = this.data.filter(i => (i.stage||1) < 5 && (i.nextReview||0) <= now).sort(() => 0.5 - Math.random());
@@ -180,43 +160,34 @@
                 if (this.queue.length === 0) return;
                 this.currentIndex = 0; this.showPage('review'); this.loadCard();
             },
-
             loadCard() {
                 this.isFlipped = false;
                 const card = this.queue[this.currentIndex];
                 const stage = card.stage || 1;
+                const front = document.getElementById('ui-front-text');
+                const back = document.getElementById('ui-back-text');
+                const mode = document.getElementById('ui-mode-label');
 
-                const frontText = document.getElementById('ui-front-text');
-                const backText = document.getElementById('ui-back-text');
-                const modeLabel = document.getElementById('ui-mode-label');
-
-                // Logic: 1, 3, 5 are Kanji Ask; 2, 4 are Meaning Ask
                 if ([1, 3, 5].includes(stage)) {
-                    modeLabel.innerText = "Kanji → Meaning";
-                    frontText.innerText = card.japanese;
-                    frontText.className = "text-5xl font-bold jp-text text-center px-4";
-                    backText.innerText = card.definition || card.meaning;
+                    mode.innerText = "Kanji → Meaning";
+                    front.innerText = card.japanese; front.className = "text-5xl font-bold jp-text text-center px-4";
+                    back.innerText = card.definition;
                 } else {
-                    modeLabel.innerText = "Meaning → Kanji";
-                    frontText.innerText = card.definition || card.meaning;
-                    frontText.className = "text-3xl font-bold text-center px-4 italic text-slate-600";
-                    backText.innerText = card.japanese;
+                    mode.innerText = "Meaning → Kanji";
+                    front.innerText = card.definition; front.className = "text-3xl font-bold text-center px-4 italic text-slate-600";
+                    back.innerText = card.japanese;
                 }
-
                 document.getElementById('ui-back-pos').innerText = card.pos || '';
                 document.getElementById('flashcard').classList.remove('is-flipped');
                 document.getElementById('progress-bar').style.width = ((this.currentIndex / this.queue.length) * 100) + "%";
                 document.getElementById('progress-text').innerText = `${this.currentIndex + 1} / ${this.queue.length}`;
             },
-
             flipCard() { if(!this.isFlipped) { this.isFlipped = true; document.getElementById('flashcard').classList.add('is-flipped'); } },
-
             speak(event) {
                 event.stopPropagation();
                 const msg = new SpeechSynthesisUtterance(this.queue[this.currentIndex].japanese);
                 msg.lang = 'ja-JP'; window.speechSynthesis.speak(msg);
             },
-
             handleResult(correct, event) {
                 event.stopPropagation();
                 const cur = this.queue[this.currentIndex];
@@ -227,14 +198,14 @@
                         this.data[idx].nextReview = Date.now() + (Math.pow(2, this.data[idx].stage - 1) * 86400000);
                     }
                 } else {
-                    this.data[idx].stage = cur.stage >= 5 ? 4 : 1;
+                    // Fail Logic: If stage 4 or 5, drop to 3. Otherwise drop to 1.
+                    this.data[idx].stage = cur.stage >= 4 ? 3 : 1;
                     this.data[idx].nextReview = Date.now();
                 }
                 this.save(); this.currentIndex++;
-                if (this.currentIndex >= this.queue.length) { alert("Session Complete!"); this.showPage('dashboard'); }
+                if (this.currentIndex >= this.queue.length) { alert("Done!"); this.showPage('dashboard'); }
                 else this.loadCard();
             },
-
             exportJSON() {
                 const blob = new Blob([JSON.stringify(this.data, null, 2)], {type: 'application/json'});
                 const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'vocab.json'; a.click();
