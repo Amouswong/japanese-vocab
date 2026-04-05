@@ -232,16 +232,40 @@
                     return textMatch && levelMatch;
                 });
 
-                document.getElementById('vocab-container').innerHTML = filtered.map(i => `<div class="bg-white p-4 rounded-lg flex justify-between border border-slate-100 shadow-sm">
+                document.getElementById('vocab-container').innerHTML = filtered.map(i => {
+                    const index = this.data.indexOf(i);
+                    const stageColor = i.stage >= 5 ? 'bg-green-100 text-green-700 border-green-200' : 'bg-indigo-50 text-indigo-600 border-indigo-200';
+                    
+                    return `<div class="bg-white p-4 rounded-lg flex justify-between border border-slate-100 shadow-sm">
                     <div>
                         <div class="jp-text font-bold text-lg">${i.japanese}</div>
                         <div class="text-xs text-slate-500">${i.definition || i.meaning} ${i.pos ? '• ' + i.pos : ''}</div>
                     </div>
                     <div class="flex items-center gap-4">
-                        <span class="text-[10px] font-bold px-2 py-1 rounded ${i.stage >= 5 ? 'bg-green-100 text-green-700' : 'bg-indigo-50 text-indigo-600'}">STAGE ${i.stage||1}</span>
-                        <button onclick="app.deleteItem(${this.data.indexOf(i)})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
+                        <select onchange="app.updateStage(${index}, this.value)" class="text-[10px] font-bold px-2 py-1 rounded border cursor-pointer outline-none ${stageColor}">
+                            <option value="1" ${i.stage == 1 ? 'selected' : ''}>Stage 1</option>
+                            <option value="2" ${i.stage == 2 ? 'selected' : ''}>Stage 2</option>
+                            <option value="3" ${i.stage == 3 ? 'selected' : ''}>Stage 3</option>
+                            <option value="4" ${i.stage == 4 ? 'selected' : ''}>Stage 4</option>
+                            <option value="5" ${i.stage >= 5 ? 'selected' : ''}>Stage 5 (MAX)</option>
+                        </select>
+                        <button onclick="app.deleteItem(${index})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
                     </div>
-                </div>`).join('');
+                </div>`}).join('');
+            },
+
+            updateStage(index, newStage) {
+                const stageNum = parseInt(newStage);
+                this.data[index].stage = stageNum;
+                
+                // If set to anything lower than 5, recalculate review time. 
+                // If setting it backwards (e.g. forgot), make it due right now.
+                if (stageNum < 5) {
+                    this.data[index].nextReview = Date.now();
+                }
+
+                this.save();
+                this.renderList(); // Re-render to update the colors immediately
             },
 
             deleteItem(index) { if(confirm("Delete this word?")) { this.data.splice(index, 1); this.save(); this.renderList(); } },
@@ -305,16 +329,15 @@
                 if(!this.isRevealed) return; 
                 
                 const cur = this.queue[this.currentIndex];
-                const idx = this.data.findIndex(i => i.japanese === cur.japanese);
                 
                 if (correct) {
                     if (cur.stage < 5) {
-                        this.data[idx].stage = (this.data[idx].stage || 1) + 1;
-                        this.data[idx].nextReview = Date.now() + (Math.pow(2, this.data[idx].stage - 1) * 86400000);
+                        cur.stage = (cur.stage || 1) + 1;
+                        cur.nextReview = Date.now() + (Math.pow(2, cur.stage - 1) * 86400000);
                     }
                 } else {
-                    this.data[idx].stage = cur.stage >= 4 ? 3 : 1;
-                    this.data[idx].nextReview = Date.now();
+                    cur.stage = cur.stage >= 4 ? 3 : 1;
+                    cur.nextReview = Date.now();
                 }
                 
                 this.save();
