@@ -107,7 +107,7 @@
                 <div class="flex-1 flex flex-col justify-center items-center relative py-6">
                     <div class="absolute top-0 left-0 text-[10px] uppercase font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded" id="ui-mode-label">Mode</div>
                     <h2 class="text-5xl font-bold text-center px-4" id="ui-front-text">...</h2>
-                    <p class="text-slate-300 mt-6 text-xs italic" id="ui-tap-hint">Tap to reveal Answer</p>
+                    <p class="text-slate-300 mt-6 text-xs italic" id="ui-tap-hint">Tap or press Enter to reveal</p>
                 </div>
 
                 <hr id="ui-divider" class="hidden border-slate-200 my-4 w-full">
@@ -120,8 +120,8 @@
                     <p class="text-slate-500 text-sm italic mb-6" id="ui-back-pos"></p>
                     
                     <div class="flex gap-4 w-full no-click">
-                        <button onclick="app.handleResult(false, event)" class="flex-1 bg-red-100 text-red-700 font-bold py-4 rounded-xl hover:bg-red-200 transition">Forgot</button>
-                        <button onclick="app.handleResult(true, event)" class="flex-1 bg-green-100 text-green-700 font-bold py-4 rounded-xl hover:bg-green-200 transition">Correct</button>
+                        <button onclick="app.handleResult(false, event)" class="flex-1 bg-red-100 text-red-700 font-bold py-4 rounded-xl hover:bg-red-200 transition">Forgot (←)</button>
+                        <button onclick="app.handleResult(true, event)" class="flex-1 bg-green-100 text-green-700 font-bold py-4 rounded-xl hover:bg-green-200 transition">Correct (→)</button>
                     </div>
                 </div>
             </div>
@@ -258,14 +258,12 @@
                 const stageNum = parseInt(newStage);
                 this.data[index].stage = stageNum;
                 
-                // If set to anything lower than 5, recalculate review time. 
-                // If setting it backwards (e.g. forgot), make it due right now.
                 if (stageNum < 5) {
                     this.data[index].nextReview = Date.now();
                 }
 
                 this.save();
-                this.renderList(); // Re-render to update the colors immediately
+                this.renderList(); 
             },
 
             deleteItem(index) { if(confirm("Delete this word?")) { this.data.splice(index, 1); this.save(); this.renderList(); } },
@@ -319,13 +317,13 @@
             },
 
             speak(event) {
-                event.stopPropagation();
+                if(event) event.stopPropagation();
                 const msg = new SpeechSynthesisUtterance(this.queue[this.currentIndex].japanese);
                 msg.lang = 'ja-JP'; window.speechSynthesis.speak(msg);
             },
 
             handleResult(correct, event) {
-                event.stopPropagation();
+                if(event) event.stopPropagation();
                 if(!this.isRevealed) return; 
                 
                 const cur = this.queue[this.currentIndex];
@@ -356,7 +354,29 @@
                 const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'vocab.json'; a.click();
             }
         };
+        
+        // Initialize App
         app.init();
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Only apply shortcuts if the review page is visible
+            if (!document.getElementById('page-review').classList.contains('hidden')) {
+                
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevents the page from scrolling down
+                    app.revealAnswer();
+                } 
+                else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    if (app.isRevealed) app.handleResult(false, e);
+                } 
+                else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    if (app.isRevealed) app.handleResult(true, e);
+                }
+            }
+        });
     </script>
 </body>
 </html>
