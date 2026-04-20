@@ -3,32 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日文單字溫習系統</title>
+    <title>日文溫習系統</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #4a90e2; --success: #27ae60; --danger: #e74c3c; --bg: #f5f7f9; --text: #2c3e50; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 90%; max-width: 420px; text-align: center; }
+        :root { --primary: #4a90e2; --success: #27ae60; --danger: #e74c3c; --bg: #f5f7f9; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
         .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
         .stat-box { padding: 15px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
-        .stat-box span { display: block; font-size: 1.6rem; font-weight: bold; color: var(--primary); }
-        #card { font-size: 2.4rem; margin: 2rem 0; min-height: 150px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px dashed #cbd5e1; border-radius: 15px; padding: 20px; transition: 0.2s; }
-        #card:hover { background-color: #f0f7ff; border-color: var(--primary); }
-        .definition { font-size: 1.4rem; color: #64748b; margin-top: 15px; font-weight: normal; }
-        .btn { border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; width: 100%; margin-top: 12px; font-weight: bold; transition: 0.3s; }
+        .stat-box span { display: block; font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+        #card { font-size: 2.2rem; margin: 2rem 0; min-height: 130px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px dashed #cbd5e1; border-radius: 15px; padding: 20px; }
+        .definition { font-size: 1.3rem; color: #64748b; margin-top: 15px; }
+        .btn { border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; width: 100%; font-weight: bold; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
-        .btn:disabled { background: #e2e8f0; cursor: not-allowed; color: #94a3b8; }
         .hidden { display: none; }
-        #pos-tag { font-size: 0.85rem; color: var(--primary); background: #eef6ff; padding: 4px 12px; border-radius: 20px; margin-bottom: 10px; display: inline-block; }
+        #pos-tag { font-size: 0.85rem; color: var(--primary); background: #eef6ff; padding: 4px 12px; border-radius: 20px; display: inline-block; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="page-home">
-        <h2 style="margin-top:0">日本語単語帳</h2>
+        <h1>日本語単語帳</h1>
         <div class="stats">
             <div class="stat-box"><small>待複習</small><span id="due-count">0</span></div>
             <div class="stat-box"><small>已掌握</small><span id="master-count">0</span></div>
@@ -40,7 +38,7 @@
         <div id="pos-tag"></div>
         <div id="card" onclick="app.reveal()">
             <div>
-                <div id="japanese-text">載入中...</div>
+                <div id="japanese-text"></div>
                 <div id="definition-text" class="definition hidden"></div>
             </div>
         </div>
@@ -50,16 +48,14 @@
                 <button class="btn btn-success" onclick="app.handleResult(true)">識喇</button>
             </div>
         </div>
-        <p id="hint" style="color: #94a3b8; font-size: 0.85rem;">點擊卡片顯示答案</p>
     </div>
 </div>
 
 <script>
-    // --- 專案連線資訊 ---
+    // --- 專案連線資訊 (已修正 URL 與格式) ---
     const SUPABASE_URL = 'https://ogjzoudptzwwmpwtpaar.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nanpvdWRwdHp3d21wd3RwYWFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjAxMzgsImV4cCI6MjA5MjIzNjEzOH0.7rpYyglHCONhrTTMwk--i-lfVxx7VyWi49MMftMqyE0';
     
-    // 初始化 Supabase
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const app = {
@@ -69,8 +65,8 @@
 
         async init() {
             try {
-                // 讀取 Vocab Table (大寫 V)
-                const { data, error } = await _supabase.from('Vocab').select('*');
+                // 重要：Table 名稱為細寫 'vocab'
+                const { data, error } = await _supabase.from('vocab').select('*');
                 
                 if (error) {
                     console.error("Database Error:", error.message);
@@ -79,16 +75,15 @@
                 
                 this.data = data.map(item => ({
                     ...item,
-                    // 數據對齊處理
                     mastered: String(item.mastered).toLowerCase() === 'true',
                     nextReview: Number(item.nextReview) || 0,
                     stage: Number(item.stage) || 0
                 }));
                 
-                console.log("數據同步成功，總數：", this.data.length);
+                console.log("數據載入成功！");
                 this.updateUI();
             } catch (err) {
-                console.error("System Init Error:", err);
+                console.error("Init Error:", err);
             }
         },
 
@@ -120,50 +115,39 @@
             document.getElementById('japanese-text').innerText = cur.japanese;
             document.getElementById('definition-text').innerText = cur.definition;
             document.getElementById('pos-tag').innerText = cur.pos || '單字';
-            
             document.getElementById('definition-text').classList.add('hidden');
             document.getElementById('quiz-controls').classList.add('hidden');
-            document.getElementById('hint').classList.remove('hidden');
         },
 
         reveal() {
             document.getElementById('definition-text').classList.remove('hidden');
             document.getElementById('quiz-controls').classList.remove('hidden');
-            document.getElementById('hint').classList.add('hidden');
         },
 
         async handleResult(correct) {
             const cur = this.queue[this.currentIndex];
-            
             if (correct) {
                 cur.stage += 1;
                 if (cur.stage >= 5) cur.mastered = true;
-                // 間隔重複邏輯
-                const days = Math.pow(2, cur.stage - 1);
-                cur.nextReview = Date.now() + (days * 86400000);
+                cur.nextReview = Date.now() + (Math.pow(2, cur.stage - 1) * 86400000);
             } else {
                 cur.stage = 1;
                 cur.mastered = false;
                 cur.nextReview = Date.now();
             }
 
-            // 更新到 Supabase
-            const { error } = await _supabase
-                .from('Vocab')
-                .update({ 
-                    stage: cur.stage, 
-                    nextReview: cur.nextReview, 
-                    mastered: cur.mastered 
-                })
-                .eq('id', cur.id);
-
-            if (error) console.error("Update error:", error.message);
+            // 更新到細寫 'vocab' 表
+            await _supabase.from('vocab').update({ 
+                stage: cur.stage, 
+                nextReview: cur.nextReview, 
+                mastered: cur.mastered 
+            }).eq('id', cur.id);
 
             this.currentIndex++;
             if (this.currentIndex < this.queue.length) {
                 this.loadCard();
             } else {
-                alert("本輪溫習已完成！");
+                alert("溫習完畢！");
                 this.showPage('home');
                 this.init();
             }
@@ -175,9 +159,7 @@
         }
     };
 
-    // 啟動
     app.init();
 </script>
-
 </body>
 </html>
