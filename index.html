@@ -1,4 +1,4 @@
-// 1. 初始化 Supabase 客戶端
+// 1. 初始化 Supabase
 const supabaseUrl = 'https://ogjzoudptzwwmpwtpaar.supabase.co';
 const supabaseKey = 'sb_publishable_pOy2bU1RfzcRg24ncOGC6w_cVYtiPdl';
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -7,23 +7,19 @@ const app = {
     data: [], queue: [], currentIndex: 0, isRevealed: false,
 
     async init() {
-        console.log("正在從雲端同步數據...");
+        console.log("正在同步雲端數據...");
         try {
-            // 從 Supabase 抓取所有單字
+            // 從 Supabase 抓取，按 ID 排序
             const { data, error } = await _supabase.from('vocab').select('*').order('id', { ascending: true });
-            
             if (error) throw error;
-
-            this.data = data;
-            // 存一份備份到本地，以防萬一
-            localStorage.setItem('jp_srs_storage', JSON.stringify(data));
-            console.log("雲端同步完成！");
+            this.data = data || [];
+            localStorage.setItem('jp_srs_storage', JSON.stringify(this.data));
+            console.log("同步成功，共有 " + this.data.length + " 條單字");
         } catch (e) {
-            console.error("雲端讀取失敗，使用本地備份:", e);
+            console.error("雲端讀取失敗:", e);
             const local = localStorage.getItem('jp_srs_storage');
             if (local) this.data = JSON.parse(local);
         }
-
         this.updateUI();
         this.showPage('dashboard');
     },
@@ -32,7 +28,7 @@ const app = {
         const jp = document.getElementById('add-jp').value.trim();
         const def = document.getElementById('add-def').value.trim();
         const pos = document.getElementById('add-pos').value.trim();
-        if(!jp || !def) return alert("Japanese and Explanation are required.");
+        if(!jp || !def) return alert("請輸入日文同解釋");
 
         const newWord = { 
             japanese: jp, 
@@ -43,7 +39,6 @@ const app = {
         };
 
         const { data, error } = await _supabase.from('vocab').insert([newWord]).select();
-        
         if (!error) {
             this.data.push(data[0]);
             this.renderList();
@@ -60,16 +55,16 @@ const app = {
         const text = document.getElementById('bulk-input').value.trim();
         if(!text) return;
         const lines = text.split('\n');
-        const toAdd = [];
-        lines.forEach(line => {
+        const toAdd = lines.map(line => {
             const parts = line.split(/[,\t]+/).map(s => s.trim());
             if(parts.length >= 2) {
-                toAdd.push({ 
+                return { 
                     japanese: parts[0], definition: parts[1], pos: parts[2] || '', 
                     stage: 1, nextReview: Date.now() 
-                });
+                };
             }
-        });
+            return null;
+        }).filter(item => item !== null);
 
         const { data, error } = await _supabase.from('vocab').insert(toAdd).select();
         if (!error) {
@@ -77,40 +72,31 @@ const app = {
             this.renderList();
             this.updateUI();
             document.getElementById('bulk-input').value = '';
-            alert(`成功匯入 ${data.length} 個單字！`);
+            alert("匯入成功！");
         } else {
             alert("匯入失敗: " + error.message);
         }
     },
 
-    // 核心雲端儲存邏輯
     async saveProgress(item) {
-        const { error } = await _supabase
-            .from('vocab')
-            .update({ 
-                stage: item.stage, 
-                nextReview: item.nextReview 
-            })
+        const { error } = await _supabase.from('vocab')
+            .update({ stage: item.stage, nextReview: item.nextReview })
             .eq('id', item.id);
-        
-        if (error) console.error("雲端更新失敗:", error);
-        // 同步本地緩存
+        if (error) console.error("同步失敗:", error);
         localStorage.setItem('jp_srs_storage', JSON.stringify(this.data));
         this.updateUI();
     },
 
     async updateStage(index, newStage) {
-        const stageNum = parseInt(newStage);
         const item = this.data[index];
-        item.stage = stageNum;
-        item.nextReview = Date.now(); // 手動改 Stage 會重設複習時間
-        
+        item.stage = parseInt(newStage);
+        item.nextReview = Date.now();
         await this.saveProgress(item);
         this.renderList(); 
     },
 
     async deleteItem(index) { 
-        if(confirm("Delete this word?")) { 
+        if(confirm("確定刪除？")) { 
             const item = this.data[index];
             const { error } = await _supabase.from('vocab').delete().eq('id', item.id);
             if (!error) {
@@ -124,11 +110,11 @@ const app = {
 
     updateUI() {
         const now = Date.now();
-        const due = this.data.filter(i => (i.stage||1) < 5 && (i.nextReview||0) <= now).length;
-        const mastered = this.data.filter(i => (i.stage||1) >= 5).length;
+        const due = this.data.filter(i => (i.stage || 1) < 5 && (i.nextReview || 0) <= now).length;
+        const mastered = this.data.filter(i => (i.stage || 1) >= 5).length;
         document.getElementById('due-count').innerText = due;
         document.getElementById('master-count').innerText = mastered;
-        document.getElementById('btn-start').disabled = due === 0;
+        document.getElementById('btn-start').disabled = (due === 0);
     },
 
     showPage(id) {
@@ -140,7 +126,6 @@ const app = {
     renderList() {
         const term = document.getElementById('search-input').value.toLowerCase();
         const lvl = document.getElementById('filter-level').value;
-
         const filtered = this.data.filter(i => {
             const textMatch = i.japanese.toLowerCase().includes(term) || (i.definition || "").toLowerCase().includes(term);
             const levelMatch = lvl === 'all' || (i.stage || 1).toString() === lvl;
@@ -148,25 +133,25 @@ const app = {
         });
 
         document.getElementById('vocab-container').innerHTML = filtered.map(i => {
-            const index = this.data.indexOf(i);
-            const stageColor = i.stage >= 5 ? 'bg-green-100 text-green-700 border-green-200' : 'bg-indigo-50 text-indigo-600 border-indigo-200';
-            
-            return `<div class="bg-white p-4 rounded-lg flex justify-between border border-slate-100 shadow-sm">
-            <div>
-                <div class="jp-text font-bold text-lg">${i.japanese}</div>
-                <div class="text-xs text-slate-500">${i.definition} ${i.pos ? '• ' + i.pos : ''}</div>
-            </div>
-            <div class="flex items-center gap-4">
-                <select onchange="app.updateStage(${index}, this.value)" class="text-[10px] font-bold px-2 py-1 rounded border cursor-pointer outline-none ${stageColor}">
-                    <option value="1" ${i.stage == 1 ? 'selected' : ''}>Stage 1</option>
-                    <option value="2" ${i.stage == 2 ? 'selected' : ''}>Stage 2</option>
-                    <option value="3" ${i.stage == 3 ? 'selected' : ''}>Stage 3</option>
-                    <option value="4" ${i.stage == 4 ? 'selected' : ''}>Stage 4</option>
-                    <option value="5" ${i.stage >= 5 ? 'selected' : ''}>Stage 5 (MAX)</option>
-                </select>
-                <button onclick="app.deleteItem(${index})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
-            </div>
-        </div>`}).join('');
+            const idx = this.data.indexOf(i);
+            const clr = i.stage >= 5 ? 'bg-green-100 text-green-700' : 'bg-indigo-50 text-indigo-600';
+            return `<div class="bg-white p-4 rounded-lg flex justify-between border shadow-sm">
+                <div>
+                    <div class="jp-text font-bold text-lg">${i.japanese}</div>
+                    <div class="text-xs text-slate-500">${i.definition} ${i.pos ? '• '+i.pos : ''}</div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <select onchange="app.updateStage(${idx}, this.value)" class="text-[10px] font-bold p-1 rounded border ${clr}">
+                        <option value="1" ${i.stage==1?'selected':''}>S1</option>
+                        <option value="2" ${i.stage==2?'selected':''}>S2</option>
+                        <option value="3" ${i.stage==3?'selected':''}>S3</option>
+                        <option value="4" ${i.stage==4?'selected':''}>S4</option>
+                        <option value="5" ${i.stage>=5?'selected':''}>S5</option>
+                    </select>
+                    <button onclick="app.deleteItem(${idx})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </div>`;
+        }).join('');
     },
 
     startSession(type) {
@@ -177,26 +162,21 @@ const app = {
             this.queue = this.data.filter(i => (i.stage||1) >= 5).sort(() => 0.5 - Math.random()).slice(0, 10);
         }
         if (this.queue.length === 0) return;
-        this.currentIndex = 0; 
-        this.showPage('review'); 
-        this.loadCard();
+        this.currentIndex = 0; this.showPage('review'); this.loadCard();
     },
 
     loadCard() {
         this.isRevealed = false;
         const card = this.queue[this.currentIndex];
-        const stage = card.stage || 1;
-        
         document.getElementById('ui-divider').classList.add('hidden');
         document.getElementById('ui-answer-section').classList.add('hidden');
-        document.getElementById('ui-answer-section').classList.remove('fade-in');
         document.getElementById('ui-tap-hint').classList.remove('hidden');
 
         const front = document.getElementById('ui-front-text');
         const back = document.getElementById('ui-back-text');
         const mode = document.getElementById('ui-mode-label');
 
-        if ([1, 3, 5].includes(stage)) {
+        if ([1, 3, 5].includes(card.stage || 1)) {
             mode.innerText = "Kanji → Meaning";
             front.innerText = card.japanese; front.className = "text-5xl font-bold jp-text text-center px-4";
             back.innerText = card.definition;
@@ -205,7 +185,6 @@ const app = {
             front.innerText = card.definition; front.className = "text-3xl font-bold text-center px-4 italic text-slate-600";
             back.innerText = card.japanese;
         }
-        
         document.getElementById('ui-back-pos').innerText = card.pos || '';
         document.getElementById('progress-bar').style.width = ((this.currentIndex / this.queue.length) * 100) + "%";
         document.getElementById('progress-text').innerText = `${this.currentIndex + 1} / ${this.queue.length}`;
@@ -216,63 +195,44 @@ const app = {
         this.isRevealed = true;
         document.getElementById('ui-tap-hint').classList.add('hidden');
         document.getElementById('ui-divider').classList.remove('hidden');
-        const answerSection = document.getElementById('ui-answer-section');
-        answerSection.classList.remove('hidden');
-        answerSection.classList.add('flex', 'fade-in');
+        document.getElementById('ui-answer-section').classList.remove('hidden');
+        document.getElementById('ui-answer-section').classList.add('flex', 'fade-in');
     },
 
-    speak(event) {
-        if(event) event.stopPropagation();
+    speak(e) {
+        if(e) e.stopPropagation();
         const msg = new SpeechSynthesisUtterance(this.queue[this.currentIndex].japanese);
         msg.lang = 'ja-JP'; window.speechSynthesis.speak(msg);
     },
 
-    async handleResult(correct, event) {
-        if(event) event.stopPropagation();
+    async handleResult(correct, e) {
+        if(e) e.stopPropagation();
         if(!this.isRevealed) return; 
-        
         const cur = this.queue[this.currentIndex];
-        
         if (correct) {
             if (cur.stage < 5) {
                 cur.stage = (cur.stage || 1) + 1;
                 cur.nextReview = Date.now() + (Math.pow(2, cur.stage - 1) * 86400000);
             }
         } else {
-            cur.stage = cur.stage >= 4 ? 3 : 1;
+            cur.stage = (cur.stage >= 4) ? 3 : 1;
             cur.nextReview = Date.now();
         }
-        
-        // 即時上傳進度
         await this.saveProgress(cur);
-        
         this.currentIndex++;
-        
         if (this.currentIndex >= this.queue.length) { 
-            alert("完成！進度已同步至 Supabase。"); 
+            alert("Session 完成！"); 
             this.showPage('dashboard'); 
         } else {
             this.loadCard();
         }
-    },
-
-    exportJSON() {
-        const blob = new Blob([JSON.stringify(this.data, null, 2)], {type: 'application/json'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'vocab.json'; a.click();
-    },
-
-    clearLocal() {
-        if(confirm("這將會清除本地緩存並從雲端重新讀取，確定嗎？")) {
-            localStorage.removeItem('jp_srs_storage');
-            location.reload();
-        }
     }
 };
 
-// 初始化 App
+// 啟動
 app.init();
 
-// 鍵盤快捷鍵
+// 快捷鍵
 document.addEventListener('keydown', (e) => {
     if (!document.getElementById('page-review').classList.contains('hidden')) {
         if (e.key === 'Enter') { e.preventDefault(); app.revealAnswer(); } 
