@@ -11,11 +11,13 @@
             --success: #27ae60;
             --danger: #e74c3c;
             --bg: #f5f7f9;
+            --text: #2c3e50;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
             background-color: var(--bg);
+            color: var(--text);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -25,72 +27,83 @@
 
         .container {
             background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 450px;
             text-align: center;
         }
+
+        h1 { margin-bottom: 1.5rem; font-size: 1.8rem; }
 
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-bottom: 25px;
         }
 
         .stat-box {
-            padding: 10px;
-            border-radius: 8px;
-            background: #f0f4f8;
+            padding: 15px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
         }
 
-        .stat-box span {
-            display: block;
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
+        .stat-box small { color: #64748b; font-size: 0.85rem; }
+        .stat-box span { display: block; font-size: 1.5rem; font-weight: bold; margin-top: 5px; }
 
         #card {
-            font-size: 2rem;
-            margin: 2rem 0;
-            min-height: 100px;
+            font-size: 2.2rem;
+            margin: 2.5rem 0;
+            min-height: 140px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
             cursor: pointer;
+            border: 2px dashed #e2e8f0;
+            border-radius: 15px;
+            padding: 10px;
+            transition: 0.2s;
         }
 
+        #card:hover { border-color: var(--primary); background: #f0f7ff; }
+
         .definition {
-            font-size: 1.2rem;
-            color: #666;
-            margin-top: 10px;
-            display: none;
+            font-size: 1.3rem;
+            color: #475569;
+            margin-top: 15px;
+            font-weight: normal;
         }
 
         .btn {
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 14px 28px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
             transition: 0.3s;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 12px;
         }
 
-        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 6px rgba(74,144,226,0.2); }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .btn:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
 
         .hidden { display: none; }
         
         #pos-tag {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             color: var(--primary);
-            font-weight: bold;
+            background: #eef6ff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
         }
     </style>
 </head>
@@ -98,7 +111,7 @@
 
 <div class="container">
     <div id="page-home">
-        <h1>日文溫習</h1>
+        <h1>日本語単語</h1>
         <div class="stats-grid">
             <div class="stat-box">
                 <small>待複習</small>
@@ -115,21 +128,21 @@
     <div id="page-quiz" class="hidden">
         <div id="pos-tag"></div>
         <div id="card" onclick="app.reveal()">
-            <div id="japanese-text"></div>
-            <div id="definition-text" class="definition"></div>
+            <div id="japanese-text">載入中...</div>
+            <div id="definition-text" class="definition hidden"></div>
         </div>
         <div id="quiz-controls" class="hidden">
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 12px;">
                 <button class="btn btn-danger" onclick="app.handleResult(false)">唔識</button>
                 <button class="btn btn-success" onclick="app.handleResult(true)">識喇</button>
             </div>
         </div>
-        <p style="color: #999; font-size: 0.8rem; margin-top: 20px;">點擊單字顯示答案</p>
+        <p id="hint-text" style="color: #94a3b8; font-size: 0.9rem; margin-top: 20px;">點擊卡片顯示答案</p>
     </div>
 </div>
 
 <script>
-    // 1. Supabase 配置 (請填寫你的 Key)
+    // 1. Supabase 配置 (請確認 URL 同 Key 是否正確)
     const SUPABASE_URL = 'YOUR_SUPABASE_URL';
     const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -142,33 +155,33 @@
 
         async init() {
             try {
-                // 獲取所有資料
+                // 重點：Table 名稱改為 'Vocab' (大寫 V)
                 const { data, error } = await _supabase
-                    .from('vocab')
+                    .from('Vocab')
                     .select('*');
 
                 if (error) throw error;
 
-                // 數據清洗：確保 mastered 是布爾值
+                // 數據清洗
                 this.data = data.map(item => ({
                     ...item,
+                    // 確保 mastered 係 Boolean
                     mastered: String(item.mastered).toLowerCase() === 'true'
                 }));
 
+                console.log("成功載入數據，總數：", this.data.length);
                 this.updateUI();
             } catch (err) {
                 console.error("初始化失敗:", err);
-                alert("資料庫連線失敗，請檢查 API Key 或 RLS 設定。");
+                alert("無法從 Vocab Table 讀取資料，請檢查 RLS Policy 或 Table 名稱。");
             }
         },
 
         updateUI() {
             const now = Date.now();
             
-            // Mastered 功能核心邏輯：
-            // 1. 待複習 = 未 mastered 且時間已到
-            const dueTasks = this.data.filter(i => !i.mastered && (i.nextReview || 0) <= now);
-            // 2. 已掌握 = mastered 屬性為 true 的總數
+            // 邏輯判斷
+            const dueTasks = this.data.filter(i => !i.mastered && (Number(i.nextReview) || 0) <= now);
             const masteredCount = this.data.filter(i => i.mastered === true).length;
 
             document.getElementById('due-count').innerText = dueTasks.length;
@@ -178,9 +191,9 @@
 
         startSession() {
             const now = Date.now();
-            // 只抽樣「未掌握」且「到期」的字
+            // 篩選未掌握且到期嘅單字
             this.queue = this.data
-                .filter(i => !i.mastered && (i.nextReview || 0) <= now)
+                .filter(i => !i.mastered && (Number(i.nextReview) || 0) <= now)
                 .sort(() => Math.random() - 0.5);
 
             if (this.queue.length > 0) {
@@ -197,39 +210,36 @@
             document.getElementById('definition-text').innerText = cur.definition;
             document.getElementById('pos-tag').innerText = cur.pos || '單字';
             
-            document.getElementById('definition-text').style.display = 'none';
+            document.getElementById('definition-text').classList.add('hidden');
             document.getElementById('quiz-controls').classList.add('hidden');
+            document.getElementById('hint-text').classList.remove('hidden');
         },
 
         reveal() {
+            if (this.isRevealed) return;
             this.isRevealed = true;
-            document.getElementById('definition-text').style.display = 'block';
+            document.getElementById('definition-text').classList.remove('hidden');
             document.getElementById('quiz-controls').classList.remove('hidden');
+            document.getElementById('hint-text').classList.add('hidden');
         },
 
         async handleResult(correct) {
             const cur = this.queue[this.currentIndex];
             
             if (correct) {
-                // 答對邏輯
-                cur.stage = (cur.stage || 0) + 1;
-                // 如果連續答對到達 Stage 5，自動設為 Mastered
-                if (cur.stage >= 5) {
-                    cur.mastered = true;
-                }
-                // 簡單間隔重複：Stage 1=1日, 2=2日, 3=4日, 4=8日...
+                cur.stage = (Number(cur.stage) || 0) + 1;
+                if (cur.stage >= 5) cur.mastered = true;
                 const days = Math.pow(2, cur.stage - 1);
                 cur.nextReview = Date.now() + (days * 86400000);
             } else {
-                // 答錯重來
                 cur.stage = 1;
                 cur.mastered = false;
                 cur.nextReview = Date.now();
             }
 
-            // 同步回 Supabase
-            const { error } = await _supabase
-                .from('vocab')
+            // 更新 Supabase (同樣使用大寫 Vocab)
+            await _supabase
+                .from('Vocab')
                 .update({ 
                     stage: cur.stage, 
                     nextReview: cur.nextReview, 
@@ -237,16 +247,13 @@
                 })
                 .eq('id', cur.id);
 
-            if (error) console.error("同步失敗:", error);
-
-            // 下一張或結束
             this.currentIndex++;
             if (this.currentIndex < this.queue.length) {
                 this.loadCard();
             } else {
-                alert("完成今次溫習！");
+                alert("今日溫習完畢！");
                 this.showPage('home');
-                this.init(); // 重新整理數據
+                this.init();
             }
         },
 
@@ -257,7 +264,6 @@
         }
     };
 
-    // 啟動 App
     app.init();
 </script>
 
