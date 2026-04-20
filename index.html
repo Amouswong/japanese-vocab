@@ -3,210 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JP SRS Learner</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>日文單字溫習系統</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
-        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f8fafc; }
-        .jp-text { font-family: 'Noto Sans JP', sans-serif; }
+        :root {
+            --primary: #4a90e2;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --bg: #f5f7f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            padding: 10px;
+            border-radius: 8px;
+            background: #f0f4f8;
+        }
+
+        .stat-box span {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        #card {
+            font-size: 2rem;
+            margin: 2rem 0;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .definition {
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+
         .hidden { display: none; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        #pos-tag {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
     </style>
 </head>
-<body class="max-w-md mx-auto min-h-screen shadow-xl bg-white">
+<body>
 
-    <header class="bg-indigo-600 text-white p-4 sticky top-0 z-10 flex justify-between items-center shadow-md">
-        <h1 class="font-bold text-xl tracking-tight" onclick="app.showPage('dashboard')">日語 SRS</h1>
-        <nav class="flex gap-4">
-            <button onclick="app.showPage('dashboard')" class="hover:text-indigo-200"><i class="fas fa-home"></i></button>
-            <button onclick="app.showPage('list')" class="hover:text-indigo-200"><i class="fas fa-list"></i></button>
-            <button onclick="app.showPage('add')" class="hover:text-indigo-200"><i class="fas fa-plus-circle"></i></button>
-        </nav>
-    </header>
-
-    <main class="p-4">
-        <div id="page-dashboard" class="space-y-6">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-indigo-50 p-6 rounded-2xl text-center border border-indigo-100">
-                    <div id="due-count" class="text-4xl font-black text-indigo-600">0</div>
-                    <div class="text-xs font-bold text-indigo-400 mt-1 uppercase">待複習</div>
-                </div>
-                <div class="bg-green-50 p-6 rounded-2xl text-center border border-green-100">
-                    <div id="master-count" class="text-4xl font-black text-green-600">0</div>
-                    <div class="text-xs font-bold text-green-400 mt-1 uppercase">已掌握</div>
-                </div>
+<div class="container">
+    <div id="page-home">
+        <h1>日文溫習</h1>
+        <div class="stats-grid">
+            <div class="stat-box">
+                <small>待複習</small>
+                <span id="due-count">0</span>
             </div>
-            <button id="btn-start" onclick="app.startSession('review')" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform disabled:opacity-50">
-                開始複習 <i class="fas fa-play ml-2"></i>
-            </button>
-            <button onclick="app.startSession('mastered')" class="w-full bg-white text-slate-600 py-4 rounded-2xl font-bold border-2 border-slate-100 shadow-sm active:scale-95 transition-transform">
-                溫故知新 (Random 10)
-            </button>
-        </div>
-
-        <div id="page-list" class="hidden space-y-4">
-            <div class="flex gap-2">
-                <input type="text" id="search-input" oninput="app.renderList()" placeholder="搜尋單字..." class="flex-1 border p-2 rounded-lg text-sm">
-                <select id="filter-level" onchange="app.renderList()" class="border rounded-lg text-sm px-2">
-                    <option value="all">全部</option>
-                    <option value="1">S1</option>
-                    <option value="5">S5</option>
-                </select>
-            </div>
-            <div id="vocab-container" class="space-y-3"></div>
-        </div>
-
-        <div id="page-add" class="hidden space-y-6">
-            <div class="bg-slate-50 p-4 rounded-xl space-y-3 border">
-                <h3 class="font-bold text-slate-700">單個新增</h3>
-                <input id="add-jp" type="text" placeholder="日文 (例如: 食べる)" class="w-full p-3 border rounded-lg">
-                <input id="add-def" type="text" placeholder="中文解釋" class="w-full p-3 border rounded-lg">
-                <input id="add-pos" type="text" placeholder="詞性 (例如: 動II)" class="w-full p-3 border rounded-lg">
-                <button onclick="app.addSingle()" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold">確認新增</button>
-            </div>
-            <div class="bg-slate-50 p-4 rounded-xl space-y-3 border">
-                <h3 class="font-bold text-slate-700">批次匯入 (CSV格式)</h3>
-                <textarea id="bulk-input" rows="4" placeholder="日文, 解釋, 詞性 (每行一條)" class="w-full p-3 border rounded-lg text-sm"></textarea>
-                <button onclick="app.addBulk()" class="w-full bg-slate-700 text-white py-3 rounded-lg font-bold">批次匯入</button>
+            <div class="stat-box">
+                <small>已掌握 (Mastered)</small>
+                <span id="master-count">0</span>
             </div>
         </div>
+        <button id="btn-start" class="btn btn-primary" onclick="app.startSession()">開始溫習</button>
+    </div>
 
-        <div id="page-review" class="hidden fixed inset-0 bg-white z-50 flex flex-col">
-            <div class="p-4 flex justify-between items-center border-b">
-                <button onclick="app.showPage('dashboard')" class="text-slate-400 text-xl"><i class="fas fa-times"></i></button>
-                <div id="ui-mode-label" class="text-xs font-bold text-slate-400 uppercase tracking-widest"></div>
-                <div id="progress-text" class="text-xs font-bold text-indigo-600">0 / 0</div>
-            </div>
-            <div class="w-full h-1 bg-slate-100">
-                <div id="progress-bar" class="h-full bg-indigo-500 transition-all duration-300" style="width: 0%"></div>
-            </div>
-            <div class="flex-1 flex flex-col items-center justify-center p-6 text-center" onclick="app.revealAnswer()">
-                <div id="ui-front-text" class=""></div>
-                <div id="ui-tap-hint" class="mt-8 text-slate-300 text-sm animate-pulse">點擊畫面顯示答案</div>
-                <div id="ui-divider" class="w-16 h-1 bg-slate-100 my-8 hidden"></div>
-                <div id="ui-answer-section" class="hidden flex-col items-center">
-                    <div id="ui-back-text" class="text-3xl font-bold text-indigo-600"></div>
-                    <div id="ui-back-pos" class="text-sm text-slate-400 mt-2"></div>
-                    <button onclick="app.speak(event)" class="mt-6 w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full text-xl flex items-center justify-center">
-                        <i class="fas fa-volume-up"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="p-6 grid grid-cols-2 gap-4 border-t bg-slate-50">
-                <button onclick="app.handleResult(false, event)" class="bg-white border-2 border-red-100 text-red-500 py-4 rounded-2xl font-black shadow-sm active:bg-red-50">唔記得</button>
-                <button onclick="app.handleResult(true, event)" class="bg-indigo-600 text-white py-4 rounded-2xl font-black shadow-lg active:scale-95">記得</button>
+    <div id="page-quiz" class="hidden">
+        <div id="pos-tag"></div>
+        <div id="card" onclick="app.reveal()">
+            <div id="japanese-text"></div>
+            <div id="definition-text" class="definition"></div>
+        </div>
+        <div id="quiz-controls" class="hidden">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-danger" onclick="app.handleResult(false)">唔識</button>
+                <button class="btn btn-success" onclick="app.handleResult(true)">識喇</button>
             </div>
         </div>
-    </main>
+        <p style="color: #999; font-size: 0.8rem; margin-top: 20px;">點擊單字顯示答案</p>
+    </div>
+</div>
 
-    <script>
-        // --- 這裡放入剛才提供的 JavaScript 邏輯 ---
-        const supabaseUrl = 'https://ogjzoudptzwwmpwtpaar.supabase.co';
-        const supabaseKey = 'sb_publishable_pOy2bU1RfzcRg24ncOGC6w_cVYtiPdl';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+<script>
+    // 1. Supabase 配置 (請填寫你的 Key)
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const app = {
-            data: [], queue: [], currentIndex: 0, isRevealed: false,
-            // ... (其餘 app 邏輯，與上一個回覆完全相同)
-            async init() {
-                try {
-                    const { data, error } = await _supabase.from('vocab').select('*').order('id', { ascending: true });
-                    this.data = data || [];
-                    localStorage.setItem('jp_srs_storage', JSON.stringify(this.data));
-                } catch (e) {
-                    const local = localStorage.getItem('jp_srs_storage');
-                    if (local) this.data = JSON.parse(local);
-                }
+    const app = {
+        data: [],
+        queue: [],
+        currentIndex: 0,
+        isRevealed: false,
+
+        async init() {
+            try {
+                // 獲取所有資料
+                const { data, error } = await _supabase
+                    .from('vocab')
+                    .select('*');
+
+                if (error) throw error;
+
+                // 數據清洗：確保 mastered 是布爾值
+                this.data = data.map(item => ({
+                    ...item,
+                    mastered: String(item.mastered).toLowerCase() === 'true'
+                }));
+
                 this.updateUI();
-                this.showPage('dashboard');
-            },
-            async addSingle() {
-                const jp = document.getElementById('add-jp').value.trim();
-                const def = document.getElementById('add-def').value.trim();
-                const pos = document.getElementById('add-pos').value.trim();
-                if(!jp || !def) return alert("請輸入日文同解釋");
-                const { data, error } = await _supabase.from('vocab').insert([{ japanese: jp, definition: def, pos: pos, stage: 1, nextReview: Date.now() }]).select();
-                if (!error) { this.data.push(data[0]); this.updateUI(); this.showPage('list'); }
-            },
-            async addBulk() {
-                const text = document.getElementById('bulk-input').value.trim();
-                const lines = text.split('\n');
-                const toAdd = lines.map(line => {
-                    const p = line.split(/[,\t]+/).map(s => s.trim());
-                    return p.length >= 2 ? { japanese: p[0], definition: p[1], pos: p[2] || '', stage: 1, nextReview: Date.now() } : null;
-                }).filter(i => i);
-                const { data, error } = await _supabase.from('vocab').insert(toAdd).select();
-                if (!error) { this.data.push(...data); this.updateUI(); alert("匯入成功"); }
-            },
-            async saveProgress(item) {
-                await _supabase.from('vocab').update({ stage: item.stage, nextReview: item.nextReview }).eq('id', item.id);
-                this.updateUI();
-            },
-            async deleteItem(index) {
-                if(confirm("確定刪除？")) {
-                    const item = this.data[index];
-                    await _supabase.from('vocab').delete().eq('id', item.id);
-                    this.data.splice(index, 1); this.renderList(); this.updateUI();
-                }
-            },
-            updateUI() {
-                const now = Date.now();
-                document.getElementById('due-count').innerText = this.data.filter(i => (i.stage||1) < 5 && (i.nextReview||0) <= now).length;
-                document.getElementById('master-count').innerText = this.data.filter(i => (i.stage||1) >= 5).length;
-            },
-            showPage(id) {
-                document.querySelectorAll('main > div').forEach(div => div.classList.add('hidden'));
-                document.getElementById('page-' + id).classList.remove('hidden');
-                if(id === 'list') this.renderList();
-            },
-            renderList() {
-                const term = document.getElementById('search-input').value.toLowerCase();
-                const filtered = this.data.filter(i => i.japanese.toLowerCase().includes(term));
-                document.getElementById('vocab-container').innerHTML = filtered.map((i, idx) => `
-                    <div class="bg-white p-4 rounded-xl flex justify-between border shadow-sm">
-                        <div><div class="font-bold">${i.japanese}</div><div class="text-xs text-slate-400">${i.definition}</div></div>
-                        <button onclick="app.deleteItem(${this.data.indexOf(i)})" class="text-slate-300"><i class="fas fa-trash"></i></button>
-                    </div>`).join('');
-            },
-            startSession(type) {
-                const now = Date.now();
-                this.queue = type === 'review' ? this.data.filter(i => (i.stage||1) < 5 && (i.nextReview||0) <= now) : this.data.filter(i => (i.stage||1) >= 5).slice(0,10);
-                if (this.queue.length === 0) return;
-                this.currentIndex = 0; this.showPage('review'); this.loadCard();
-            },
-            loadCard() {
-                this.isRevealed = false;
-                const card = this.queue[this.currentIndex];
-                document.getElementById('ui-answer-section').classList.add('hidden');
-                document.getElementById('ui-divider').classList.add('hidden');
-                document.getElementById('ui-tap-hint').classList.remove('hidden');
-                document.getElementById('ui-front-text').innerText = card.japanese;
-                document.getElementById('ui-front-text').className = "text-5xl font-bold";
-                document.getElementById('ui-back-text').innerText = card.definition;
-                document.getElementById('ui-back-pos').innerText = card.pos;
-                document.getElementById('progress-bar').style.width = (this.currentIndex / this.queue.length * 100) + "%";
-            },
-            revealAnswer() {
-                this.isRevealed = true;
-                document.getElementById('ui-answer-section').classList.remove('hidden');
-                document.getElementById('ui-divider').classList.remove('hidden');
-                document.getElementById('ui-tap-hint').classList.add('hidden');
-            },
-            speak(e) { e.stopPropagation(); const m = new SpeechSynthesisUtterance(this.queue[this.currentIndex].japanese); m.lang='ja-JP'; speechSynthesis.speak(m); },
-            async handleResult(correct, e) {
-                if(!this.isRevealed) return;
-                const cur = this.queue[this.currentIndex];
-                if(correct) { cur.stage++; cur.nextReview = Date.now() + (Math.pow(2, cur.stage)*86400000); }
-                else { cur.stage = 1; cur.nextReview = Date.now(); }
-                await this.saveProgress(cur);
-                this.currentIndex++;
-                if(this.currentIndex >= this.queue.length) { alert("完咗喇！"); this.showPage('dashboard'); } else { this.loadCard(); }
+            } catch (err) {
+                console.error("初始化失敗:", err);
+                alert("資料庫連線失敗，請檢查 API Key 或 RLS 設定。");
             }
-        };
-        app.init();
-    </script>
+        },
+
+        updateUI() {
+            const now = Date.now();
+            
+            // Mastered 功能核心邏輯：
+            // 1. 待複習 = 未 mastered 且時間已到
+            const dueTasks = this.data.filter(i => !i.mastered && (i.nextReview || 0) <= now);
+            // 2. 已掌握 = mastered 屬性為 true 的總數
+            const masteredCount = this.data.filter(i => i.mastered === true).length;
+
+            document.getElementById('due-count').innerText = dueTasks.length;
+            document.getElementById('master-count').innerText = masteredCount;
+            document.getElementById('btn-start').disabled = dueTasks.length === 0;
+        },
+
+        startSession() {
+            const now = Date.now();
+            // 只抽樣「未掌握」且「到期」的字
+            this.queue = this.data
+                .filter(i => !i.mastered && (i.nextReview || 0) <= now)
+                .sort(() => Math.random() - 0.5);
+
+            if (this.queue.length > 0) {
+                this.currentIndex = 0;
+                this.showPage('quiz');
+                this.loadCard();
+            }
+        },
+
+        loadCard() {
+            this.isRevealed = false;
+            const cur = this.queue[this.currentIndex];
+            document.getElementById('japanese-text').innerText = cur.japanese;
+            document.getElementById('definition-text').innerText = cur.definition;
+            document.getElementById('pos-tag').innerText = cur.pos || '單字';
+            
+            document.getElementById('definition-text').style.display = 'none';
+            document.getElementById('quiz-controls').classList.add('hidden');
+        },
+
+        reveal() {
+            this.isRevealed = true;
+            document.getElementById('definition-text').style.display = 'block';
+            document.getElementById('quiz-controls').classList.remove('hidden');
+        },
+
+        async handleResult(correct) {
+            const cur = this.queue[this.currentIndex];
+            
+            if (correct) {
+                // 答對邏輯
+                cur.stage = (cur.stage || 0) + 1;
+                // 如果連續答對到達 Stage 5，自動設為 Mastered
+                if (cur.stage >= 5) {
+                    cur.mastered = true;
+                }
+                // 簡單間隔重複：Stage 1=1日, 2=2日, 3=4日, 4=8日...
+                const days = Math.pow(2, cur.stage - 1);
+                cur.nextReview = Date.now() + (days * 86400000);
+            } else {
+                // 答錯重來
+                cur.stage = 1;
+                cur.mastered = false;
+                cur.nextReview = Date.now();
+            }
+
+            // 同步回 Supabase
+            const { error } = await _supabase
+                .from('vocab')
+                .update({ 
+                    stage: cur.stage, 
+                    nextReview: cur.nextReview, 
+                    mastered: cur.mastered 
+                })
+                .eq('id', cur.id);
+
+            if (error) console.error("同步失敗:", error);
+
+            // 下一張或結束
+            this.currentIndex++;
+            if (this.currentIndex < this.queue.length) {
+                this.loadCard();
+            } else {
+                alert("完成今次溫習！");
+                this.showPage('home');
+                this.init(); // 重新整理數據
+            }
+        },
+
+        showPage(pageId) {
+            document.getElementById('page-home').classList.add('hidden');
+            document.getElementById('page-quiz').classList.add('hidden');
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+        }
+    };
+
+    // 啟動 App
+    app.init();
+</script>
+
 </body>
 </html>
