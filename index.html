@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>改善 KAIZEN</title>
+    <title>Japanese Vocab</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
       :root {
@@ -495,6 +495,7 @@
         quizQueue: [],
         currentQuizIndex: 0,
         quizTimerInterval: null,
+        isRandomQuizMode: false, // 紀錄當前是否為隨機精通模式
 
         showPage: function (pageId) {
           document.getElementById("page-home").classList.add("hidden");
@@ -522,7 +523,6 @@
         playAudio: function (text) {
           if (!text) return;
           window.speechSynthesis.cancel();
-
           const utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = "ja-JP";
           utterance.rate = 0.9;
@@ -690,6 +690,8 @@
         },
 
         startSession: function (isRandom) {
+          this.isRandomQuizMode = isRandom; // 紀錄目前模式
+
           if (!this.vocabData || this.vocabData.length < 4) {
             alert("資料庫中的單字太少，至少需要 4 個單字才能產生選項喔！");
             return;
@@ -698,7 +700,7 @@
           let pool = [];
           const now = new Date();
 
-          if (isRandom) {
+          if (this.isRandomQuizMode) {
             pool = this.vocabData.filter(
               (item) => item.mastered === true || (item.stage ?? 0) >= 5,
             );
@@ -751,25 +753,69 @@
           }
 
           const currentWord = this.quizQueue[this.currentQuizIndex];
-          const wordText =
-            currentWord.kanji || currentWord["Hiragana/Katakana"];
+          const currentStage = currentWord.stage ?? 0;
           const kanaForAudio =
             currentWord["Hiragana/Katakana"] || currentWord.kanji || "";
 
+          // 💡 決定題型邏輯
+          // 0: 題型A (看日文選中文，有語音)
+          // 1: 題型B (看中文選日文，無自動語音)
+          // 2: 題型C (聽力題，隱藏文字，有語音)
+          let questionType = 0;
+
+          if (this.isRandomQuizMode) {
+            // 隨機測驗 (精通單字)：三種題型隨機出現
+            questionType = Math.floor(Math.random() * 3);
+          } else {
+            // 復習測驗：根據 stage 決定
+            if (
+              currentStage === 0 ||
+              currentStage === 2 ||
+              currentStage === 4
+            ) {
+              questionType = 0;
+            } else {
+              // stage 1, 3, 5
+              questionType = 1;
+            }
+          }
+
+          // 設定題目文字與副標題
+          let questionText = "";
+          let questionSub = "";
+
+          if (questionType === 0) {
+            questionText =
+              currentWord.kanji || currentWord["Hiragana/Katakana"];
+            questionSub = "正しい意味を選択してください (請選擇正確的意思)";
+          } else if (questionType === 1) {
+            questionText = currentWord.definition || "未知意思";
+            questionSub = "正しい単語を選択してください (請選擇正確的日文)";
+          } else if (questionType === 2) {
+            questionText = "🎧 音声問題 (聽力)";
+            questionSub = "音声を聞いて、正しい単語を選択してください";
+          }
+
           document.getElementById("quiz-progress").innerText =
             `${this.currentQuizIndex + 1} / ${this.quizQueue.length}`;
-
           const progressPercent =
             (this.currentQuizIndex / this.quizQueue.length) * 100;
           document.getElementById("quiz-progress-bar").style.width =
             `${progressPercent}%`;
 
-          document.getElementById("q-text").innerText = wordText;
+          document.getElementById("q-text").innerText = questionText;
+          document.getElementById("q-sub").innerText = questionSub;
 
+          // 綁定語音按鈕
           const audioBtn = document.getElementById("q-audio-btn");
           audioBtn.onclick = () => this.playAudio(kanaForAudio);
-          this.playAudio(kanaForAudio);
 
+          // 題型 A 與 C (聽力) 會自動發音
+          if (questionType === 0 || questionType === 2) {
+            this.playAudio(kanaForAudio);
+          }
+
+          // 準備選項：1 個正確 + 3 個隨機錯誤
           let options = [currentWord];
           let otherWords = this.vocabData.filter(
             (item) => item.id !== currentWord.id,
@@ -785,7 +831,20 @@
           options.forEach((opt) => {
             const btn = document.createElement("button");
             btn.className = "btn-random";
-            btn.innerText = opt.definition || "未知意思";
+
+            // 根據題型設定選項按鈕的內容
+            if (questionType === 0) {
+              btn.innerText = opt.definition || "未知意思";
+            } else {
+              // 題型 B 和 C：選項顯示日文 (漢字 + 假名)
+              if (opt.kanji && opt["Hiragana/Katakana"]) {
+                btn.innerText = `${opt.kanji} (${opt["Hiragana/Katakana"]})`;
+              } else {
+                btn.innerText =
+                  opt.kanji || opt["Hiragana/Katakana"] || "未知單字";
+              }
+            }
+
             btn.dataset.isCorrect = opt.id === currentWord.id;
             btn.onclick = (e) =>
               this.handleAnswer(opt.id === currentWord.id, false, e.target);
@@ -919,7 +978,6 @@
               return;
             }
 
-            // 💡 更新：允許漢字或平假名其中一個為空
             let kanji = parts[0].trim();
             if (kanji === "") kanji = null;
 
