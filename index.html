@@ -1,302 +1,918 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KAIZEN 10.7 - Fixed</title>
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>改善 KAIZEN</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #ffffff; --text-main: #1a1a1a; --text-sub: #999999; --accent: #000000; --correct: #00b894; --wrong: #ff7675; --line: #f2f2f2; }
-        body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 0; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box; }
-        
-        .db-status { font-size: 0.7rem; display: flex; align-items: center; gap: 5px; color: var(--text-sub); margin-bottom: 5px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
-        .dot.online { background: #00b894; box-shadow: 0 0 5px #00b894; }
-        .dot.offline { background: #ff7675; }
-        .nav-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
-        .logo { font-weight: 700; letter-spacing: 3px; font-size: 1.2rem; }
-        .nav-links button { background: none; border: none; font-size: 1rem; cursor: pointer; margin-left: 15px; color: var(--text-sub); }
-        .nav-links button.active { color: var(--accent); font-weight: 700; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: #fafafa; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid var(--line); }
-        .stat-card b { font-size: 1.8rem; }
-        .timer-wrapper { width: 100%; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 30px; }
-        #timer-bar { width: 100%; height: 100%; background: var(--accent); transition: width 0.1s linear; }
-        
-        .quiz-container { text-align: center; margin-bottom: 40px; }
-        #q-text { font-size: 3.2rem; font-weight: 700; margin: 0; }
-        
-        .mc-grid { display: grid; gap: 12px; }
-        .mc-btn { background: #ffffff; border: 2px solid var(--line); padding: 18px; border-radius: 12px; font-size: 1.1rem; cursor: pointer; text-align: center; }
-        .mc-btn.correct { background: var(--correct) !important; color: white; border-color: var(--correct); }
-        .mc-btn.wrong { background: var(--wrong) !important; color: white; border-color: var(--wrong); }
-        .btn-main { background: var(--accent); color: white; border: none; padding: 20px; border-radius: 12px; width: 100%; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
-        
-        /* New style for random quiz button to give back its color */
-        .btn-random { background: #e8f4fd; color: #0984e3; border: 1px solid #74b9ff; padding: 15px; border-radius: 12px; width: 100%; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-        .btn-random:hover { background: #0984e3; color: white; }
-        
-        .btn-sm { padding: 8px 15px; border-radius: 8px; border: 1px solid var(--line); background: white; cursor: pointer; font-size: 0.8rem; }
-        .btn-save { background: var(--accent); color: white; border: none; }
-        .list-item { padding: 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: white; }
-        .edit-mode { flex-direction: column; align-items: flex-start; gap: 10px; }
-        .edit-input { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; box-sizing: border-box; }
-        .hidden { display: none !important; }
-        textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; }
+      :root {
+        --line: #e0e0e0;
+        --text-main: #333333;
+        --text-sub: #888888;
+        --bg-light: #fafafa;
+        --primary: #007bff;
+        --success: #28a745;
+        --danger: #dc3545;
+        --jlpt-color: #0056b3;
+        --jlpt-bg: #f0f8ff;
+        --jlpt-border: #bce0fd;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        color: var(--text-main);
+        margin: 0;
+        padding: 20px;
+        background-color: #fff;
+      }
+      .container {
+        max-width: 500px;
+        margin: 0 auto;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .db-status {
+        font-size: 0.8rem;
+        margin-bottom: 15px;
+        color: var(--success);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        background-color: var(--success);
+        border-radius: 50%;
+      }
+      .nav-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .logo {
+        font-weight: bold;
+        font-size: 1.2rem;
+      }
+      .nav-links button {
+        background: none;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+        color: var(--text-sub);
+        padding: 5px 10px;
+      }
+      .nav-links button.active {
+        font-weight: bold;
+        color: var(--text-main);
+        border-bottom: 2px solid var(--text-main);
+      }
+      .stats-grid {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .stat-card {
+        flex: 1;
+        background: var(--bg-light);
+        padding: 15px;
+        border-radius: 15px;
+        border: 1px solid var(--line);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+      }
+      .stat-card b {
+        font-size: 1.2rem;
+        margin-top: 5px;
+      }
+      .dashboard-card {
+        background: var(--bg-light);
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid var(--line);
+        margin-bottom: 20px;
+      }
+      .dashboard-jlpt {
+        background: var(--jlpt-bg);
+        border-color: var(--jlpt-border);
+      }
+      .dashboard-title {
+        margin: 0 0 15px 0;
+        text-align: center;
+        font-size: 1rem;
+      }
+      .dashboard-jlpt .dashboard-title {
+        color: var(--jlpt-color);
+      }
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        text-align: center;
+      }
+      button {
+        font-family: inherit;
+      }
+      .btn-main,
+      .btn-random {
+        width: 100%;
+        padding: 15px;
+        border-radius: 10px;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+        font-weight: bold;
+        margin-bottom: 10px;
+        transition: 0.2s;
+      }
+      .btn-main {
+        background-color: var(--text-main);
+        color: white;
+      }
+      .btn-main:disabled {
+        background-color: #aaa;
+        cursor: not-allowed;
+      }
+      .btn-random {
+        background-color: var(--bg-light);
+        color: var(--text-main);
+        border: 1px solid var(--line);
+      }
+      .btn-random:hover {
+        background-color: #eee;
+      }
+      .btn-sm {
+        background: white;
+        border: 1px solid var(--line);
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.8rem;
+      }
+      .btn-danger {
+        background: white;
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        margin-left: 5px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        box-sizing: border-box;
+        font-family: inherit;
+      }
+      textarea {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        margin-bottom: 10px;
+        resize: vertical;
+        min-height: 80px;
+      }
+      .list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .list-item:last-child {
+        border-bottom: none;
+      }
+
+      /* 測驗進度與倒數計時條 CSS */
+      .progress-bg {
+        width: 100%;
+        background-color: var(--line);
+        border-radius: 5px;
+        height: 6px;
+        margin-bottom: 10px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background-color: var(--primary);
+        transition: width 0.3s ease;
+        width: 0%;
+      }
+      .timer-bg {
+        width: 100%;
+        background-color: #ffeeba;
+        border-radius: 5px;
+        height: 6px;
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+      .timer-fill {
+        height: 100%;
+        background-color: var(--danger);
+        transition: width 1s linear;
+        width: 100%;
+      }
     </style>
-</head>
-<body>
-<div class="container">
-    <div class="db-status"><div id="status-dot" class="dot"></div> <span id="status-text">連接中...</span></div>
-    
-    <div class="nav-header">
+  </head>
+  <body>
+    <div class="container">
+      <div class="db-status">
+        <div id="status-dot" class="dot" style="background-color: orange"></div>
+        <span id="status-text">連線中...</span>
+      </div>
+
+      <div class="nav-header">
         <div class="logo">改善 KAIZEN</div>
         <div class="nav-links">
-            <button id="nav-study" class="active" onclick="app.showPage('home')">学習</button>
-            <button id="nav-db" onclick="app.showPage('db')">単語帳</button>
+          <button id="nav-study" class="active" onclick="app.showPage('home')">
+            学習
+          </button>
+          <button id="nav-db" onclick="app.showPage('db')">単語帳</button>
         </div>
-    </div>
-    <div id="page-home">
+      </div>
+
+      <div id="page-home">
         <div class="stats-grid">
-            <div class="stat-card"><small>復習待ち</small><b id="due-count">0</b></div>
-            <div class="stat-card"><small>習得済み</small><b id="master-count">0</b></div>
+          <div class="stat-card">
+            <small>復習待ち</small><b id="due-count">0</b>
+          </div>
+          <div class="stat-card">
+            <small>習得済み</small><b id="master-count">0</b>
+          </div>
         </div>
 
-        <!-- NEW: Level Dashboard -->
-        <div style="background:#fafafa; padding:20px; border-radius:15px; border:1px solid var(--line); margin-bottom:20px;">
-            <h4 style="margin:0 0 15px 0; text-align:center; font-size: 1rem;">レベル別単語数</h4>
-            <div style="display:flex; justify-content:space-between; text-align:center;">
-                <div><div style="font-size:0.8rem; color:var(--text-sub)">Lv.1</div><b id="level-1-count">0</b></div>
-                <div><div style="font-size:0.8rem; color:var(--text-sub)">Lv.2</div><b id="level-2-count">0</b></div>
-                <div><div style="font-size:0.8rem; color:var(--text-sub)">Lv.3</div><b id="level-3-count">0</b></div>
-                <div><div style="font-size:0.8rem; color:var(--text-sub)">Lv.4</div><b id="level-4-count">0</b></div>
-                <div><div style="font-size:0.8rem; color:var(--text-sub)">Lv.5+</div><b id="level-5-count">0</b></div>
+        <div class="dashboard-card">
+          <h4 class="dashboard-title">レベル別単語数</h4>
+          <div class="stat-row">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.1</div>
+              <b id="level-1-count">0</b>
             </div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.2</div>
+              <b id="level-2-count">0</b>
+            </div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.3</div>
+              <b id="level-3-count">0</b>
+            </div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.4</div>
+              <b id="level-4-count">0</b>
+            </div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.5+</div>
+              <b id="level-5-count">0</b>
+            </div>
+          </div>
         </div>
 
-        <!-- NEW: Upcoming Vocab count for Next Quiz -->
-        <div style="text-align: center; margin-bottom: 20px; font-size: 0.95rem; color: var(--text-main);">
-            次回のクイズ単語数: <strong id="next-quiz-count" style="font-size: 1.2rem; margin: 0 5px;">0</strong> 問
+        <div class="dashboard-card dashboard-jlpt">
+          <h4 class="dashboard-title">JLPT 級別單字數</h4>
+          <div class="stat-row">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-sub)">N1</div>
+              <b id="jlpt-1-count">0</b>
+            </div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-sub)">N2</div>
+              <b id="jlpt-2-count">0</b>
+            </div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-sub)">N3</div>
+              <b id="jlpt-3-count">0</b>
+            </div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-sub)">N4</div>
+              <b id="jlpt-4-count">0</b>
+            </div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-sub)">N5</div>
+              <b id="jlpt-5-count">0</b>
+            </div>
+          </div>
         </div>
 
-        <button class="btn-main" onclick="app.startSession(false)">学習を開始する</button>
-        <!-- CHANGED: Applied new button style class btn-random -->
-        <button class="btn-random" onclick="app.startSession(true)">習得済みから10問復習</button>
-    </div>
-    <div id="page-quiz" class="hidden">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.8rem; color:var(--text-sub);">
-            <span id="quiz-progress">0 / 0</span>
-            <span onclick="location.reload()" style="cursor:pointer;">終了</span>
+        <div
+          style="text-align: center; margin-bottom: 20px; font-size: 0.95rem"
+        >
+          次回のクイズ単語数:
+          <strong id="next-quiz-count" style="font-size: 1.2rem; margin: 0 5px"
+            >0</strong
+          >
+          問
         </div>
-        <div class="timer-wrapper"><div id="timer-bar"></div></div>
-        <div class="quiz-container">
-            <h1 id="q-text">---</h1>
-            <div id="q-sub">正しい意味を選択してください</div>
+
+        <button class="btn-main" onclick="app.startSession(false)">
+          学習を開始する
+        </button>
+        <button class="btn-random" onclick="app.startSession(true)">
+          習得済みから10問復習
+        </button>
+      </div>
+
+      <div id="page-quiz" class="hidden">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+          "
+        >
+          <span id="quiz-progress">0 / 0</span>
+          <span
+            onclick="app.quitQuiz()"
+            style="cursor: pointer; color: var(--primary)"
+            >終了</span
+          >
         </div>
-        <div id="ans-mc-area" class="mc-grid"></div>
-        <button id="next-btn" class="btn-main hidden" style="margin-top:20px;" onclick="app.nextCard()">次へ</button>
-    </div>
-    <div id="page-db" class="hidden">
-        <div style="background:#fafafa; padding:20px; border-radius:15px; margin-bottom:20px; border:1px solid var(--line);">
-            <h4 style="margin:0 0 10px 0;">一括インポート</h4>
-            <textarea id="import-input" placeholder="漢字,読み,意味 (1行に1語)"></textarea>
-            <button class="btn-main" style="padding:12px; margin:0;" onclick="app.bulkImport()">追加する</button>
+
+        <div class="progress-bg">
+          <div id="quiz-progress-bar" class="progress-fill"></div>
         </div>
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <input type="text" id="db-search" placeholder="検索..." style="flex:1; padding:12px; border:1px solid var(--line); border-radius:10px;" oninput="app.renderList()">
+        <div class="timer-bg">
+          <div id="quiz-timer-bar" class="timer-fill"></div>
         </div>
+
+        <div
+          class="quiz-container"
+          style="text-align: center; padding: 20px 0 40px 0"
+        >
+          <h1 id="q-text" style="font-size: 2.5rem; margin-bottom: 10px">
+            単語
+          </h1>
+          <div id="q-sub" style="color: var(--text-sub)">
+            正しい意味を選択してください
+          </div>
+        </div>
+        <div
+          id="ans-mc-area"
+          style="display: flex; flex-direction: column; gap: 10px"
+        ></div>
+      </div>
+
+      <div id="page-db" class="hidden">
+        <div class="dashboard-card">
+          <h4 style="margin: 0 0 10px 0">一括インポート</h4>
+          <textarea
+            id="import-input"
+            placeholder="漢字,読み,意味,JLPT級別 (1行に1語)&#10;例：食べる,たべる,吃,5"
+          ></textarea>
+          <button
+            class="btn-main"
+            id="import-btn"
+            style="padding: 12px; margin: 0"
+            onclick="app.bulkImport()"
+          >
+            追加する
+          </button>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+          "
+        >
+          <input
+            type="text"
+            id="db-search"
+            placeholder="單字或意思搜尋..."
+            style="
+              padding: 12px;
+              border: 1px solid var(--line);
+              border-radius: 10px;
+            "
+            oninput="app.renderList()"
+          />
+
+          <div style="display: flex; gap: 10px">
+            <select
+              id="filter-stage"
+              style="
+                flex: 1;
+                padding: 12px;
+                border: 1px solid var(--line);
+                border-radius: 10px;
+              "
+              onchange="app.renderList()"
+            >
+              <option value="">すべて (Stage)</option>
+            </select>
+            <select
+              id="filter-pos"
+              style="
+                flex: 1;
+                padding: 12px;
+                border: 1px solid var(--line);
+                border-radius: 10px;
+              "
+              onchange="app.renderList()"
+            >
+              <option value="">すべて (POS)</option>
+            </select>
+          </div>
+        </div>
+
         <div id="db-list"></div>
+      </div>
     </div>
-</div>
-<script>
-    const SUPABASE_URL = 'https://ogjzoudptzwwmpwtpaar.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nanpvdWRwdHp3d21wd3RwYWFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjAxMzgsImV4cCI6MjA5MjIzNjEzOH0.7rpYyglHCONhrTTMwk--i-lfVxx7VyWi49MMftMqyE0';
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const app = {
-        data: [], queue: [], currentIndex: 0, isAnswered: false, timer: null, timeLeft: 100,
-        async init() {
-            const dot = document.getElementById('status-dot');
-            const txt = document.getElementById('status-text');
-            try {
-                const { data, error } = await _supabase.from('vocab').select('*');
-                
-                if (error) throw error;
-                this.data = data || [];
-                dot.className = "dot online";
-                txt.innerText = "Online";
-                this.updateStats();
-            } catch (err) {
-                dot.className = "dot offline";
-                txt.innerText = "Error: " + err.message;
-                console.error("Database Connection Failed:", err);
-            }
-        },
-        updateStats() {
-            const now = new Date();
-            const due = this.data.filter(i => !i.mastered && (!i.nextReview || new Date(i.nextReview) <= now));
-            const master = this.data.filter(i => i.mastered);
-            
-            document.getElementById('due-count').innerText = due.length;
-            document.getElementById('master-count').innerText = master.length;
-            
-            // NEW: Set Upcoming Vocab # for next quiz
-            const nextQuizCount = document.getElementById('next-quiz-count');
-            if(nextQuizCount) nextQuizCount.innerText = due.length;
 
-            // NEW: Calculate and Display Levels
-            const levels = {1:0, 2:0, 3:0, 4:0, 5:0};
-            this.data.forEach(i => {
-                let st = i.stage || 1;
-                if (st >= 5) st = 5; // Group anything stage 5 and beyond into Lv.5+
-                levels[st] = (levels[st] || 0) + 1;
-            });
-            for(let i=1; i<=5; i++) {
-                const el = document.getElementById(`level-${i}-count`);
-                if (el) el.innerText = levels[i];
+    <script>
+      const app = {
+        vocabData: [],
+        dbClient: null,
+
+        quizQueue: [],
+        currentQuizIndex: 0,
+        quizTimerInterval: null, // 計時器 ID
+
+        showPage: function (pageId) {
+          document.getElementById("page-home").classList.add("hidden");
+          document.getElementById("page-quiz").classList.add("hidden");
+          document.getElementById("page-db").classList.add("hidden");
+          document.getElementById(`page-${pageId}`).classList.remove("hidden");
+
+          document.getElementById("nav-study").classList.remove("active");
+          document.getElementById("nav-db").classList.remove("active");
+
+          if (pageId === "home") {
+            document.getElementById("nav-study").classList.add("active");
+            this.updateDashboardStats();
+          }
+          if (pageId === "db") {
+            document.getElementById("nav-db").classList.add("active");
+            this.renderList();
+          }
+        },
+
+        updateDashboardStats: function () {
+          if (!this.vocabData || !Array.isArray(this.vocabData)) return;
+
+          let jlptCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+          let levelCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+          let masterCount = 0;
+          let dueCount = 0;
+          const now = new Date();
+
+          this.vocabData.forEach((item) => {
+            if (item.JLPT >= 1 && item.JLPT <= 5) {
+              jlptCounts[item.JLPT]++;
             }
-        },
-        async bulkImport() {
-            const input = document.getElementById('import-input');
-            const lines = input.value.trim().split('\n').filter(l => l.includes(','));
-            if (!lines.length) return alert("形式：漢字,読み,意味");
-            const newItems = lines.map(l => {
-                const parts = l.split(',');
-                return { 
-                    kanji: parts[0]?.trim() || "", 
-                    "Hiragana/Katakana": parts[1]?.trim() || "", 
-                    definition: parts[2]?.trim() || "", 
-                    stage: 1, mastered: false 
-                };
-            });
-            const { error } = await _supabase.from('vocab').insert(newItems);
-            if (error) alert("Error: " + error.message);
-            else { input.value = ""; await this.init(); this.renderList(); alert("追加完了"); }
-        },
-        startSession(isMasteredOnly) {
-            const now = new Date();
-            this.queue = isMasteredOnly ? 
-                this.data.filter(i => i.mastered).sort(() => Math.random() - 0.5).slice(0, 10) :
-                this.data.filter(i => !i.mastered && (!i.nextReview || new Date(i.nextReview) <= now)).sort(() => Math.random() - 0.5);
-            
-            if (!this.queue.length) return alert("対象の単語がありません。");
-            this.currentIndex = 0;
-            this.showPage('quiz');
-            this.loadCard();
-        },
-        loadCard() {
-            this.isAnswered = false;
-            const item = this.queue[this.currentIndex];
-            document.getElementById('next-btn').classList.add('hidden');
-            document.getElementById('quiz-progress').innerText = `${this.currentIndex + 1} / ${this.queue.length}`;
-            document.getElementById('q-text').innerText = item.kanji || item["Hiragana/Katakana"];
-            
-            const correct = (item.definition || "").trim();
-            const dists = [...new Set(this.data.map(d => (d.definition || "").trim()))].filter(v => v !== correct && v !== "");
-            const choices = dists.sort(() => Math.random() - 0.5).slice(0, 3);
-            choices.push(correct);
-            choices.sort(() => Math.random() - 0.5);
-            const area = document.getElementById('ans-mc-area');
-            area.innerHTML = '';
-            choices.forEach(c => {
-                const btn = document.createElement('button');
-                btn.className = 'mc-btn';
-                btn.innerText = c;
-                btn.onclick = () => this.check(c, btn, correct);
-                area.appendChild(btn);
-            });
-            this.startTimer();
-        },
-        startTimer() {
-            clearInterval(this.timer);
-            this.timeLeft = 100;
-            const bar = document.getElementById('timer-bar');
-            this.timer = setInterval(() => {
-                this.timeLeft -= 1.2;
-                bar.style.width = this.timeLeft + "%";
-                if (this.timeLeft <= 0) { clearInterval(this.timer); if (!this.isAnswered) this.check('', null, this.queue[this.currentIndex].definition); }
-            }, 100);
-        },
-        check(u, btn, correct) {
-            if (this.isAnswered) return;
-            this.isAnswered = true;
-            clearInterval(this.timer);
-            const isCorrect = u === correct;
-            if (isCorrect) {
-                if(btn) btn.classList.add('correct');
-                this.updateDB(true);
-            } else {
-                if(btn) btn.classList.add('wrong');
-                document.querySelectorAll('.mc-btn').forEach(b => { if(b.innerText === correct) b.classList.add('correct'); });
-                this.updateDB(false);
+
+            let lv = item.stage ?? 0;
+            let isMastered = item.mastered === true || lv >= 5;
+
+            if (isMastered) {
+              lv = 5;
+              masterCount++;
+            } else if (lv > 5) {
+              lv = 5;
             }
-            document.getElementById('next-btn').classList.remove('hidden');
+
+            if (lv >= 1 && lv <= 5) {
+              levelCounts[lv]++;
+            }
+
+            if (
+              item.nextReview &&
+              new Date(item.nextReview) <= now &&
+              !isMastered
+            ) {
+              dueCount++;
+            }
+          });
+
+          document.getElementById("master-count").innerText = masterCount;
+          document.getElementById("due-count").innerText = dueCount;
+          document.getElementById("next-quiz-count").innerText =
+            dueCount > 0 ? Math.min(dueCount, 10) : 10;
+
+          for (let i = 1; i <= 5; i++) {
+            document.getElementById(`jlpt-${i}-count`).innerText =
+              jlptCounts[i];
+            document.getElementById(`level-${i}-count`).innerText =
+              levelCounts[i];
+          }
         },
-        async updateDB(isCorrect) {
-            const item = this.queue[this.currentIndex];
-            let newStage = isCorrect ? (item.stage || 1) + 1 : 1;
-            let nextDate = new Date();
-            if (isCorrect) nextDate.setDate(nextDate.getDate() + (newStage * 2));
-            await _supabase.from('vocab').update({ stage: newStage, mastered: newStage >= 5, nextReview: nextDate.toISOString() }).eq('id', item.id);
+
+        populateFilters: function () {
+          const stageSet = new Set();
+          const posSet = new Set();
+
+          this.vocabData.forEach((item) => {
+            if (item.stage !== null && item.stage !== undefined)
+              stageSet.add(item.stage);
+            if (item.pos) posSet.add(item.pos);
+          });
+
+          const stageSelect = document.getElementById("filter-stage");
+          const posSelect = document.getElementById("filter-pos");
+
+          stageSelect.innerHTML = '<option value="">すべて (Stage)</option>';
+          posSelect.innerHTML = '<option value="">すべて (POS)</option>';
+
+          Array.from(stageSet)
+            .sort((a, b) => a - b)
+            .forEach((stage) => {
+              stageSelect.innerHTML += `<option value="${stage}">Stage ${stage}</option>`;
+            });
+
+          Array.from(posSet)
+            .sort()
+            .forEach((pos) => {
+              posSelect.innerHTML += `<option value="${pos}">${pos}</option>`;
+            });
         },
-        nextCard() {
-            this.currentIndex++;
-            if (this.currentIndex < this.queue.length) this.loadCard();
-            else location.reload();
-        },
-        renderList() {
-            const term = document.getElementById('db-search').value.toLowerCase();
-            const list = document.getElementById('db-list');
-            const filtered = this.data.filter(i => (i.kanji + i["Hiragana/Katakana"] + i.definition).toLowerCase().includes(term));
-            
-            list.innerHTML = filtered.map(i => `
-                <div class="list-item" id="row-${i.id}">
+
+        renderList: function () {
+          if (!this.vocabData || !Array.isArray(this.vocabData)) return;
+          const searchQ = document
+            .getElementById("db-search")
+            .value.toLowerCase();
+          const filterStage = document.getElementById("filter-stage").value;
+          const filterPos = document.getElementById("filter-pos").value;
+          const listContainer = document.getElementById("db-list");
+
+          let htmlString = "";
+
+          this.vocabData.forEach((item) => {
+            const word = item.kanji || item["Hiragana/Katakana"] || "未知單字";
+            const meaning = item.definition || "未知意思";
+            const level = item.stage ?? 0;
+            const pos = item.pos || "";
+
+            if (
+              searchQ &&
+              !word.toLowerCase().includes(searchQ) &&
+              !meaning.toLowerCase().includes(searchQ)
+            )
+              return;
+            if (filterStage !== "" && String(level) !== String(filterStage))
+              return;
+            if (filterPos !== "" && String(pos) !== String(filterPos)) return;
+
+            const jlptDisplay = item.JLPT
+              ? `<span style="color: var(--primary); font-weight: bold;"> | N${item.JLPT}</span>`
+              : "";
+
+            htmlString += `
+                <div class="list-item" id="row-${item.id}">
                     <div>
-                        <b>${i.kanji || i["Hiragana/Katakana"]}</b><br>
-                        <small style="color:var(--text-sub)">${i.definition} (Lv.${i.stage})</small>
+                        <b>${word}</b><br>
+                        <small style="color:var(--text-sub)">
+                            ${meaning} <span style="color: #bbb;">(Lv.${level}</span>${jlptDisplay}<span style="color: #bbb;">)</span>
+                        </small>
                     </div>
-                    <button class="btn-sm" onclick="app.editMode(${i.id})">編集</button>
-                </div>
-            `).join('');
+                    <div style="display:flex; align-items:center;">
+                        <button class="btn-sm" onclick="app.editMode(${item.id})">編集</button>
+                        <button class="btn-danger" onclick="app.deleteVocab(${item.id})">削除</button>
+                    </div>
+                </div>`;
+          });
+
+          listContainer.innerHTML =
+            htmlString ||
+            '<div style="text-align:center; padding:20px; color:#888;">見つかりませんでした (找不到符合條件的單字)</div>';
         },
-        editMode(id) {
-            const item = this.data.find(i => i.id === id);
-            const row = document.getElementById(`row-${id}`);
-            row.className = "list-item edit-mode";
-            row.innerHTML = `
-                <input type="text" id="ed-k-${id}" class="edit-input" value="${item.kanji || ''}" placeholder="漢字">
-                <input type="text" id="ed-r-${id}" class="edit-input" value="${item["Hiragana/Katakana"] || ''}" placeholder="読み">
-                <input type="text" id="ed-d-${id}" class="edit-input" value="${item.definition || ''}" placeholder="意味">
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-sm btn-save" onclick="app.saveEdit(${id})">保存</button>
-                    <button class="btn-sm" onclick="app.renderList()">取消</button>
-                    <button class="btn-sm" style="color:red; border-color:red;" onclick="app.deleteItem(${id})">削除</button>
-                </div>
-            `;
+
+        // ==========================================
+        // 測驗模組 (Quiz Module) + 計時器
+        // ==========================================
+        quitQuiz: function () {
+          this.clearQuizTimer();
+          this.updateDashboardStats();
+          this.renderList();
+          this.showPage("home");
         },
-        async saveEdit(id) {
-            const k = document.getElementById(`ed-k-${id}`).value;
-            const r = document.getElementById(`ed-r-${id}`).value;
-            const d = document.getElementById(`ed-d-${id}`).value;
-            const { error } = await _supabase.from('vocab').update({
-                kanji: k, "Hiragana/Katakana": r, definition: d
-            }).eq('id', id);
-            if (!error) { await this.init(); this.renderList(); }
+
+        clearQuizTimer: function () {
+          if (this.quizTimerInterval) {
+            clearInterval(this.quizTimerInterval);
+            this.quizTimerInterval = null;
+          }
         },
-        async deleteItem(id) {
-            if (confirm("削除しますか？")) {
-                const { error } = await _supabase.from('vocab').delete().eq('id', id);
-                if (!error) { await this.init(); this.renderList(); }
+
+        startQuizTimer: function () {
+          this.clearQuizTimer();
+          let timeLeft = 20;
+          const timerBar = document.getElementById("quiz-timer-bar");
+
+          // 瞬間重置計時條
+          timerBar.style.transition = "none";
+          timerBar.style.width = "100%";
+          void timerBar.offsetWidth; // 強制瀏覽器重繪
+          timerBar.style.transition = "width 1s linear";
+
+          this.quizTimerInterval = setInterval(() => {
+            timeLeft--;
+            const percentage = (timeLeft / 20) * 100;
+            timerBar.style.width = `${percentage}%`;
+
+            // 時間到
+            if (timeLeft <= 0) {
+              this.clearQuizTimer();
+              this.handleAnswer(false, true); // true 代表是 Timeout
             }
+          }, 1000);
         },
-        showPage(id) {
-            ['home', 'quiz', 'db'].forEach(p => document.getElementById('page-' + p).classList.add('hidden'));
-            document.getElementById('page-' + id).classList.remove('hidden');
-            if (id === 'db') this.renderList();
-        }
-    };
-    app.init();
-</script>
-</body>
+
+        startSession: function (isRandom) {
+          if (!this.vocabData || this.vocabData.length < 4) {
+            alert("資料庫中的單字太少，至少需要 4 個單字才能產生選項喔！");
+            return;
+          }
+
+          let pool = [];
+          const now = new Date();
+
+          if (isRandom) {
+            pool = this.vocabData.filter(
+              (item) => item.mastered === true || (item.stage ?? 0) >= 5,
+            );
+            if (pool.length === 0) {
+              alert(
+                "習得済みの単語がありません。\n(還沒有精通的單字！請先學習更多單字)",
+              );
+              return;
+            }
+          } else {
+            pool = this.vocabData.filter(
+              (item) =>
+                item.nextReview &&
+                new Date(item.nextReview) <= now &&
+                !item.mastered &&
+                (item.stage ?? 0) < 5,
+            );
+
+            if (pool.length === 0) {
+              alert(
+                "現在復習が必要な単語はありません！\n(目前沒有需要復習的單字！)",
+              );
+              return;
+            }
+          }
+
+          pool = pool.sort(() => 0.5 - Math.random());
+          this.quizQueue = pool.slice(0, 10);
+          this.currentQuizIndex = 0;
+
+          this.showPage("quiz");
+          this.renderQuizQuestion();
+        },
+
+        renderQuizQuestion: function () {
+          // 測驗結束檢查
+          if (this.currentQuizIndex >= this.quizQueue.length) {
+            this.clearQuizTimer();
+            // 滿版進度條，延遲一下下讓畫面順暢再跳出結束提示
+            document.getElementById("quiz-progress-bar").style.width = `100%`;
+            setTimeout(() => {
+              alert("🎉 クイズ終了！お疲れ様でした！ (測驗結束！辛苦了！)");
+              this.updateDashboardStats();
+              this.renderList();
+              this.showPage("home");
+            }, 100);
+            return;
+          }
+
+          const currentWord = this.quizQueue[this.currentQuizIndex];
+          const wordText =
+            currentWord.kanji || currentWord["Hiragana/Katakana"];
+
+          document.getElementById("quiz-progress").innerText =
+            `${this.currentQuizIndex + 1} / ${this.quizQueue.length}`;
+
+          // 更新進度條
+          const progressPercent =
+            (this.currentQuizIndex / this.quizQueue.length) * 100;
+          document.getElementById("quiz-progress-bar").style.width =
+            `${progressPercent}%`;
+
+          document.getElementById("q-text").innerText = wordText;
+
+          let options = [currentWord];
+          let otherWords = this.vocabData.filter(
+            (item) => item.id !== currentWord.id,
+          );
+          otherWords = otherWords.sort(() => 0.5 - Math.random());
+
+          options = options.concat(otherWords.slice(0, 3));
+          options = options.sort(() => 0.5 - Math.random());
+
+          const mcArea = document.getElementById("ans-mc-area");
+          mcArea.innerHTML = "";
+
+          options.forEach((opt) => {
+            const btn = document.createElement("button");
+            btn.className = "btn-random";
+            btn.innerText = opt.definition || "未知意思";
+            btn.onclick = () =>
+              this.handleAnswer(opt.id === currentWord.id, false);
+            mcArea.appendChild(btn);
+          });
+
+          // 開始 20 秒倒數計時
+          this.startQuizTimer();
+        },
+
+        handleAnswer: function (isCorrect, isTimeout = false) {
+          this.clearQuizTimer(); // 停止計時
+
+          const currentWord = this.quizQueue[this.currentQuizIndex];
+          const wordText =
+            currentWord.kanji || currentWord["Hiragana/Katakana"];
+
+          if (isCorrect) {
+            // 💡 修正：答對時，處理升級與推遲復習時間
+            const currentStage = currentWord.stage ?? 0;
+            let newStage = currentStage;
+
+            // 滿足你的需求：只有 Lv 0 第一次答對會變成 Lv 1
+            if (currentStage === 0) {
+              newStage = 1;
+            }
+
+            // 🌟 關鍵：將下一次復習時間往後推遲 1 天 (24小時)，這樣就會從「復習待ち」中移除了！
+            const nextTime = new Date();
+            nextTime.setDate(nextTime.getDate() + 1); // +1 天
+            const newNextReview = nextTime.toISOString();
+
+            // 1. 更新本地暫存資料 (讓畫面即時反應)
+            currentWord.stage = newStage;
+            currentWord.nextReview = newNextReview;
+
+            // 2. 在背景更新到 Supabase 資料庫
+            this.dbClient
+              .from("vocab")
+              .update({
+                stage: newStage,
+                nextReview: newNextReview,
+              })
+              .eq("id", currentWord.id)
+              .then(({ error }) => {
+                if (error) console.error("更新單字狀態失敗:", error);
+              });
+          } else {
+            if (isTimeout) {
+              alert(
+                `⏱️ タイムアップ！ (時間到！)\n「${wordText}」的意思應該是：\n👉 ${currentWord.definition}`,
+              );
+            } else {
+              alert(
+                `❌ 不正解！\n「${wordText}」的意思應該是：\n👉 ${currentWord.definition}`,
+              );
+            }
+          }
+
+          this.currentQuizIndex++;
+          this.renderQuizQuestion();
+        },
+        // ==========================================
+
+        deleteVocab: async function (id) {
+          const isConfirmed = window.confirm(
+            "本当に削除しますか？\n(確定要刪除這個單字嗎？刪除後無法復原！)",
+          );
+          if (!isConfirmed) return;
+
+          try {
+            const { error } = await this.dbClient
+              .from("vocab")
+              .delete()
+              .eq("id", id);
+            if (error) throw error;
+            this.vocabData = this.vocabData.filter((item) => item.id !== id);
+            this.populateFilters();
+            this.updateDashboardStats();
+            this.renderList();
+            alert("削除しました！ (已成功刪除)");
+          } catch (err) {
+            console.error("刪除失敗:", err);
+            alert("刪除失敗，請檢查資料庫權限或網路連線。\n" + err.message);
+          }
+        },
+
+        bulkImport: async function () {
+          const inputEl = document.getElementById("import-input");
+          const btnEl = document.getElementById("import-btn");
+          const rawText = inputEl.value.trim();
+
+          if (!rawText) {
+            alert("請先輸入要匯入的單字資料！");
+            return;
+          }
+
+          const lines = rawText.split("\n");
+          const insertData = [];
+
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            const parts = line.split(",");
+            if (parts.length < 3) {
+              alert(
+                `第 ${i + 1} 行格式不正確：請確保至少包含「漢字,讀音,意思」以逗號分隔。`,
+              );
+              return;
+            }
+
+            const kanji = parts[0].trim();
+            const reading = parts[1].trim();
+            const definition = parts[2].trim();
+
+            let jlptVal = parts[3] ? parseInt(parts[3].trim()) : null;
+            if (isNaN(jlptVal) || jlptVal < 1 || jlptVal > 5) jlptVal = null;
+
+            insertData.push({
+              kanji: kanji,
+              "Hiragana/Katakana": reading,
+              definition: definition,
+              JLPT: jlptVal,
+              stage: 0,
+              nextReview: new Date().toISOString(),
+              mastered: false,
+            });
+          }
+
+          if (insertData.length === 0) return;
+
+          try {
+            btnEl.innerText = "匯入中...";
+            btnEl.disabled = true;
+
+            const { data, error } = await this.dbClient
+              .from("vocab")
+              .insert(insertData)
+              .select();
+            if (error) throw error;
+
+            alert(`成功追加 ${insertData.length} 個單字！`);
+            inputEl.value = "";
+
+            if (data && data.length > 0) {
+              this.vocabData = [...data, ...this.vocabData];
+            } else {
+              await this.init();
+            }
+
+            this.populateFilters();
+            this.updateDashboardStats();
+            this.renderList();
+          } catch (err) {
+            console.error("匯入失敗:", err);
+            alert("匯入失敗！請確認你的資料庫權限。\n錯誤訊息：" + err.message);
+          } finally {
+            btnEl.innerText = "追加する";
+            btnEl.disabled = false;
+          }
+        },
+
+        init: async function () {
+          try {
+            const url = "https://ogjzoudptzwwmpwtpaar.supabase.co";
+            const key =
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nanpvdWRwdHp3d21wd3RwYWFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjAxMzgsImV4cCI6MjA5MjIzNjEzOH0.7rpYyglHCONhrTTMwk--i-lfVxx7VyWi49MMftMqyE0";
+            this.dbClient = window.supabase.createClient(url, key);
+
+            const { data, error } = await this.dbClient
+              .from("vocab")
+              .select("*")
+              .order("id", { ascending: false });
+
+            if (error) throw error;
+
+            this.vocabData = data || [];
+
+            this.populateFilters();
+            this.updateDashboardStats();
+            this.renderList();
+
+            document.getElementById("status-text").innerText = "Online";
+            document.getElementById("status-dot").style.backgroundColor =
+              "var(--success)";
+          } catch (err) {
+            console.error("連線失敗:", err);
+            document.getElementById("status-text").innerText =
+              "Offline (發生錯誤)";
+            document.getElementById("status-dot").style.backgroundColor = "red";
+            this.vocabData = [];
+          }
+        },
+      };
+
+      window.onload = () => app.init();
+    </script>
+  </body>
 </html>
