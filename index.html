@@ -142,9 +142,25 @@
         color: var(--text-main);
         border: 1px solid var(--line);
       }
-      .btn-random:hover {
+      .btn-random:hover:not(:disabled) {
         background-color: #eee;
       }
+
+      .btn-random.correct {
+        background-color: var(--success) !important;
+        color: white !important;
+        border-color: var(--success) !important;
+      }
+      .btn-random.wrong {
+        background-color: var(--danger) !important;
+        color: white !important;
+        border-color: var(--danger) !important;
+      }
+      .btn-random:disabled {
+        cursor: not-allowed;
+        opacity: 0.85;
+      }
+
       .btn-sm {
         background: white;
         border: 1px solid var(--line);
@@ -189,7 +205,6 @@
         border-bottom: none;
       }
 
-      /* 測驗進度與倒數計時條 CSS */
       .progress-bg {
         width: 100%;
         background-color: var(--line);
@@ -217,6 +232,31 @@
         background-color: var(--danger);
         transition: width 1s linear;
         width: 100%;
+      }
+
+      .feedback-box {
+        background-color: #f8f9fa;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+        text-align: center;
+      }
+
+      .audio-btn {
+        background: none;
+        border: none;
+        font-size: 1.8rem;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%;
+        transition: 0.2s;
+      }
+      .audio-btn:hover {
+        background-color: var(--line);
+      }
+      .audio-btn:active {
+        transform: scale(0.9);
       }
     </style>
   </head>
@@ -310,7 +350,7 @@
         </div>
 
         <button class="btn-main" onclick="app.startSession(false)">
-          学習を開始する
+          学習を開始する (全ての復習)
         </button>
         <button class="btn-random" onclick="app.startSession(true)">
           習得済みから10問復習
@@ -344,19 +384,38 @@
 
         <div
           class="quiz-container"
-          style="text-align: center; padding: 20px 0 40px 0"
+          style="text-align: center; padding: 20px 0 20px 0"
         >
-          <h1 id="q-text" style="font-size: 2.5rem; margin-bottom: 10px">
-            単語
-          </h1>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 10px;
+              margin-bottom: 5px;
+            "
+          >
+            <h1 id="q-text" style="font-size: 2.5rem; margin: 0">単語</h1>
+            <button id="q-audio-btn" class="audio-btn" title="發音">🔊</button>
+          </div>
           <div id="q-sub" style="color: var(--text-sub)">
             正しい意味を選択してください
           </div>
         </div>
+
         <div
           id="ans-mc-area"
           style="display: flex; flex-direction: column; gap: 10px"
         ></div>
+        <div id="quiz-feedback" class="feedback-box hidden"></div>
+        <button
+          id="next-btn"
+          class="btn-main hidden"
+          style="margin-top: 15px"
+          onclick="app.nextQuizQuestion()"
+        >
+          次へ
+        </button>
       </div>
 
       <div id="page-db" class="hidden">
@@ -364,7 +423,7 @@
           <h4 style="margin: 0 0 10px 0">一括インポート</h4>
           <textarea
             id="import-input"
-            placeholder="漢字,読み,意味,JLPT級別 (1行に1語)&#10;例：食べる,たべる,吃,5"
+            placeholder="漢字(可留空),読み,意味,JLPT級別,品詞 (1行に1語)&#10;例1：食べる,たべる,吃,5,動詞&#10;例2：,パソコン,電腦,5,名詞"
           ></textarea>
           <button
             class="btn-main"
@@ -435,7 +494,7 @@
 
         quizQueue: [],
         currentQuizIndex: 0,
-        quizTimerInterval: null, // 計時器 ID
+        quizTimerInterval: null,
 
         showPage: function (pageId) {
           document.getElementById("page-home").classList.add("hidden");
@@ -454,6 +513,20 @@
             document.getElementById("nav-db").classList.add("active");
             this.renderList();
           }
+
+          if (pageId !== "quiz") {
+            window.speechSynthesis.cancel();
+          }
+        },
+
+        playAudio: function (text) {
+          if (!text) return;
+          window.speechSynthesis.cancel();
+
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = "ja-JP";
+          utterance.rate = 0.9;
+          window.speechSynthesis.speak(utterance);
         },
 
         updateDashboardStats: function () {
@@ -466,9 +539,7 @@
           const now = new Date();
 
           this.vocabData.forEach((item) => {
-            if (item.JLPT >= 1 && item.JLPT <= 5) {
-              jlptCounts[item.JLPT]++;
-            }
+            if (item.JLPT >= 1 && item.JLPT <= 5) jlptCounts[item.JLPT]++;
 
             let lv = item.stage ?? 0;
             let isMastered = item.mastered === true || lv >= 5;
@@ -476,13 +547,9 @@
             if (isMastered) {
               lv = 5;
               masterCount++;
-            } else if (lv > 5) {
-              lv = 5;
-            }
+            } else if (lv > 5) lv = 5;
 
-            if (lv >= 1 && lv <= 5) {
-              levelCounts[lv]++;
-            }
+            if (lv >= 1 && lv <= 5) levelCounts[lv]++;
 
             if (
               item.nextReview &&
@@ -495,8 +562,7 @@
 
           document.getElementById("master-count").innerText = masterCount;
           document.getElementById("due-count").innerText = dueCount;
-          document.getElementById("next-quiz-count").innerText =
-            dueCount > 0 ? Math.min(dueCount, 10) : 10;
+          document.getElementById("next-quiz-count").innerText = dueCount;
 
           for (let i = 1; i <= 5; i++) {
             document.getElementById(`jlpt-${i}-count`).innerText =
@@ -586,11 +652,9 @@
             '<div style="text-align:center; padding:20px; color:#888;">見つかりませんでした (找不到符合條件的單字)</div>';
         },
 
-        // ==========================================
-        // 測驗模組 (Quiz Module) + 計時器
-        // ==========================================
         quitQuiz: function () {
           this.clearQuizTimer();
+          window.speechSynthesis.cancel();
           this.updateDashboardStats();
           this.renderList();
           this.showPage("home");
@@ -608,10 +672,9 @@
           let timeLeft = 20;
           const timerBar = document.getElementById("quiz-timer-bar");
 
-          // 瞬間重置計時條
           timerBar.style.transition = "none";
           timerBar.style.width = "100%";
-          void timerBar.offsetWidth; // 強制瀏覽器重繪
+          void timerBar.offsetWidth;
           timerBar.style.transition = "width 1s linear";
 
           this.quizTimerInterval = setInterval(() => {
@@ -619,10 +682,9 @@
             const percentage = (timeLeft / 20) * 100;
             timerBar.style.width = `${percentage}%`;
 
-            // 時間到
             if (timeLeft <= 0) {
               this.clearQuizTimer();
-              this.handleAnswer(false, true); // true 代表是 Timeout
+              this.handleAnswer(false, true, null);
             }
           }, 1000);
         },
@@ -646,6 +708,8 @@
               );
               return;
             }
+            pool = pool.sort(() => 0.5 - Math.random());
+            this.quizQueue = pool.slice(0, 10);
           } else {
             pool = this.vocabData.filter(
               (item) =>
@@ -661,21 +725,21 @@
               );
               return;
             }
+            pool = pool.sort(() => 0.5 - Math.random());
+            this.quizQueue = pool;
           }
 
-          pool = pool.sort(() => 0.5 - Math.random());
-          this.quizQueue = pool.slice(0, 10);
           this.currentQuizIndex = 0;
-
           this.showPage("quiz");
           this.renderQuizQuestion();
         },
 
         renderQuizQuestion: function () {
-          // 測驗結束檢查
+          document.getElementById("quiz-feedback").classList.add("hidden");
+          document.getElementById("next-btn").classList.add("hidden");
+
           if (this.currentQuizIndex >= this.quizQueue.length) {
             this.clearQuizTimer();
-            // 滿版進度條，延遲一下下讓畫面順暢再跳出結束提示
             document.getElementById("quiz-progress-bar").style.width = `100%`;
             setTimeout(() => {
               alert("🎉 クイズ終了！お疲れ様でした！ (測驗結束！辛苦了！)");
@@ -689,17 +753,22 @@
           const currentWord = this.quizQueue[this.currentQuizIndex];
           const wordText =
             currentWord.kanji || currentWord["Hiragana/Katakana"];
+          const kanaForAudio =
+            currentWord["Hiragana/Katakana"] || currentWord.kanji || "";
 
           document.getElementById("quiz-progress").innerText =
             `${this.currentQuizIndex + 1} / ${this.quizQueue.length}`;
 
-          // 更新進度條
           const progressPercent =
             (this.currentQuizIndex / this.quizQueue.length) * 100;
           document.getElementById("quiz-progress-bar").style.width =
             `${progressPercent}%`;
 
           document.getElementById("q-text").innerText = wordText;
+
+          const audioBtn = document.getElementById("q-audio-btn");
+          audioBtn.onclick = () => this.playAudio(kanaForAudio);
+          this.playAudio(kanaForAudio);
 
           let options = [currentWord];
           let otherWords = this.vocabData.filter(
@@ -717,42 +786,36 @@
             const btn = document.createElement("button");
             btn.className = "btn-random";
             btn.innerText = opt.definition || "未知意思";
-            btn.onclick = () =>
-              this.handleAnswer(opt.id === currentWord.id, false);
+            btn.dataset.isCorrect = opt.id === currentWord.id;
+            btn.onclick = (e) =>
+              this.handleAnswer(opt.id === currentWord.id, false, e.target);
             mcArea.appendChild(btn);
           });
 
-          // 開始 20 秒倒數計時
           this.startQuizTimer();
         },
 
-        handleAnswer: function (isCorrect, isTimeout = false) {
-          this.clearQuizTimer(); // 停止計時
-
+        handleAnswer: function (
+          isCorrect,
+          isTimeout = false,
+          clickedBtn = null,
+        ) {
+          this.clearQuizTimer();
           const currentWord = this.quizQueue[this.currentQuizIndex];
-          const wordText =
-            currentWord.kanji || currentWord["Hiragana/Katakana"];
 
-          if (isCorrect) {
-            // 💡 修正：答對時，處理升級與推遲復習時間
+          if (isCorrect && !isTimeout) {
             const currentStage = currentWord.stage ?? 0;
             let newStage = currentStage;
 
-            // 滿足你的需求：只有 Lv 0 第一次答對會變成 Lv 1
-            if (currentStage === 0) {
-              newStage = 1;
-            }
+            if (currentStage === 0) newStage = 1;
 
-            // 🌟 關鍵：將下一次復習時間往後推遲 1 天 (24小時)，這樣就會從「復習待ち」中移除了！
             const nextTime = new Date();
-            nextTime.setDate(nextTime.getDate() + 1); // +1 天
+            nextTime.setDate(nextTime.getDate() + 1);
             const newNextReview = nextTime.toISOString();
 
-            // 1. 更新本地暫存資料 (讓畫面即時反應)
             currentWord.stage = newStage;
             currentWord.nextReview = newNextReview;
 
-            // 2. 在背景更新到 Supabase 資料庫
             this.dbClient
               .from("vocab")
               .update({
@@ -763,22 +826,50 @@
               .then(({ error }) => {
                 if (error) console.error("更新單字狀態失敗:", error);
               });
-          } else {
-            if (isTimeout) {
-              alert(
-                `⏱️ タイムアップ！ (時間到！)\n「${wordText}」的意思應該是：\n👉 ${currentWord.definition}`,
-              );
-            } else {
-              alert(
-                `❌ 不正解！\n「${wordText}」的意思應該是：\n👉 ${currentWord.definition}`,
-              );
-            }
           }
 
+          const buttons = document.querySelectorAll("#ans-mc-area .btn-random");
+          buttons.forEach((btn) => {
+            btn.disabled = true;
+            if (btn.dataset.isCorrect === "true") {
+              btn.classList.add("correct");
+            } else if (clickedBtn === btn && !isCorrect && !isTimeout) {
+              btn.classList.add("wrong");
+            }
+          });
+
+          const feedbackEl = document.getElementById("quiz-feedback");
+          const kanji = currentWord.kanji || "無";
+          const kana = currentWord["Hiragana/Katakana"] || "無";
+          const meaning = currentWord.definition || "無";
+
+          let feedbackHtml = "";
+          if (isTimeout) {
+            feedbackHtml += `<div style="color: var(--danger); font-weight: bold; margin-bottom: 8px;">⏱️ タイムアップ！ (時間到)</div>`;
+          } else if (!isCorrect) {
+            feedbackHtml += `<div style="color: var(--danger); font-weight: bold; margin-bottom: 8px;">❌ 不正解！</div>`;
+          } else {
+            feedbackHtml += `<div style="color: var(--success); font-weight: bold; margin-bottom: 8px;">✅ 正解！</div>`;
+          }
+
+          feedbackHtml += `
+                <div style="font-size: 1.3rem; font-weight: bold; color: var(--text-main); margin-bottom: 5px;">${kanji}</div>
+                <div style="font-size: 1rem; color: var(--primary); margin-bottom: 8px;">${kana}</div>
+                <div style="font-size: 1rem; color: var(--text-sub);">${meaning}</div>
+            `;
+
+          feedbackEl.innerHTML = feedbackHtml;
+          feedbackEl.classList.remove("hidden");
+          document.getElementById("next-btn").classList.remove("hidden");
+
+          this.playAudio(currentWord["Hiragana/Katakana"] || currentWord.kanji);
+        },
+
+        nextQuizQuestion: function () {
+          window.speechSynthesis.cancel();
           this.currentQuizIndex++;
           this.renderQuizQuestion();
         },
-        // ==========================================
 
         deleteVocab: async function (id) {
           const isConfirmed = window.confirm(
@@ -823,23 +914,36 @@
             const parts = line.split(",");
             if (parts.length < 3) {
               alert(
-                `第 ${i + 1} 行格式不正確：請確保至少包含「漢字,讀音,意思」以逗號分隔。`,
+                `第 ${i + 1} 行格式不正確：請確保至少包含兩個逗號分隔「漢字,讀音,意思」。\n如果沒有漢字，請在開頭留空，例如：,パソコン,電腦`,
               );
               return;
             }
 
-            const kanji = parts[0].trim();
-            const reading = parts[1].trim();
-            const definition = parts[2].trim();
+            // 💡 更新：允許漢字或平假名其中一個為空
+            let kanji = parts[0].trim();
+            if (kanji === "") kanji = null;
+
+            let reading = parts[1] ? parts[1].trim() : "";
+            if (reading === "") reading = null;
+
+            let definition = parts[2] ? parts[2].trim() : "";
+
+            if (!kanji && !reading) {
+              alert(`第 ${i + 1} 行錯誤：漢字與讀音不能同時為空！`);
+              return;
+            }
 
             let jlptVal = parts[3] ? parseInt(parts[3].trim()) : null;
             if (isNaN(jlptVal) || jlptVal < 1 || jlptVal > 5) jlptVal = null;
+
+            const posVal = parts[4] ? parts[4].trim() : null;
 
             insertData.push({
               kanji: kanji,
               "Hiragana/Katakana": reading,
               definition: definition,
               JLPT: jlptVal,
+              pos: posVal,
               stage: 0,
               nextReview: new Date().toISOString(),
               mastered: false,
