@@ -15,16 +15,13 @@
         .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
         .dot.online { background: #00b894; box-shadow: 0 0 5px #00b894; }
         .dot.offline { background: #ff7675; }
-
         .nav-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
         .logo { font-weight: 700; letter-spacing: 3px; font-size: 1.2rem; }
         .nav-links button { background: none; border: none; font-size: 1rem; cursor: pointer; margin-left: 15px; color: var(--text-sub); }
         .nav-links button.active { color: var(--accent); font-weight: 700; }
-
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .stat-card { background: #fafafa; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid var(--line); }
         .stat-card b { font-size: 1.8rem; }
-
         .timer-wrapper { width: 100%; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 30px; }
         #timer-bar { width: 100%; height: 100%; background: var(--accent); transition: width 0.1s linear; }
         
@@ -35,21 +32,22 @@
         .mc-btn { background: #ffffff; border: 2px solid var(--line); padding: 18px; border-radius: 12px; font-size: 1.1rem; cursor: pointer; text-align: center; }
         .mc-btn.correct { background: var(--correct) !important; color: white; border-color: var(--correct); }
         .mc-btn.wrong { background: var(--wrong) !important; color: white; border-color: var(--wrong); }
-
         .btn-main { background: var(--accent); color: white; border: none; padding: 20px; border-radius: 12px; width: 100%; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
+        
+        /* New style for random quiz button to give back its color */
+        .btn-random { background: #e8f4fd; color: #0984e3; border: 1px solid #74b9ff; padding: 15px; border-radius: 12px; width: 100%; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-random:hover { background: #0984e3; color: white; }
+        
         .btn-sm { padding: 8px 15px; border-radius: 8px; border: 1px solid var(--line); background: white; cursor: pointer; font-size: 0.8rem; }
         .btn-save { background: var(--accent); color: white; border: none; }
-
         .list-item { padding: 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: white; }
         .edit-mode { flex-direction: column; align-items: flex-start; gap: 10px; }
         .edit-input { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; box-sizing: border-box; }
-
         .hidden { display: none !important; }
         textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="db-status"><div id="status-dot" class="dot"></div> <span id="status-text">連接中...</span></div>
     
@@ -60,16 +58,33 @@
             <button id="nav-db" onclick="app.showPage('db')">単語帳</button>
         </div>
     </div>
-
     <div id="page-home">
         <div class="stats-grid">
             <div class="stat-card"><small>復習待ち</small><b id="due-count">0</b></div>
             <div class="stat-card"><small>習得済み</small><b id="master-count">0</b></div>
         </div>
-        <button class="btn-main" onclick="app.startSession(false)">学習を開始する</button>
-        <button onclick="app.startSession(true)" style="background:none; border:none; color:var(--text-sub); width:100%; cursor:pointer; margin-top:10px;">習得済みから10問復習</button>
-    </div>
 
+        <!-- NEW: Level Dashboard -->
+        <div style="background:#fafafa; padding:20px; border-radius:15px; border:1px solid var(--line); margin-bottom:20px;">
+            <h4 style="margin:0 0 15px 0; text-align:center; font-size: 1rem;">レベル別単語数</h4>
+            <div style="display:flex; justify-content:space-between; text-align:center;">
+                <div><div style="font-size:0.8rem; color:var(--text-sub)">Lv.1</div><b id="level-1-count">0</b></div>
+                <div><div style="font-size:0.8rem; color:var(--text-sub)">Lv.2</div><b id="level-2-count">0</b></div>
+                <div><div style="font-size:0.8rem; color:var(--text-sub)">Lv.3</div><b id="level-3-count">0</b></div>
+                <div><div style="font-size:0.8rem; color:var(--text-sub)">Lv.4</div><b id="level-4-count">0</b></div>
+                <div><div style="font-size:0.8rem; color:var(--text-sub)">Lv.5+</div><b id="level-5-count">0</b></div>
+            </div>
+        </div>
+
+        <!-- NEW: Upcoming Vocab count for Next Quiz -->
+        <div style="text-align: center; margin-bottom: 20px; font-size: 0.95rem; color: var(--text-main);">
+            次回のクイズ単語数: <strong id="next-quiz-count" style="font-size: 1.2rem; margin: 0 5px;">0</strong> 問
+        </div>
+
+        <button class="btn-main" onclick="app.startSession(false)">学習を開始する</button>
+        <!-- CHANGED: Applied new button style class btn-random -->
+        <button class="btn-random" onclick="app.startSession(true)">習得済みから10問復習</button>
+    </div>
     <div id="page-quiz" class="hidden">
         <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.8rem; color:var(--text-sub);">
             <span id="quiz-progress">0 / 0</span>
@@ -83,7 +98,6 @@
         <div id="ans-mc-area" class="mc-grid"></div>
         <button id="next-btn" class="btn-main hidden" style="margin-top:20px;" onclick="app.nextCard()">次へ</button>
     </div>
-
     <div id="page-db" class="hidden">
         <div style="background:#fafafa; padding:20px; border-radius:15px; margin-bottom:20px; border:1px solid var(--line);">
             <h4 style="margin:0 0 10px 0;">一括インポート</h4>
@@ -96,25 +110,19 @@
         <div id="db-list"></div>
     </div>
 </div>
-
 <script>
     const SUPABASE_URL = 'https://ogjzoudptzwwmpwtpaar.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nanpvdWRwdHp3d21wd3RwYWFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjAxMzgsImV4cCI6MjA5MjIzNjEzOH0.7rpYyglHCONhrTTMwk--i-lfVxx7VyWi49MMftMqyE0';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
     const app = {
         data: [], queue: [], currentIndex: 0, isAnswered: false, timer: null, timeLeft: 100,
-
         async init() {
             const dot = document.getElementById('status-dot');
             const txt = document.getElementById('status-text');
-
             try {
-                // 修復位：拎走咗 .order('created_at')
                 const { data, error } = await _supabase.from('vocab').select('*');
                 
                 if (error) throw error;
-
                 this.data = data || [];
                 dot.className = "dot online";
                 txt.innerText = "Online";
@@ -125,20 +133,34 @@
                 console.error("Database Connection Failed:", err);
             }
         },
-
         updateStats() {
             const now = new Date();
             const due = this.data.filter(i => !i.mastered && (!i.nextReview || new Date(i.nextReview) <= now));
             const master = this.data.filter(i => i.mastered);
+            
             document.getElementById('due-count').innerText = due.length;
             document.getElementById('master-count').innerText = master.length;
-        },
+            
+            // NEW: Set Upcoming Vocab # for next quiz
+            const nextQuizCount = document.getElementById('next-quiz-count');
+            if(nextQuizCount) nextQuizCount.innerText = due.length;
 
+            // NEW: Calculate and Display Levels
+            const levels = {1:0, 2:0, 3:0, 4:0, 5:0};
+            this.data.forEach(i => {
+                let st = i.stage || 1;
+                if (st >= 5) st = 5; // Group anything stage 5 and beyond into Lv.5+
+                levels[st] = (levels[st] || 0) + 1;
+            });
+            for(let i=1; i<=5; i++) {
+                const el = document.getElementById(`level-${i}-count`);
+                if (el) el.innerText = levels[i];
+            }
+        },
         async bulkImport() {
             const input = document.getElementById('import-input');
             const lines = input.value.trim().split('\n').filter(l => l.includes(','));
             if (!lines.length) return alert("形式：漢字,読み,意味");
-
             const newItems = lines.map(l => {
                 const parts = l.split(',');
                 return { 
@@ -148,12 +170,10 @@
                     stage: 1, mastered: false 
                 };
             });
-
             const { error } = await _supabase.from('vocab').insert(newItems);
             if (error) alert("Error: " + error.message);
             else { input.value = ""; await this.init(); this.renderList(); alert("追加完了"); }
         },
-
         startSession(isMasteredOnly) {
             const now = new Date();
             this.queue = isMasteredOnly ? 
@@ -165,7 +185,6 @@
             this.showPage('quiz');
             this.loadCard();
         },
-
         loadCard() {
             this.isAnswered = false;
             const item = this.queue[this.currentIndex];
@@ -178,7 +197,6 @@
             const choices = dists.sort(() => Math.random() - 0.5).slice(0, 3);
             choices.push(correct);
             choices.sort(() => Math.random() - 0.5);
-
             const area = document.getElementById('ans-mc-area');
             area.innerHTML = '';
             choices.forEach(c => {
@@ -190,7 +208,6 @@
             });
             this.startTimer();
         },
-
         startTimer() {
             clearInterval(this.timer);
             this.timeLeft = 100;
@@ -201,7 +218,6 @@
                 if (this.timeLeft <= 0) { clearInterval(this.timer); if (!this.isAnswered) this.check('', null, this.queue[this.currentIndex].definition); }
             }, 100);
         },
-
         check(u, btn, correct) {
             if (this.isAnswered) return;
             this.isAnswered = true;
@@ -217,7 +233,6 @@
             }
             document.getElementById('next-btn').classList.remove('hidden');
         },
-
         async updateDB(isCorrect) {
             const item = this.queue[this.currentIndex];
             let newStage = isCorrect ? (item.stage || 1) + 1 : 1;
@@ -225,13 +240,11 @@
             if (isCorrect) nextDate.setDate(nextDate.getDate() + (newStage * 2));
             await _supabase.from('vocab').update({ stage: newStage, mastered: newStage >= 5, nextReview: nextDate.toISOString() }).eq('id', item.id);
         },
-
         nextCard() {
             this.currentIndex++;
             if (this.currentIndex < this.queue.length) this.loadCard();
             else location.reload();
         },
-
         renderList() {
             const term = document.getElementById('db-search').value.toLowerCase();
             const list = document.getElementById('db-list');
@@ -247,7 +260,6 @@
                 </div>
             `).join('');
         },
-
         editMode(id) {
             const item = this.data.find(i => i.id === id);
             const row = document.getElementById(`row-${id}`);
@@ -263,26 +275,21 @@
                 </div>
             `;
         },
-
         async saveEdit(id) {
             const k = document.getElementById(`ed-k-${id}`).value;
             const r = document.getElementById(`ed-r-${id}`).value;
             const d = document.getElementById(`ed-d-${id}`).value;
-
             const { error } = await _supabase.from('vocab').update({
                 kanji: k, "Hiragana/Katakana": r, definition: d
             }).eq('id', id);
-
             if (!error) { await this.init(); this.renderList(); }
         },
-
         async deleteItem(id) {
             if (confirm("削除しますか？")) {
                 const { error } = await _supabase.from('vocab').delete().eq('id', id);
                 if (!error) { await this.init(); this.renderList(); }
             }
         },
-
         showPage(id) {
             ['home', 'quiz', 'db'].forEach(p => document.getElementById('page-' + p).classList.add('hidden'));
             document.getElementById('page-' + id).classList.remove('hidden');
