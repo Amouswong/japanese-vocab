@@ -30,6 +30,7 @@
       .container {
         max-width: 500px;
         margin: 0 auto;
+        position: relative;
       }
       .hidden {
         display: none !important;
@@ -145,7 +146,6 @@
       .btn-random:hover:not(:disabled) {
         background-color: #eee;
       }
-
       .btn-random.correct {
         background-color: var(--success) !important;
         color: white !important;
@@ -160,7 +160,6 @@
         cursor: not-allowed;
         opacity: 0.85;
       }
-
       .btn-sm {
         background: white;
         border: 1px solid var(--line);
@@ -204,7 +203,6 @@
       .list-item:last-child {
         border-bottom: none;
       }
-
       .progress-bg {
         width: 100%;
         background-color: var(--line);
@@ -233,7 +231,6 @@
         transition: width 1s linear;
         width: 100%;
       }
-
       .feedback-box {
         background-color: #f8f9fa;
         border: 1px solid var(--line);
@@ -242,7 +239,6 @@
         margin-top: 15px;
         text-align: center;
       }
-
       .audio-btn {
         background: none;
         border: none;
@@ -258,6 +254,46 @@
       .audio-btn:active {
         transform: scale(0.9);
       }
+      
+      .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      }
+      .modal-content label {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--text-sub);
+        margin: 10px 0 5px 0;
+      }
+      .modal-content input {
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin-bottom: 5px;
+      }
+
+      /* 🌟 Furigana 漢字標音樣式 */
+      ruby {
+        ruby-align: center;
+      }
+      rt {
+        font-size: 0.6em;
+        color: var(--primary);
+        font-weight: normal;
+      }
     </style>
   </head>
   <body>
@@ -266,7 +302,6 @@
         <div id="status-dot" class="dot" style="background-color: orange"></div>
         <span id="status-text">連線中...</span>
       </div>
-
       <div class="nav-header">
         <div class="logo">改善 KAIZEN</div>
         <div class="nav-links">
@@ -276,9 +311,10 @@
           <button id="nav-db" onclick="app.showPage('db')">単語帳</button>
         </div>
       </div>
-
+      
       <div id="page-home">
         <div class="stats-grid">
+          <!-- 移除咗連續打卡，回復本來兩個 stat-card -->
           <div class="stat-card">
             <small>復習待ち</small><b id="due-count">0</b>
           </div>
@@ -286,7 +322,6 @@
             <small>習得済み</small><b id="master-count">0</b>
           </div>
         </div>
-
         <div class="dashboard-card">
           <h4 class="dashboard-title">レベル別単語数</h4>
           <div class="stat-row">
@@ -312,7 +347,6 @@
             </div>
           </div>
         </div>
-
         <div class="dashboard-card dashboard-jlpt">
           <h4 class="dashboard-title">JLPT 級別單字數</h4>
           <div class="stat-row">
@@ -338,7 +372,6 @@
             </div>
           </div>
         </div>
-
         <div
           style="text-align: center; margin-bottom: 20px; font-size: 0.95rem"
         >
@@ -348,7 +381,6 @@
           >
           問
         </div>
-
         <button class="btn-main" onclick="app.startSession(false)">
           学習を開始する (全ての復習)
         </button>
@@ -356,7 +388,7 @@
           習得済みから10問復習
         </button>
       </div>
-
+      
       <div id="page-quiz" class="hidden">
         <div
           style="
@@ -374,14 +406,12 @@
             >終了</span
           >
         </div>
-
         <div class="progress-bg">
           <div id="quiz-progress-bar" class="progress-fill"></div>
         </div>
         <div class="timer-bg">
           <div id="quiz-timer-bar" class="timer-fill"></div>
         </div>
-
         <div
           class="quiz-container"
           style="text-align: center; padding: 20px 0 20px 0"
@@ -402,7 +432,6 @@
             正しい意味を選択してください
           </div>
         </div>
-
         <div
           id="ans-mc-area"
           style="display: flex; flex-direction: column; gap: 10px"
@@ -423,7 +452,7 @@
           <h4 style="margin: 0 0 10px 0">一括インポート</h4>
           <textarea
             id="import-input"
-            placeholder="漢字(可留空),読み,意味,JLPT級別,品詞 (1行に1語)&#10;例1：食べる,たべる,吃,5,動詞&#10;例2：,パソコン,電腦,5,名詞"
+            placeholder="漢字(支援標音),読み,意味,JLPT級別,品詞 (1行に1語)&#10;例1：食[た]べる,たべる,吃,5,動詞&#10;例2：,パソコン,電腦,5,名詞"
           ></textarea>
           <button
             class="btn-main"
@@ -434,7 +463,6 @@
             追加する
           </button>
         </div>
-
         <div
           style="
             display: flex;
@@ -452,9 +480,8 @@
               border: 1px solid var(--line);
               border-radius: 10px;
             "
-            oninput="app.renderList()"
+            oninput="app.handleSearch()"
           />
-
           <div style="display: flex; gap: 10px">
             <select
               id="filter-stage"
@@ -482,30 +509,71 @@
             </select>
           </div>
         </div>
-
         <div id="db-list"></div>
       </div>
+      
+      <div id="edit-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+          <h3 style="margin-top: 0; color: var(--text-main);">単語編集 (編輯單字)</h3>
+          
+          <input type="hidden" id="edit-id" />
+          
+          <label>漢字 (支援 漢字[假名] 格式，例如: 食[た]べる)</label>
+          <input type="text" id="edit-kanji" placeholder="如沒有請留空" />
+          
+          <label>読み (Hiragana/Katakana)</label>
+          <input type="text" id="edit-kana" placeholder="平假名 / 片假名" />
+          
+          <label>意味 (Definition)</label>
+          <input type="text" id="edit-def" placeholder="中文意思" />
+          
+          <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+              <label>レベル (Level)</label>
+              <input type="number" id="edit-stage" min="0" max="10" placeholder="0" />
+            </div>
+            <div style="flex: 1;">
+              <label>JLPT 級別</label>
+              <input type="number" id="edit-jlpt" min="1" max="5" placeholder="1-5" />
+            </div>
+          </div>
+          
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+            <button class="btn-sm" onclick="app.closeEditModal()">キャンセル (取消)</button>
+            <button class="btn-main" id="save-edit-btn" style="width: auto; padding: 8px 20px; margin: 0;" onclick="app.saveEdit()">保存</button>
+          </div>
+        </div>
+      </div>
+      
     </div>
 
     <script>
       const app = {
         vocabData: [],
         dbClient: null,
-
         quizQueue: [],
         currentQuizIndex: 0,
         quizTimerInterval: null,
-        isRandomQuizMode: false, // 紀錄當前是否為隨機精通模式
+        isRandomQuizMode: false,
+        searchTimeout: null,
+
+        // 🌟 將 "漢字[假名]" 轉換成 <ruby> 標籤的工具函數
+        formatFurigana: function (text) {
+          if (!text) return "";
+          const regex = /([一-龯A-Za-z]+)\[(.*?)\]/g;
+          if (regex.test(text)) {
+            return text.replace(regex, "<ruby>$1<rt>$2</rt></ruby>");
+          }
+          return text;
+        },
 
         showPage: function (pageId) {
           document.getElementById("page-home").classList.add("hidden");
           document.getElementById("page-quiz").classList.add("hidden");
           document.getElementById("page-db").classList.add("hidden");
           document.getElementById(`page-${pageId}`).classList.remove("hidden");
-
           document.getElementById("nav-study").classList.remove("active");
           document.getElementById("nav-db").classList.remove("active");
-
           if (pageId === "home") {
             document.getElementById("nav-study").classList.add("active");
             this.updateDashboardStats();
@@ -514,7 +582,6 @@
             document.getElementById("nav-db").classList.add("active");
             this.renderList();
           }
-
           if (pageId !== "quiz") {
             window.speechSynthesis.cancel();
           }
@@ -523,34 +590,30 @@
         playAudio: function (text) {
           if (!text) return;
           window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(text);
+          // 如果字串入面有 Furigana [ ]，將括號同入面啲字清走，淨係讀原字
+          const cleanTextForAudio = text.replace(/\[.*?\]/g, "");
+          const utterance = new SpeechSynthesisUtterance(cleanTextForAudio);
           utterance.lang = "ja-JP";
-          utterance.rate = 0.9;
+          utterance.rate = 0.75; 
           window.speechSynthesis.speak(utterance);
         },
 
         updateDashboardStats: function () {
           if (!this.vocabData || !Array.isArray(this.vocabData)) return;
-
           let jlptCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
           let levelCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
           let masterCount = 0;
           let dueCount = 0;
           const now = new Date();
-
           this.vocabData.forEach((item) => {
             if (item.JLPT >= 1 && item.JLPT <= 5) jlptCounts[item.JLPT]++;
-
             let lv = item.stage ?? 0;
             let isMastered = item.mastered === true || lv >= 5;
-
             if (isMastered) {
               lv = 5;
               masterCount++;
             } else if (lv > 5) lv = 5;
-
             if (lv >= 1 && lv <= 5) levelCounts[lv]++;
-
             if (
               item.nextReview &&
               new Date(item.nextReview) <= now &&
@@ -559,11 +622,9 @@
               dueCount++;
             }
           });
-
           document.getElementById("master-count").innerText = masterCount;
           document.getElementById("due-count").innerText = dueCount;
           document.getElementById("next-quiz-count").innerText = dueCount;
-
           for (let i = 1; i <= 5; i++) {
             document.getElementById(`jlpt-${i}-count`).innerText =
               jlptCounts[i];
@@ -575,30 +636,34 @@
         populateFilters: function () {
           const stageSet = new Set();
           const posSet = new Set();
-
           this.vocabData.forEach((item) => {
             if (item.stage !== null && item.stage !== undefined)
               stageSet.add(item.stage);
             if (item.pos) posSet.add(item.pos);
           });
-
           const stageSelect = document.getElementById("filter-stage");
           const posSelect = document.getElementById("filter-pos");
-
           stageSelect.innerHTML = '<option value="">すべて (Stage)</option>';
           posSelect.innerHTML = '<option value="">すべて (POS)</option>';
-
           Array.from(stageSet)
             .sort((a, b) => a - b)
             .forEach((stage) => {
               stageSelect.innerHTML += `<option value="${stage}">Stage ${stage}</option>`;
             });
-
           Array.from(posSet)
             .sort()
             .forEach((pos) => {
               posSelect.innerHTML += `<option value="${pos}">${pos}</option>`;
             });
+        },
+
+        handleSearch: function () {
+          if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+          }
+          this.searchTimeout = setTimeout(() => {
+            this.renderList();
+          }, 300);
         },
 
         renderList: function () {
@@ -609,33 +674,31 @@
           const filterStage = document.getElementById("filter-stage").value;
           const filterPos = document.getElementById("filter-pos").value;
           const listContainer = document.getElementById("db-list");
-
           let htmlString = "";
-
           this.vocabData.forEach((item) => {
-            const word = item.kanji || item["Hiragana/Katakana"] || "未知單字";
+            const wordRaw = item.kanji || item["Hiragana/Katakana"] || "未知單字";
+            const wordHtml = this.formatFurigana(wordRaw); 
+            
             const meaning = item.definition || "未知意思";
             const level = item.stage ?? 0;
             const pos = item.pos || "";
-
             if (
               searchQ &&
-              !word.toLowerCase().includes(searchQ) &&
-              !meaning.toLowerCase().includes(searchQ)
+              !wordRaw.toLowerCase().includes(searchQ) &&
+              !meaning.toLowerCase().includes(searchQ) &&
+              !(item["Hiragana/Katakana"] && item["Hiragana/Katakana"].toLowerCase().includes(searchQ))
             )
               return;
             if (filterStage !== "" && String(level) !== String(filterStage))
               return;
             if (filterPos !== "" && String(pos) !== String(filterPos)) return;
-
             const jlptDisplay = item.JLPT
               ? `<span style="color: var(--primary); font-weight: bold;"> | N${item.JLPT}</span>`
               : "";
-
             htmlString += `
                 <div class="list-item" id="row-${item.id}">
                     <div>
-                        <b>${word}</b><br>
+                        <b style="font-size: 1.1rem;">${wordHtml}</b><br>
                         <small style="color:var(--text-sub)">
                             ${meaning} <span style="color: #bbb;">(Lv.${level}</span>${jlptDisplay}<span style="color: #bbb;">)</span>
                         </small>
@@ -646,10 +709,88 @@
                     </div>
                 </div>`;
           });
-
           listContainer.innerHTML =
             htmlString ||
             '<div style="text-align:center; padding:20px; color:#888;">見つかりませんでした (找不到符合條件的單字)</div>';
+        },
+
+        editMode: function (id) {
+          const word = this.vocabData.find((item) => item.id === id);
+          if (!word) return;
+          
+          document.getElementById("edit-id").value = word.id;
+          document.getElementById("edit-kanji").value = word.kanji || "";
+          document.getElementById("edit-kana").value = word["Hiragana/Katakana"] || "";
+          document.getElementById("edit-def").value = word.definition || "";
+          document.getElementById("edit-stage").value = word.stage !== null ? word.stage : 0;
+          document.getElementById("edit-jlpt").value = word.JLPT || "";
+
+          document.getElementById("edit-modal").classList.remove("hidden");
+        },
+
+        closeEditModal: function () {
+          document.getElementById("edit-modal").classList.add("hidden");
+        },
+
+        saveEdit: async function () {
+          const btnEl = document.getElementById("save-edit-btn");
+          const id = parseInt(document.getElementById("edit-id").value);
+          const wordIndex = this.vocabData.findIndex((item) => item.id === id);
+          
+          if (wordIndex === -1) return;
+
+          let kanji = document.getElementById("edit-kanji").value.trim();
+          if (kanji === "") kanji = null;
+          
+          let kana = document.getElementById("edit-kana").value.trim();
+          if (kana === "") kana = null;
+          
+          let def = document.getElementById("edit-def").value.trim();
+          
+          let stageVal = document.getElementById("edit-stage").value.trim();
+          let stage = stageVal !== "" ? parseInt(stageVal) : 0;
+          
+          let jlptVal = document.getElementById("edit-jlpt").value.trim();
+          let jlpt = jlptVal !== "" ? parseInt(jlptVal) : null;
+
+          if (!kanji && !kana) {
+            alert("漢字同讀音不能同時為空！");
+            return;
+          }
+
+          try {
+            btnEl.innerText = "保存中...";
+            btnEl.disabled = true;
+
+            const updateData = {
+              kanji: kanji,
+              "Hiragana/Katakana": kana,
+              definition: def,
+              stage: stage,
+              JLPT: jlpt
+            };
+
+            const { error } = await this.dbClient
+              .from("vocab")
+              .update(updateData)
+              .eq("id", id);
+
+            if (error) throw error;
+
+            this.vocabData[wordIndex] = { ...this.vocabData[wordIndex], ...updateData };
+            
+            this.populateFilters();
+            this.updateDashboardStats();
+            this.renderList();
+            this.closeEditModal();
+            
+          } catch (err) {
+            console.error("更新失敗:", err);
+            alert("更新失敗，請檢查網絡連線或權限。\n錯誤訊息：" + err.message);
+          } finally {
+            btnEl.innerText = "保存";
+            btnEl.disabled = false;
+          }
         },
 
         quitQuiz: function () {
@@ -671,17 +812,14 @@
           this.clearQuizTimer();
           let timeLeft = 20;
           const timerBar = document.getElementById("quiz-timer-bar");
-
           timerBar.style.transition = "none";
           timerBar.style.width = "100%";
           void timerBar.offsetWidth;
           timerBar.style.transition = "width 1s linear";
-
           this.quizTimerInterval = setInterval(() => {
             timeLeft--;
             const percentage = (timeLeft / 20) * 100;
             timerBar.style.width = `${percentage}%`;
-
             if (timeLeft <= 0) {
               this.clearQuizTimer();
               this.handleAnswer(false, true, null);
@@ -690,16 +828,13 @@
         },
 
         startSession: function (isRandom) {
-          this.isRandomQuizMode = isRandom; // 紀錄目前模式
-
+          this.isRandomQuizMode = isRandom;
           if (!this.vocabData || this.vocabData.length < 4) {
             alert("資料庫中的單字太少，至少需要 4 個單字才能產生選項喔！");
             return;
           }
-
           let pool = [];
           const now = new Date();
-
           if (this.isRandomQuizMode) {
             pool = this.vocabData.filter(
               (item) => item.mastered === true || (item.stage ?? 0) >= 5,
@@ -720,7 +855,6 @@
                 !item.mastered &&
                 (item.stage ?? 0) < 5,
             );
-
             if (pool.length === 0) {
               alert(
                 "現在復習が必要な単語はありません！\n(目前沒有需要復習的單字！)",
@@ -730,7 +864,6 @@
             pool = pool.sort(() => 0.5 - Math.random());
             this.quizQueue = pool;
           }
-
           this.currentQuizIndex = 0;
           this.showPage("quiz");
           this.renderQuizQuestion();
@@ -739,7 +872,6 @@
         renderQuizQuestion: function () {
           document.getElementById("quiz-feedback").classList.add("hidden");
           document.getElementById("next-btn").classList.add("hidden");
-
           if (this.currentQuizIndex >= this.quizQueue.length) {
             this.clearQuizTimer();
             document.getElementById("quiz-progress-bar").style.width = `100%`;
@@ -751,23 +883,15 @@
             }, 100);
             return;
           }
-
           const currentWord = this.quizQueue[this.currentQuizIndex];
           const currentStage = currentWord.stage ?? 0;
           const kanaForAudio =
             currentWord["Hiragana/Katakana"] || currentWord.kanji || "";
-
-          // 💡 決定題型邏輯
-          // 0: 題型A (看日文選中文，有語音)
-          // 1: 題型B (看中文選日文，無自動語音)
-          // 2: 題型C (聽力題，隱藏文字，有語音)
+          
           let questionType = 0;
-
           if (this.isRandomQuizMode) {
-            // 隨機測驗 (精通單字)：三種題型隨機出現
             questionType = Math.floor(Math.random() * 3);
           } else {
-            // 復習測驗：根據 stage 決定
             if (
               currentStage === 0 ||
               currentStage === 2 ||
@@ -775,82 +899,71 @@
             ) {
               questionType = 0;
             } else {
-              // stage 1, 3, 5
               questionType = 1;
             }
           }
-
-          // 設定題目文字與副標題
+          
           let questionText = "";
           let questionSub = "";
-
           if (questionType === 0) {
-            questionText =
-              currentWord.kanji || currentWord["Hiragana/Katakana"];
+            questionText = this.formatFurigana(currentWord.kanji || currentWord["Hiragana/Katakana"]);
             questionSub = "正しい意味を選択してください (請選擇正確的意思)";
           } else if (questionType === 1) {
             questionText = currentWord.definition || "未知意思";
             questionSub = "正しい単語を選択してください (請選擇正確的日文)";
           } else if (questionType === 2) {
             questionText = "🎧 音声問題 (聽力)";
-            questionSub = "音声を聞いて、正しい単語を選択してください";
+            questionSub = "音声を聞いて、正しい意味を選択してください"; 
           }
-
           document.getElementById("quiz-progress").innerText =
             `${this.currentQuizIndex + 1} / ${this.quizQueue.length}`;
           const progressPercent =
             (this.currentQuizIndex / this.quizQueue.length) * 100;
           document.getElementById("quiz-progress-bar").style.width =
             `${progressPercent}%`;
-
-          document.getElementById("q-text").innerText = questionText;
+            
+          document.getElementById("q-text").innerHTML = questionText;
           document.getElementById("q-sub").innerText = questionSub;
-
-          // 綁定語音按鈕
+          
           const audioBtn = document.getElementById("q-audio-btn");
           audioBtn.onclick = () => this.playAudio(kanaForAudio);
-
-          // 題型 A 與 C (聽力) 會自動發音
           if (questionType === 0 || questionType === 2) {
             this.playAudio(kanaForAudio);
           }
-
-          // 準備選項：1 個正確 + 3 個隨機錯誤
+          
           let options = [currentWord];
           let otherWords = this.vocabData.filter(
             (item) => item.id !== currentWord.id,
           );
           otherWords = otherWords.sort(() => 0.5 - Math.random());
-
           options = options.concat(otherWords.slice(0, 3));
           options = options.sort(() => 0.5 - Math.random());
-
           const mcArea = document.getElementById("ans-mc-area");
           mcArea.innerHTML = "";
-
           options.forEach((opt) => {
             const btn = document.createElement("button");
             btn.className = "btn-random";
-
-            // 根據題型設定選項按鈕的內容
-            if (questionType === 0) {
+            
+            if (questionType === 0 || questionType === 2) {
               btn.innerText = opt.definition || "未知意思";
             } else {
-              // 題型 B 和 C：選項顯示日文 (漢字 + 假名)
               if (opt.kanji && opt["Hiragana/Katakana"]) {
-                btn.innerText = `${opt.kanji} (${opt["Hiragana/Katakana"]})`;
+                const formattedKanji = this.formatFurigana(opt.kanji);
+                if (formattedKanji.includes("<ruby>")) {
+                  btn.innerHTML = formattedKanji; 
+                } else {
+                  btn.innerHTML = `${formattedKanji} (${opt["Hiragana/Katakana"]})`;
+                }
               } else {
-                btn.innerText =
-                  opt.kanji || opt["Hiragana/Katakana"] || "未知單字";
+                btn.innerHTML = this.formatFurigana(opt.kanji || opt["Hiragana/Katakana"] || "未知單字");
               }
             }
-
+            
             btn.dataset.isCorrect = opt.id === currentWord.id;
             btn.onclick = (e) =>
-              this.handleAnswer(opt.id === currentWord.id, false, e.target);
+              this.handleAnswer(opt.id === currentWord.id, false, e.currentTarget); 
             mcArea.appendChild(btn);
           });
-
           this.startQuizTimer();
         },
 
@@ -860,33 +973,33 @@
           clickedBtn = null,
         ) {
           this.clearQuizTimer();
+          
           const currentWord = this.quizQueue[this.currentQuizIndex];
-
+          
           if (isCorrect && !isTimeout) {
             const currentStage = currentWord.stage ?? 0;
             let newStage = currentStage;
-
             if (currentStage === 0) newStage = 1;
-
             const nextTime = new Date();
             nextTime.setDate(nextTime.getDate() + 1);
             const newNextReview = nextTime.toISOString();
-
-            currentWord.stage = newStage;
-            currentWord.nextReview = newNextReview;
-
-            this.dbClient
-              .from("vocab")
-              .update({
-                stage: newStage,
-                nextReview: newNextReview,
-              })
-              .eq("id", currentWord.id)
-              .then(({ error }) => {
-                if (error) console.error("更新單字狀態失敗:", error);
-              });
+            
+            if (!this.isRandomQuizMode) {
+              currentWord.stage = newStage;
+              currentWord.nextReview = newNextReview;
+              this.dbClient
+                .from("vocab")
+                .update({
+                  stage: newStage,
+                  nextReview: newNextReview,
+                })
+                .eq("id", currentWord.id)
+                .then(({ error }) => {
+                  if (error) console.error("更新單字狀態失敗:", error);
+                });
+            }
           }
-
+          
           const buttons = document.querySelectorAll("#ans-mc-area .btn-random");
           buttons.forEach((btn) => {
             btn.disabled = true;
@@ -896,13 +1009,13 @@
               btn.classList.add("wrong");
             }
           });
-
+          
           const feedbackEl = document.getElementById("quiz-feedback");
-          const kanji = currentWord.kanji || "無";
+          const kanjiHtml = this.formatFurigana(currentWord.kanji) || "無";
           const kana = currentWord["Hiragana/Katakana"] || "無";
           const meaning = currentWord.definition || "無";
-
           let feedbackHtml = "";
+          
           if (isTimeout) {
             feedbackHtml += `<div style="color: var(--danger); font-weight: bold; margin-bottom: 8px;">⏱️ タイムアップ！ (時間到)</div>`;
           } else if (!isCorrect) {
@@ -910,18 +1023,54 @@
           } else {
             feedbackHtml += `<div style="color: var(--success); font-weight: bold; margin-bottom: 8px;">✅ 正解！</div>`;
           }
-
+          
+          const displayKana = kanjiHtml.includes("<ruby>") ? "" : `<div style="font-size: 1rem; color: var(--primary); margin-bottom: 8px;">${kana}</div>`;
+          
           feedbackHtml += `
-                <div style="font-size: 1.3rem; font-weight: bold; color: var(--text-main); margin-bottom: 5px;">${kanji}</div>
-                <div style="font-size: 1rem; color: var(--primary); margin-bottom: 8px;">${kana}</div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-main); margin-bottom: 5px;">${kanjiHtml}</div>
+                ${displayKana}
                 <div style="font-size: 1rem; color: var(--text-sub);">${meaning}</div>
             `;
-
+            
           feedbackEl.innerHTML = feedbackHtml;
           feedbackEl.classList.remove("hidden");
           document.getElementById("next-btn").classList.remove("hidden");
-
           this.playAudio(currentWord["Hiragana/Katakana"] || currentWord.kanji);
+
+          if (this.isRandomQuizMode && (!isCorrect || isTimeout)) {
+            setTimeout(async () => {
+              const confirmDowngrade = window.confirm(
+                "間違えました！この単語のレベルを1つ下げますか？\n(答錯了！需要將這個單字的熟練度降級嗎？)"
+              );
+              
+              if (confirmDowngrade) {
+                let currentStage = currentWord.stage || 0;
+                let newStage = Math.max(0, currentStage - 1);
+                let newNextReview = new Date().toISOString();
+
+                try {
+                  const { error } = await this.dbClient
+                    .from("vocab")
+                    .update({
+                      stage: newStage,
+                      mastered: false, 
+                      nextReview: newNextReview
+                    })
+                    .eq("id", currentWord.id);
+                    
+                  if (error) throw error;
+                  
+                  currentWord.stage = newStage;
+                  currentWord.mastered = false;
+                  currentWord.nextReview = newNextReview;
+                  
+                } catch (err) {
+                  console.error("降級失敗:", err);
+                  alert("降級失敗，請檢查網絡連線！");
+                }
+              }
+            }, 100); 
+          }
         },
 
         nextQuizQuestion: function () {
@@ -935,7 +1084,6 @@
             "本当に削除しますか？\n(確定要刪除這個單字嗎？刪除後無法復原！)",
           );
           if (!isConfirmed) return;
-
           try {
             const { error } = await this.dbClient
               .from("vocab")
@@ -957,19 +1105,15 @@
           const inputEl = document.getElementById("import-input");
           const btnEl = document.getElementById("import-btn");
           const rawText = inputEl.value.trim();
-
           if (!rawText) {
             alert("請先輸入要匯入的單字資料！");
             return;
           }
-
           const lines = rawText.split("\n");
           const insertData = [];
-
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
             if (!line) continue;
-
             const parts = line.split(",");
             if (parts.length < 3) {
               alert(
@@ -977,25 +1121,18 @@
               );
               return;
             }
-
             let kanji = parts[0].trim();
             if (kanji === "") kanji = null;
-
             let reading = parts[1] ? parts[1].trim() : "";
             if (reading === "") reading = null;
-
             let definition = parts[2] ? parts[2].trim() : "";
-
             if (!kanji && !reading) {
               alert(`第 ${i + 1} 行錯誤：漢字與讀音不能同時為空！`);
               return;
             }
-
             let jlptVal = parts[3] ? parseInt(parts[3].trim()) : null;
             if (isNaN(jlptVal) || jlptVal < 1 || jlptVal > 5) jlptVal = null;
-
             const posVal = parts[4] ? parts[4].trim() : null;
-
             insertData.push({
               kanji: kanji,
               "Hiragana/Katakana": reading,
@@ -1007,28 +1144,22 @@
               mastered: false,
             });
           }
-
           if (insertData.length === 0) return;
-
           try {
             btnEl.innerText = "匯入中...";
             btnEl.disabled = true;
-
             const { data, error } = await this.dbClient
               .from("vocab")
               .insert(insertData)
               .select();
             if (error) throw error;
-
             alert(`成功追加 ${insertData.length} 個單字！`);
             inputEl.value = "";
-
             if (data && data.length > 0) {
               this.vocabData = [...data, ...this.vocabData];
             } else {
               await this.init();
             }
-
             this.populateFilters();
             this.updateDashboardStats();
             this.renderList();
@@ -1047,20 +1178,16 @@
             const key =
               "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nanpvdWRwdHp3d21wd3RwYWFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjAxMzgsImV4cCI6MjA5MjIzNjEzOH0.7rpYyglHCONhrTTMwk--i-lfVxx7VyWi49MMftMqyE0";
             this.dbClient = window.supabase.createClient(url, key);
-
             const { data, error } = await this.dbClient
               .from("vocab")
               .select("*")
               .order("id", { ascending: false });
-
             if (error) throw error;
-
             this.vocabData = data || [];
-
+            
             this.populateFilters();
             this.updateDashboardStats();
             this.renderList();
-
             document.getElementById("status-text").innerText = "Online";
             document.getElementById("status-dot").style.backgroundColor =
               "var(--success)";
