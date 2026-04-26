@@ -395,8 +395,12 @@
 
       /* ── Desktop ≥ 768px ─────────────────────────────────── */
       @media (min-width: 768px) {
-        body { padding: 30px 60px; }
-        .container { max-width: 1100px; }
+        body {
+          padding: 30px 60px;
+        }
+        .container {
+          max-width: 1100px;
+        }
 
         /* Home: left stats / right charts */
         .home-grid {
@@ -431,7 +435,9 @@
         }
 
         /* Show key hints on desktop */
-        .key-hint { display: inline-flex; }
+        .key-hint {
+          display: inline-flex;
+        }
         .btn-random.correct .key-hint,
         .btn-random.wrong .key-hint {
           background: rgba(255, 255, 255, 0.25);
@@ -473,20 +479,40 @@
               <h4 class="dashboard-title">🔥 学習日数 (學習天數)</h4>
               <div class="stat-row">
                 <div>
-                  <div style="font-size: 0.8rem; color: #856404">📚 學習模式</div>
+                  <div style="font-size: 0.8rem; color: #856404">
+                    📚 學習模式
+                  </div>
                   <div class="streak-number" id="non-mastered-days">0</div>
                   <div class="streak-label">天</div>
                 </div>
-                <div style="width: 1px; background: #ffc107; margin: 0 10px;"></div>
+                <div
+                  style="width: 1px; background: #ffc107; margin: 0 10px"
+                ></div>
                 <div>
-                  <div style="font-size: 0.8rem; color: #856404">⭐ 復習模式</div>
+                  <div style="font-size: 0.8rem; color: #856404">
+                    ⭐ 復習模式
+                  </div>
                   <div class="streak-number" id="mastered-days">0</div>
                   <div class="streak-label">天</div>
                 </div>
-                <div style="width: 1px; background: #ffc107; margin: 0 10px;"></div>
+                <div
+                  style="width: 1px; background: #ffc107; margin: 0 10px"
+                ></div>
                 <div>
-                  <div style="font-size: 0.8rem; color: #856404">📅 最後學習</div>
-                  <div style="font-size: 0.85rem; font-weight: bold; color: #856404; margin-top: 3px;" id="last-study-date">—</div>
+                  <div style="font-size: 0.8rem; color: #856404">
+                    📅 最後學習
+                  </div>
+                  <div
+                    style="
+                      font-size: 0.85rem;
+                      font-weight: bold;
+                      color: #856404;
+                      margin-top: 3px;
+                    "
+                    id="last-study-date"
+                  >
+                    —
+                  </div>
                 </div>
               </div>
             </div>
@@ -495,23 +521,33 @@
               <h4 class="dashboard-title">レベル別単語数</h4>
               <div class="stat-row">
                 <div>
-                  <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.1</div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">
+                    Lv.1
+                  </div>
                   <b id="level-1-count">0</b>
                 </div>
                 <div>
-                  <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.2</div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">
+                    Lv.2
+                  </div>
                   <b id="level-2-count">0</b>
                 </div>
                 <div>
-                  <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.3</div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">
+                    Lv.3
+                  </div>
                   <b id="level-3-count">0</b>
                 </div>
                 <div>
-                  <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.4</div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">
+                    Lv.4
+                  </div>
                   <b id="level-4-count">0</b>
                 </div>
                 <div>
-                  <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.5+</div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">
+                    Lv.5+
+                  </div>
                   <b id="level-5-count">0</b>
                 </div>
               </div>
@@ -521,31 +557,51 @@
               <h4 class="dashboard-title">JLPT 級別單字數</h4>
               <div class="stat-row">
                 <div>
-                  <div style="font-size: 0.8rem; color: var(--text-sub)">N1</div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">
+                    N1
+                  </div>
                   <b id="jlpt-1-count">0</b>
                 </div>
                 <div>
-                  <div style="font-size: 0.8rem; color: var(--text-sub)">N2</div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">
+                    N2
+                  </div>
                   <b id="jlpt-2-count">0</b>
                 </div>
                 <div>
-                  <div style="font-size: 0.8rem; color: var(--text-sub)">N3</div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">
+                    N3
+                  </div>
                   <b id="jlpt-3-count">0</b>
                 </div>
                 <div>
-                  <div style="font-size: 0.8rem; color: var(--text-sub)">N4</div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">
+                    N4
+                  </div>
                   <b id="jlpt-4-count">0</b>
                 </div>
                 <div>
-                  <div style="font-size: 0.8rem; color: var(--text-sub)">N5</div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">
+                    N5
+                  </div>
                   <b id="jlpt-5-count">0</b>
                 </div>
               </div>
             </div>
 
-            <div style="text-align: center; margin-bottom: 20px; font-size: 0.95rem">
+            <div
+              style="
+                text-align: center;
+                margin-bottom: 20px;
+                font-size: 0.95rem;
+              "
+            >
               次回のクイズ単語数:
-              <strong id="next-quiz-count" style="font-size: 1.2rem; margin: 0 5px">0</strong>
+              <strong
+                id="next-quiz-count"
+                style="font-size: 1.2rem; margin: 0 5px"
+                >0</strong
+              >
               問
             </div>
 
@@ -559,15 +615,39 @@
 
           <!-- Right column: charts -->
           <div class="home-col-right">
-            <div class="dashboard-card" style="padding:16px;">
-              <div style="display:flex; gap:8px; margin-bottom:14px;">
-                <button class="chart-tab active" data-tab="jlpt" onclick="app.switchChart('jlpt')">JLPT 分佈</button>
-                <button class="chart-tab" data-tab="mastered" onclick="app.switchChart('mastered')">習得狀況</button>
-                <button class="chart-tab" data-tab="trend" onclick="app.switchChart('trend')">學習趨勢</button>
+            <div class="dashboard-card" style="padding: 16px">
+              <div style="display: flex; gap: 8px; margin-bottom: 14px">
+                <button
+                  class="chart-tab active"
+                  data-tab="jlpt"
+                  onclick="app.switchChart('jlpt')"
+                >
+                  JLPT 分佈
+                </button>
+                <button
+                  class="chart-tab"
+                  data-tab="mastered"
+                  onclick="app.switchChart('mastered')"
+                >
+                  習得狀況
+                </button>
+                <button
+                  class="chart-tab"
+                  data-tab="trend"
+                  onclick="app.switchChart('trend')"
+                >
+                  學習趨勢
+                </button>
               </div>
-              <div id="chart-jlpt"><canvas id="canvas-jlpt" height="220"></canvas></div>
-              <div id="chart-mastered" class="hidden"><canvas id="canvas-mastered" height="220"></canvas></div>
-              <div id="chart-trend" class="hidden"><canvas id="canvas-trend" height="220"></canvas></div>
+              <div id="chart-jlpt">
+                <canvas id="canvas-jlpt" height="220"></canvas>
+              </div>
+              <div id="chart-mastered" class="hidden">
+                <canvas id="canvas-mastered" height="220"></canvas>
+              </div>
+              <div id="chart-trend" class="hidden">
+                <canvas id="canvas-trend" height="220"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -640,76 +720,231 @@
         <div class="db-grid">
           <!-- Left column: toolbar + import/edit panels + search -->
           <div class="db-col-left">
+            <!-- Accordion toolbar -->
+            <div class="toolbar-row">
+              <button
+                class="toolbar-btn"
+                onclick="app.togglePanel('panel-import')"
+              >
+                ＋ 新增
+              </button>
+              <button
+                class="toolbar-btn"
+                id="toolbar-edit-btn"
+                onclick="app.togglePanel('panel-edit')"
+              >
+                ✎ 編集
+              </button>
+            </div>
 
-        <!-- Accordion toolbar -->
-        <div class="toolbar-row">
-          <button class="toolbar-btn" onclick="app.togglePanel('panel-import')">＋ 新增</button>
-          <button class="toolbar-btn" id="toolbar-edit-btn" onclick="app.togglePanel('panel-edit')">✎ 編集</button>
-        </div>
+            <div id="panel-import" class="panel-collapse hidden">
+              <div class="dashboard-card" style="margin-top: 10px">
+                <h4 style="margin: 0 0 8px 0; font-size: 0.95rem">
+                  一括インポート
+                </h4>
+                <p
+                  style="
+                    font-size: 0.78rem;
+                    color: var(--text-sub);
+                    margin: 0 0 8px 0;
+                  "
+                >
+                  漢字,読み,意思,JLPT,品詞（1行1語，漢字可留空）
+                </p>
+                <textarea
+                  id="import-input"
+                  style="min-height: 70px"
+                  placeholder="食べる,たべる,吃,5,動詞&#10;,パソコン,電腦,5,名詞"
+                ></textarea>
+                <button
+                  class="btn-main"
+                  id="import-btn"
+                  style="padding: 11px; margin: 0"
+                  onclick="app.bulkImport()"
+                >
+                  追加する
+                </button>
+              </div>
+            </div>
 
-        <div id="panel-import" class="panel-collapse hidden">
-          <div class="dashboard-card" style="margin-top:10px;">
-            <h4 style="margin: 0 0 8px 0; font-size:0.95rem;">一括インポート</h4>
-            <p style="font-size:0.78rem; color:var(--text-sub); margin:0 0 8px 0;">漢字,読み,意思,JLPT,品詞（1行1語，漢字可留空）</p>
-            <textarea id="import-input" style="min-height:70px;"
-              placeholder="食べる,たべる,吃,5,動詞&#10;,パソコン,電腦,5,名詞"></textarea>
-            <button class="btn-main" id="import-btn" style="padding:11px; margin:0;" onclick="app.bulkImport()">追加する</button>
-          </div>
-        </div>
+            <div id="panel-edit" class="panel-collapse hidden">
+              <div class="dashboard-card" style="margin-top: 10px">
+                <h4 style="margin: 0 0 8px 0; font-size: 0.95rem">一括編集</h4>
+                <p
+                  style="
+                    font-size: 0.78rem;
+                    color: var(--text-sub);
+                    margin: 0 0 8px 0;
+                  "
+                >
+                  id,漢字,読み,意思,JLPT,品詞（點「編集」自動填入）
+                </p>
+                <textarea
+                  id="bulk-edit-input"
+                  style="min-height: 70px"
+                  placeholder="123,食べる,たべる,吃,5,動詞&#10;456,,パソコン,電腦,5,名詞"
+                ></textarea>
+                <button
+                  class="btn-main"
+                  id="bulk-edit-btn"
+                  style="padding: 11px; margin: 0"
+                  onclick="app.bulkEdit()"
+                >
+                  保存する
+                </button>
+              </div>
+            </div>
 
-        <div id="panel-edit" class="panel-collapse hidden">
-          <div class="dashboard-card" style="margin-top:10px;">
-            <h4 style="margin: 0 0 8px 0; font-size:0.95rem;">一括編集</h4>
-            <p style="font-size:0.78rem; color:var(--text-sub); margin:0 0 8px 0;">id,漢字,読み,意思,JLPT,品詞（點「編集」自動填入）</p>
-            <textarea id="bulk-edit-input" style="min-height:70px;"
-              placeholder="123,食べる,たべる,吃,5,動詞&#10;456,,パソコン,電腦,5,名詞"></textarea>
-            <button class="btn-main" id="bulk-edit-btn" style="padding:11px; margin:0;" onclick="app.bulkEdit()">保存する</button>
-          </div>
-        </div>
-
-        <!-- Search + filters card -->
-        <div class="dashboard-card" style="margin-top:10px; padding:15px;">
-          <input
-            type="text"
-            id="db-search"
-            placeholder="搜尋單字或意思..."
-            style="padding:11px; border:1px solid var(--line); border-radius:8px; margin-bottom:12px;"
-            oninput="app.scheduleSearch()"
-          />
-          <div class="filter-section">
-            <span class="filter-label">JLPT</span>
-            <div class="chip-group">
-              <button class="filter-chip" data-group="jlpt" data-val="" onclick="app.setFilter('jlpt','')">全部</button>
-              <button class="filter-chip" data-group="jlpt" data-val="1" onclick="app.setFilter('jlpt','1')">N1</button>
-              <button class="filter-chip" data-group="jlpt" data-val="2" onclick="app.setFilter('jlpt','2')">N2</button>
-              <button class="filter-chip" data-group="jlpt" data-val="3" onclick="app.setFilter('jlpt','3')">N3</button>
-              <button class="filter-chip" data-group="jlpt" data-val="4" onclick="app.setFilter('jlpt','4')">N4</button>
-              <button class="filter-chip" data-group="jlpt" data-val="5" onclick="app.setFilter('jlpt','5')">N5</button>
+            <!-- Search + filters card -->
+            <div class="dashboard-card" style="margin-top: 10px; padding: 15px">
+              <input
+                type="text"
+                id="db-search"
+                placeholder="搜尋單字或意思..."
+                style="
+                  padding: 11px;
+                  border: 1px solid var(--line);
+                  border-radius: 8px;
+                  margin-bottom: 12px;
+                "
+                oninput="app.scheduleSearch()"
+              />
+              <div class="filter-section">
+                <span class="filter-label">JLPT</span>
+                <div class="chip-group">
+                  <button
+                    class="filter-chip"
+                    data-group="jlpt"
+                    data-val=""
+                    onclick="app.setFilter('jlpt', '')"
+                  >
+                    全部
+                  </button>
+                  <button
+                    class="filter-chip"
+                    data-group="jlpt"
+                    data-val="1"
+                    onclick="app.setFilter('jlpt', '1')"
+                  >
+                    N1
+                  </button>
+                  <button
+                    class="filter-chip"
+                    data-group="jlpt"
+                    data-val="2"
+                    onclick="app.setFilter('jlpt', '2')"
+                  >
+                    N2
+                  </button>
+                  <button
+                    class="filter-chip"
+                    data-group="jlpt"
+                    data-val="3"
+                    onclick="app.setFilter('jlpt', '3')"
+                  >
+                    N3
+                  </button>
+                  <button
+                    class="filter-chip"
+                    data-group="jlpt"
+                    data-val="4"
+                    onclick="app.setFilter('jlpt', '4')"
+                  >
+                    N4
+                  </button>
+                  <button
+                    class="filter-chip"
+                    data-group="jlpt"
+                    data-val="5"
+                    onclick="app.setFilter('jlpt', '5')"
+                  >
+                    N5
+                  </button>
+                </div>
+              </div>
+              <div class="filter-section" style="margin-top: 8px">
+                <span class="filter-label">Stage</span>
+                <div class="chip-group">
+                  <button
+                    class="filter-chip"
+                    data-group="stage"
+                    data-val=""
+                    onclick="app.setFilter('stage', '')"
+                  >
+                    全部
+                  </button>
+                  <button
+                    class="filter-chip"
+                    data-group="stage"
+                    data-val="0"
+                    onclick="app.setFilter('stage', '0')"
+                  >
+                    0
+                  </button>
+                  <button
+                    class="filter-chip"
+                    data-group="stage"
+                    data-val="1"
+                    onclick="app.setFilter('stage', '1')"
+                  >
+                    1
+                  </button>
+                  <button
+                    class="filter-chip"
+                    data-group="stage"
+                    data-val="2"
+                    onclick="app.setFilter('stage', '2')"
+                  >
+                    2
+                  </button>
+                  <button
+                    class="filter-chip"
+                    data-group="stage"
+                    data-val="3"
+                    onclick="app.setFilter('stage', '3')"
+                  >
+                    3
+                  </button>
+                  <button
+                    class="filter-chip"
+                    data-group="stage"
+                    data-val="4"
+                    onclick="app.setFilter('stage', '4')"
+                  >
+                    4
+                  </button>
+                  <button
+                    class="filter-chip"
+                    data-group="stage"
+                    data-val="5"
+                    onclick="app.setFilter('stage', '5')"
+                  >
+                    5+
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="filter-section" style="margin-top:8px;">
-            <span class="filter-label">Stage</span>
-            <div class="chip-group">
-              <button class="filter-chip" data-group="stage" data-val="" onclick="app.setFilter('stage','')">全部</button>
-              <button class="filter-chip" data-group="stage" data-val="0" onclick="app.setFilter('stage','0')">0</button>
-              <button class="filter-chip" data-group="stage" data-val="1" onclick="app.setFilter('stage','1')">1</button>
-              <button class="filter-chip" data-group="stage" data-val="2" onclick="app.setFilter('stage','2')">2</button>
-              <button class="filter-chip" data-group="stage" data-val="3" onclick="app.setFilter('stage','3')">3</button>
-              <button class="filter-chip" data-group="stage" data-val="4" onclick="app.setFilter('stage','4')">4</button>
-              <button class="filter-chip" data-group="stage" data-val="5" onclick="app.setFilter('stage','5')">5+</button>
-            </div>
-          </div>
-        </div>
-
-          </div><!-- /db-col-left -->
+          <!-- /db-col-left -->
 
           <!-- Right column: search results list -->
           <div class="db-col-right">
-        <div id="db-list">
-          <div style="text-align:center; padding:30px; color:#aaa; font-size:0.9rem;">請輸入關鍵字或選擇篩選條件</div>
+            <div id="db-list">
+              <div
+                style="
+                  text-align: center;
+                  padding: 30px;
+                  color: #aaa;
+                  font-size: 0.9rem;
+                "
+              >
+                請輸入關鍵字或選擇篩選條件
+              </div>
+            </div>
+          </div>
+          <!-- /db-col-right -->
         </div>
-          </div><!-- /db-col-right -->
-        </div><!-- /db-grid -->
+        <!-- /db-grid -->
       </div>
     </div>
 
@@ -900,12 +1135,16 @@
           ["panel-import", "panel-edit"].forEach((id) => {
             document.getElementById(id).classList.add("hidden");
           });
-          document.querySelectorAll(".toolbar-btn").forEach((b) => b.classList.remove("open"));
+          document
+            .querySelectorAll(".toolbar-btn")
+            .forEach((b) => b.classList.remove("open"));
           if (!isOpen) {
             panel.classList.remove("hidden");
             // highlight the matching toolbar button
             const btnMap = { "panel-import": 0, "panel-edit": 1 };
-            document.querySelectorAll(".toolbar-btn")[btnMap[panelId]]?.classList.add("open");
+            document
+              .querySelectorAll(".toolbar-btn")
+              [btnMap[panelId]]?.classList.add("open");
           }
         },
 
@@ -983,7 +1222,7 @@
                   </small>
                 </div>
                 <div style="display:flex; align-items:center; gap:4px;">
-                  <button class="btn-sm" onclick="app.loadForEdit(${item.id},'${(item.kanji||"").replace(/'/g,"\\'")}','${((item["Hiragana/Katakana"])||"").replace(/'/g,"\\'")}','${(item.definition||"").replace(/'/g,"\\'")}','${item.JLPT||""}','${(item.pos||"").replace(/'/g,"\\'")}')">編集</button>
+                  <button class="btn-sm" onclick="app.loadForEdit(${item.id},'${(item.kanji || "").replace(/'/g, "\\'")}','${(item["Hiragana/Katakana"] || "").replace(/'/g, "\\'")}','${(item.definition || "").replace(/'/g, "\\'")}','${item.JLPT || ""}','${(item.pos || "").replace(/'/g, "\\'")}')">編集</button>
                   <button class="btn-danger" onclick="app.deleteVocab(${item.id})">削除</button>
                 </div>
               </div>`;
@@ -1280,7 +1519,9 @@
               btn.innerHTML = keyHint + (opt.definition || "未知意思");
             } else {
               // 單字選項：使用 generateRubyHtml 渲染帶注音的日文
-              btn.innerHTML = keyHint + `<span style="font-size:1.2rem;">${this.generateRubyHtml(opt.kanji, opt["Hiragana/Katakana"])}</span>`;
+              btn.innerHTML =
+                keyHint +
+                `<span style="font-size:1.2rem;">${this.generateRubyHtml(opt.kanji, opt["Hiragana/Katakana"])}</span>`;
             }
 
             btn.dataset.isCorrect = opt.id === currentWord.id;
@@ -1450,6 +1691,7 @@
               stage: 0,
               nextReview: new Date().toISOString(),
               mastered: false,
+              created_at: new Date().toISOString(),
             });
           }
 
@@ -1496,8 +1738,14 @@
 
             // load study_stats + lightweight vocab (for dashboard & charts)
             const [statsResult, lightResult] = await Promise.all([
-              this.dbClient.from("study_stats").select("*").eq("id", 1).single(),
-              this.dbClient.from("vocab").select("id, stage, mastered, nextReview, JLPT"),
+              this.dbClient
+                .from("study_stats")
+                .select("*")
+                .eq("id", 1)
+                .single(),
+              this.dbClient
+                .from("vocab")
+                .select("id, stage, mastered, nextReview, JLPT"),
             ]);
 
             if (!statsResult.error && statsResult.data) {
@@ -1525,10 +1773,17 @@
               "var(--success)";
 
             document.addEventListener("keydown", (e) => {
-              if (document.getElementById("page-quiz").classList.contains("hidden")) return;
+              if (
+                document
+                  .getElementById("page-quiz")
+                  .classList.contains("hidden")
+              )
+                return;
               if (["1", "2", "3", "4"].includes(e.key)) {
                 const idx = parseInt(e.key) - 1;
-                const btns = [...document.querySelectorAll("#ans-mc-area .btn-random")].filter(b => !b.disabled);
+                const btns = [
+                  ...document.querySelectorAll("#ans-mc-area .btn-random"),
+                ].filter((b) => !b.disabled);
                 if (btns[idx]) btns[idx].click();
               }
               if (e.key === "Enter") {
@@ -1549,7 +1804,9 @@
 
         switchChart: function (tab) {
           ["jlpt", "mastered", "trend"].forEach((t) => {
-            document.getElementById(`chart-${t}`).classList.toggle("hidden", t !== tab);
+            document
+              .getElementById(`chart-${t}`)
+              .classList.toggle("hidden", t !== tab);
           });
           document.querySelectorAll(".chart-tab").forEach((btn) => {
             btn.classList.toggle("active", btn.dataset.tab === tab);
@@ -1559,70 +1816,95 @@
         renderCharts: function () {
           if (!this.vocabData || this.vocabData.length === 0) return;
 
-          const jlptColors = ["#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f"];
+          const jlptColors = [
+            "#4e79a7",
+            "#f28e2b",
+            "#e15759",
+            "#76b7b2",
+            "#59a14f",
+          ];
 
-          const jlptCounts = [0,0,0,0,0];
-          let masteredCount = 0, notMasteredCount = 0;
+          const jlptCounts = [0, 0, 0, 0, 0];
+          let masteredCount = 0,
+            notMasteredCount = 0;
           const monthMap = {};
 
           this.vocabData.forEach((item) => {
             const n = item.JLPT;
             if (n >= 1 && n <= 5) jlptCounts[n - 1]++;
 
-            if (item.mastered === true || (item.stage ?? 0) >= 5) masteredCount++;
+            if (item.mastered === true || (item.stage ?? 0) >= 5)
+              masteredCount++;
             else notMasteredCount++;
 
             if (item.created_at) {
               const d = new Date(item.created_at);
-              const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+              const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
               monthMap[key] = (monthMap[key] || 0) + 1;
             }
           });
 
           // destroy old charts before redrawing
-          ["jlpt","mastered","trend"].forEach((k) => {
-            if (this.charts[k]) { this.charts[k].destroy(); delete this.charts[k]; }
+          ["jlpt", "mastered", "trend"].forEach((k) => {
+            if (this.charts[k]) {
+              this.charts[k].destroy();
+              delete this.charts[k];
+            }
           });
 
           // JLPT bar
           this.charts.jlpt = new Chart(document.getElementById("canvas-jlpt"), {
             type: "bar",
             data: {
-              labels: ["N1","N2","N3","N4","N5"],
-              datasets: [{
-                data: jlptCounts,
-                backgroundColor: jlptColors,
-                borderRadius: 6,
-                borderSkipped: false,
-              }],
+              labels: ["N1", "N2", "N3", "N4", "N5"],
+              datasets: [
+                {
+                  data: jlptCounts,
+                  backgroundColor: jlptColors,
+                  borderRadius: 6,
+                  borderSkipped: false,
+                },
+              ],
             },
             options: {
               plugins: { legend: { display: false } },
               scales: {
-                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#f0f0f0" } },
+                y: {
+                  beginAtZero: true,
+                  ticks: { precision: 0 },
+                  grid: { color: "#f0f0f0" },
+                },
                 x: { grid: { display: false } },
               },
             },
           });
 
           // Mastered donut
-          this.charts.mastered = new Chart(document.getElementById("canvas-mastered"), {
-            type: "doughnut",
-            data: {
-              labels: ["習得済み","学習中"],
-              datasets: [{
-                data: [masteredCount, notMasteredCount],
-                backgroundColor: ["#28a745","#e0e0e0"],
-                borderWidth: 0,
-              }],
-            },
-            options: {
-              cutout: "65%",
-              plugins: {
-                legend: { position: "bottom", labels: { font: { size: 12 } } },
+          this.charts.mastered = new Chart(
+            document.getElementById("canvas-mastered"),
+            {
+              type: "doughnut",
+              data: {
+                labels: ["習得済み", "学習中"],
+                datasets: [
+                  {
+                    data: [masteredCount, notMasteredCount],
+                    backgroundColor: ["#28a745", "#e0e0e0"],
+                    borderWidth: 0,
+                  },
+                ],
+              },
+              options: {
+                cutout: "65%",
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: { font: { size: 12 } },
+                  },
+                },
               },
             },
-          });
+          );
 
           // Trend line — use created_at if available, else show total as single point
           const sortedMonths = Object.keys(monthMap).sort();
@@ -1630,34 +1912,49 @@
           if (sortedMonths.length > 0) {
             let cumulative = 0;
             trendLabels = sortedMonths;
-            trendData = sortedMonths.map((m) => { cumulative += monthMap[m]; return cumulative; });
+            trendData = sortedMonths.map((m) => {
+              cumulative += monthMap[m];
+              return cumulative;
+            });
           } else {
             trendLabels = ["合計"];
             trendData = [this.vocabData.length];
           }
 
-          this.charts.trend = new Chart(document.getElementById("canvas-trend"), {
-            type: "line",
-            data: {
-              labels: trendLabels,
-              datasets: [{
-                label: "累計單字數",
-                data: trendData,
-                borderColor: "#007bff",
-                backgroundColor: "rgba(0,123,255,0.08)",
-                fill: true,
-                tension: 0.3,
-                pointRadius: 3,
-              }],
-            },
-            options: {
-              plugins: { legend: { display: false } },
-              scales: {
-                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#f0f0f0" } },
-                x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } },
+          this.charts.trend = new Chart(
+            document.getElementById("canvas-trend"),
+            {
+              type: "line",
+              data: {
+                labels: trendLabels,
+                datasets: [
+                  {
+                    label: "累計單字數",
+                    data: trendData,
+                    borderColor: "#007bff",
+                    backgroundColor: "rgba(0,123,255,0.08)",
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 3,
+                  },
+                ],
+              },
+              options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 },
+                    grid: { color: "#f0f0f0" },
+                  },
+                  x: {
+                    grid: { display: false },
+                    ticks: { maxRotation: 45, font: { size: 10 } },
+                  },
+                },
               },
             },
-          });
+          );
         },
       };
 
