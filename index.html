@@ -370,6 +370,73 @@
         border-color: var(--text-main);
         font-weight: bold;
       }
+
+      /* ── Answer area base ────────────────────────────────── */
+      #ans-mc-area {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      /* ── Keyboard hint badge ─────────────────────────────── */
+      .key-hint {
+        display: none;
+        min-width: 22px;
+        height: 22px;
+        background: rgba(0, 0, 0, 0.12);
+        border-radius: 5px;
+        font-size: 0.72rem;
+        font-weight: bold;
+        margin-right: 10px;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* ── Desktop ≥ 768px ─────────────────────────────────── */
+      @media (min-width: 768px) {
+        body { padding: 30px 60px; }
+        .container { max-width: 1100px; }
+
+        /* Home: left stats / right charts */
+        .home-grid {
+          display: grid;
+          grid-template-columns: 1fr 1.4fr;
+          gap: 20px;
+          align-items: start;
+        }
+
+        /* Quiz: centred, 2×2 answer grid */
+        #page-quiz {
+          max-width: 700px;
+          margin: 0 auto;
+        }
+        #ans-mc-area {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        #ans-mc-area .btn-random {
+          margin-bottom: 0;
+          display: flex;
+          align-items: center;
+        }
+
+        /* DB: left controls / right list */
+        .db-grid {
+          display: grid;
+          grid-template-columns: 340px 1fr;
+          gap: 20px;
+          align-items: start;
+        }
+
+        /* Show key hints on desktop */
+        .key-hint { display: inline-flex; }
+        .btn-random.correct .key-hint,
+        .btn-random.wrong .key-hint {
+          background: rgba(255, 255, 255, 0.25);
+        }
+      }
     </style>
   </head>
   <body>
@@ -399,109 +466,111 @@
           </div>
         </div>
 
-        <!-- 學習天數統計卡片 -->
-        <div class="dashboard-card dashboard-streak">
-          <h4 class="dashboard-title">🔥 学習日数 (學習天數)</h4>
-          <div class="stat-row">
-            <div>
-              <div style="font-size: 0.8rem; color: #856404">📚 學習模式</div>
-              <div class="streak-number" id="non-mastered-days">0</div>
-              <div class="streak-label">天</div>
+        <div class="home-grid">
+          <!-- Left column: cards + actions -->
+          <div class="home-col-left">
+            <div class="dashboard-card dashboard-streak">
+              <h4 class="dashboard-title">🔥 学習日数 (學習天數)</h4>
+              <div class="stat-row">
+                <div>
+                  <div style="font-size: 0.8rem; color: #856404">📚 學習模式</div>
+                  <div class="streak-number" id="non-mastered-days">0</div>
+                  <div class="streak-label">天</div>
+                </div>
+                <div style="width: 1px; background: #ffc107; margin: 0 10px;"></div>
+                <div>
+                  <div style="font-size: 0.8rem; color: #856404">⭐ 復習模式</div>
+                  <div class="streak-number" id="mastered-days">0</div>
+                  <div class="streak-label">天</div>
+                </div>
+                <div style="width: 1px; background: #ffc107; margin: 0 10px;"></div>
+                <div>
+                  <div style="font-size: 0.8rem; color: #856404">📅 最後學習</div>
+                  <div style="font-size: 0.85rem; font-weight: bold; color: #856404; margin-top: 3px;" id="last-study-date">—</div>
+                </div>
+              </div>
             </div>
-            <div style="width: 1px; background: #ffc107; margin: 0 10px;"></div>
-            <div>
-              <div style="font-size: 0.8rem; color: #856404">⭐ 復習模式</div>
-              <div class="streak-number" id="mastered-days">0</div>
-              <div class="streak-label">天</div>
+
+            <div class="dashboard-card">
+              <h4 class="dashboard-title">レベル別単語数</h4>
+              <div class="stat-row">
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.1</div>
+                  <b id="level-1-count">0</b>
+                </div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.2</div>
+                  <b id="level-2-count">0</b>
+                </div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.3</div>
+                  <b id="level-3-count">0</b>
+                </div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.4</div>
+                  <b id="level-4-count">0</b>
+                </div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.5+</div>
+                  <b id="level-5-count">0</b>
+                </div>
+              </div>
             </div>
-            <div style="width: 1px; background: #ffc107; margin: 0 10px;"></div>
-            <div>
-              <div style="font-size: 0.8rem; color: #856404">📅 最後學習</div>
-              <div style="font-size: 0.85rem; font-weight: bold; color: #856404; margin-top: 3px;" id="last-study-date">—</div>
+
+            <div class="dashboard-card dashboard-jlpt">
+              <h4 class="dashboard-title">JLPT 級別單字數</h4>
+              <div class="stat-row">
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">N1</div>
+                  <b id="jlpt-1-count">0</b>
+                </div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">N2</div>
+                  <b id="jlpt-2-count">0</b>
+                </div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">N3</div>
+                  <b id="jlpt-3-count">0</b>
+                </div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">N4</div>
+                  <b id="jlpt-4-count">0</b>
+                </div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-sub)">N5</div>
+                  <b id="jlpt-5-count">0</b>
+                </div>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 20px; font-size: 0.95rem">
+              次回のクイズ単語数:
+              <strong id="next-quiz-count" style="font-size: 1.2rem; margin: 0 5px">0</strong>
+              問
+            </div>
+
+            <button class="btn-main" onclick="app.startSession(false)">
+              学習を開始する (全ての復習)
+            </button>
+            <button class="btn-random" onclick="app.startSession(true)">
+              習得済みから10問復習
+            </button>
+          </div>
+
+          <!-- Right column: charts -->
+          <div class="home-col-right">
+            <div class="dashboard-card" style="padding:16px;">
+              <div style="display:flex; gap:8px; margin-bottom:14px;">
+                <button class="chart-tab active" data-tab="jlpt" onclick="app.switchChart('jlpt')">JLPT 分佈</button>
+                <button class="chart-tab" data-tab="mastered" onclick="app.switchChart('mastered')">習得狀況</button>
+                <button class="chart-tab" data-tab="trend" onclick="app.switchChart('trend')">學習趨勢</button>
+              </div>
+              <div id="chart-jlpt"><canvas id="canvas-jlpt" height="220"></canvas></div>
+              <div id="chart-mastered" class="hidden"><canvas id="canvas-mastered" height="220"></canvas></div>
+              <div id="chart-trend" class="hidden"><canvas id="canvas-trend" height="220"></canvas></div>
             </div>
           </div>
         </div>
-
-        <div class="dashboard-card">
-          <h4 class="dashboard-title">レベル別単語数</h4>
-          <div class="stat-row">
-            <div>
-              <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.1</div>
-              <b id="level-1-count">0</b>
-            </div>
-            <div>
-              <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.2</div>
-              <b id="level-2-count">0</b>
-            </div>
-            <div>
-              <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.3</div>
-              <b id="level-3-count">0</b>
-            </div>
-            <div>
-              <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.4</div>
-              <b id="level-4-count">0</b>
-            </div>
-            <div>
-              <div style="font-size: 0.8rem; color: var(--text-sub)">Lv.5+</div>
-              <b id="level-5-count">0</b>
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-card dashboard-jlpt">
-          <h4 class="dashboard-title">JLPT 級別單字數</h4>
-          <div class="stat-row">
-            <div>
-              <div style="font-size: 0.8rem; color: var(--text-sub)">N1</div>
-              <b id="jlpt-1-count">0</b>
-            </div>
-            <div>
-              <div style="font-size: 0.8rem; color: var(--text-sub)">N2</div>
-              <b id="jlpt-2-count">0</b>
-            </div>
-            <div>
-              <div style="font-size: 0.8rem; color: var(--text-sub)">N3</div>
-              <b id="jlpt-3-count">0</b>
-            </div>
-            <div>
-              <div style="font-size: 0.8rem; color: var(--text-sub)">N4</div>
-              <b id="jlpt-4-count">0</b>
-            </div>
-            <div>
-              <div style="font-size: 0.8rem; color: var(--text-sub)">N5</div>
-              <b id="jlpt-5-count">0</b>
-            </div>
-          </div>
-        </div>
-
-        <!-- Charts card -->
-        <div class="dashboard-card" style="padding:16px;">
-          <div style="display:flex; gap:8px; margin-bottom:14px;">
-            <button class="chart-tab active" data-tab="jlpt" onclick="app.switchChart('jlpt')">JLPT 分佈</button>
-            <button class="chart-tab" data-tab="mastered" onclick="app.switchChart('mastered')">習得狀況</button>
-            <button class="chart-tab" data-tab="trend" onclick="app.switchChart('trend')">學習趨勢</button>
-          </div>
-          <div id="chart-jlpt"><canvas id="canvas-jlpt" height="180"></canvas></div>
-          <div id="chart-mastered" class="hidden"><canvas id="canvas-mastered" height="180"></canvas></div>
-          <div id="chart-trend" class="hidden"><canvas id="canvas-trend" height="180"></canvas></div>
-        </div>
-
-        <div
-          style="text-align: center; margin-bottom: 20px; font-size: 0.95rem"
-        >
-          次回のクイズ単語数:
-          <strong id="next-quiz-count" style="font-size: 1.2rem; margin: 0 5px"
-            >0</strong
-          >
-          問
-        </div>
-
-        <button class="btn-main" onclick="app.startSession(false)">
-          学習を開始する (全ての復習)
-        </button>
-        <button class="btn-random" onclick="app.startSession(true)">
-          習得済みから10問復習
-        </button>
       </div>
 
       <div id="page-quiz" class="hidden">
@@ -555,10 +624,7 @@
           </div>
         </div>
 
-        <div
-          id="ans-mc-area"
-          style="display: flex; flex-direction: column; gap: 10px"
-        ></div>
+        <div id="ans-mc-area"></div>
         <div id="quiz-feedback" class="feedback-box hidden"></div>
         <button
           id="next-btn"
@@ -571,6 +637,9 @@
       </div>
 
       <div id="page-db" class="hidden">
+        <div class="db-grid">
+          <!-- Left column: toolbar + import/edit panels + search -->
+          <div class="db-col-left">
 
         <!-- Accordion toolbar -->
         <div class="toolbar-row">
@@ -632,9 +701,15 @@
           </div>
         </div>
 
+          </div><!-- /db-col-left -->
+
+          <!-- Right column: search results list -->
+          <div class="db-col-right">
         <div id="db-list">
           <div style="text-align:center; padding:30px; color:#aaa; font-size:0.9rem;">請輸入關鍵字或選擇篩選條件</div>
         </div>
+          </div><!-- /db-col-right -->
+        </div><!-- /db-grid -->
       </div>
     </div>
 
@@ -1195,16 +1270,17 @@
           const mcArea = document.getElementById("ans-mc-area");
           mcArea.innerHTML = "";
 
-          options.forEach((opt) => {
+          options.forEach((opt, idx) => {
             const btn = document.createElement("button");
             btn.className = "btn-random";
 
+            const keyHint = `<span class="key-hint">${idx + 1}</span>`;
             if (questionType === 0) {
               // 意思選項：純文字
-              btn.innerHTML = opt.definition || "未知意思";
+              btn.innerHTML = keyHint + (opt.definition || "未知意思");
             } else {
               // 單字選項：使用 generateRubyHtml 渲染帶注音的日文
-              btn.innerHTML = `<span style="font-size:1.2rem;">${this.generateRubyHtml(opt.kanji, opt["Hiragana/Katakana"])}</span>`;
+              btn.innerHTML = keyHint + `<span style="font-size:1.2rem;">${this.generateRubyHtml(opt.kanji, opt["Hiragana/Katakana"])}</span>`;
             }
 
             btn.dataset.isCorrect = opt.id === currentWord.id;
@@ -1226,22 +1302,25 @@
 
           if (isCorrect && !isTimeout) {
             const currentStage = currentWord.stage ?? 0;
-            let newStage = currentStage;
+            const newStage = Math.min(currentStage + 1, 5);
+            const isMastered = newStage >= 5;
 
-            if (currentStage === 0) newStage = 1;
-
+            // SRS intervals: stage 1→1d, 2→2d, 3→4d, 4→7d, 5→mastered
+            const intervalDays = [1, 1, 3, 7, 15, 0][newStage] || 1;
             const nextTime = new Date();
-            nextTime.setDate(nextTime.getDate() + 1);
+            nextTime.setDate(nextTime.getDate() + intervalDays);
             const newNextReview = nextTime.toISOString();
 
             currentWord.stage = newStage;
             currentWord.nextReview = newNextReview;
+            if (isMastered) currentWord.mastered = true;
 
             this.dbClient
               .from("vocab")
               .update({
                 stage: newStage,
                 nextReview: newNextReview,
+                mastered: isMastered,
               })
               .eq("id", currentWord.id)
               .then(({ error }) => {
@@ -1444,6 +1523,19 @@
             document.getElementById("status-text").innerText = "Online";
             document.getElementById("status-dot").style.backgroundColor =
               "var(--success)";
+
+            document.addEventListener("keydown", (e) => {
+              if (document.getElementById("page-quiz").classList.contains("hidden")) return;
+              if (["1", "2", "3", "4"].includes(e.key)) {
+                const idx = parseInt(e.key) - 1;
+                const btns = [...document.querySelectorAll("#ans-mc-area .btn-random")].filter(b => !b.disabled);
+                if (btns[idx]) btns[idx].click();
+              }
+              if (e.key === "Enter") {
+                const nextBtn = document.getElementById("next-btn");
+                if (!nextBtn.classList.contains("hidden")) nextBtn.click();
+              }
+            });
           } catch (err) {
             console.error("連線失敗:", err);
             document.getElementById("status-text").innerText =
