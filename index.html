@@ -371,6 +371,107 @@
         font-weight: bold;
       }
 
+      /* ── News & Chat ────────────────────────────────────── */
+      .news-article {
+        font-size: 1.15rem;
+        line-height: 2.4;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 12px;
+      }
+      .news-translation {
+        font-size: 0.88rem;
+        color: var(--text-sub);
+        background: var(--bg-light);
+        border-radius: 8px;
+        padding: 10px 12px;
+        border-left: 3px solid var(--primary);
+      }
+      .vocab-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+      }
+      .vocab-chip {
+        background: var(--jlpt-bg);
+        border: 1px solid var(--jlpt-border);
+        border-radius: 20px;
+        padding: 5px 11px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: 0.15s;
+        user-select: none;
+      }
+      .vocab-chip:hover {
+        border-color: var(--primary);
+      }
+      .vocab-chip.selected {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+      }
+      .vocab-chip.selected span {
+        color: rgba(255,255,255,0.8) !important;
+      }
+      .chat-messages {
+        height: 260px;
+        overflow-y: auto;
+        padding: 4px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .chat-bubble {
+        max-width: 86%;
+        padding: 10px 14px;
+        border-radius: 16px;
+        font-size: 0.9rem;
+        line-height: 1.55;
+        word-break: break-word;
+      }
+      .chat-bubble-user {
+        background: var(--text-main);
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+      }
+      .chat-bubble-ai {
+        background: var(--bg-light);
+        border: 1px solid var(--line);
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+      }
+      .chat-input-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .chat-input-row input {
+        flex: 1;
+        padding: 11px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        margin-bottom: 0;
+      }
+      .news-level-chip {
+        font-size: 0.72rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        border: 1px solid var(--jlpt-border);
+        background: white;
+        color: var(--jlpt-color);
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.15s;
+      }
+      .news-level-chip.active {
+        background: var(--jlpt-color);
+        color: white;
+        border-color: var(--jlpt-color);
+      }
+
       /* ── Answer area base ────────────────────────────────── */
       #ans-mc-area {
         display: flex;
@@ -459,6 +560,7 @@
             学習
           </button>
           <button id="nav-db" onclick="app.showPage('db')">単語帳</button>
+          <button id="nav-news" onclick="app.showPage('news')">ニュース</button>
         </div>
       </div>
 
@@ -946,6 +1048,88 @@
         </div>
         <!-- /db-grid -->
       </div>
+
+      <!-- ── News & AI Teacher Page ──────────────────────── -->
+      <div id="page-news" class="hidden">
+
+        <!-- API Key setup (shown when no key saved) -->
+        <div id="news-key-setup" class="dashboard-card" style="border-color:#ffc107;background:#fff8e1;">
+          <h4 style="margin:0 0 8px 0;color:#856404;">⚙️ Gemini API Key 設定</h4>
+          <p style="font-size:0.82rem;color:#856404;margin:0 0 10px 0;">
+            需要 API Key 才能使用日文新聞與 AI 老師功能。<br>
+            請至 <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--primary);">aistudio.google.com/apikey</a> 免費取得（需 Google 帳號）。
+          </p>
+          <div style="display:flex;gap:8px;">
+            <input type="password" id="gemini-key-input" placeholder="貼上 Gemini API Key..." style="padding:10px;border:1px solid #ffc107;border-radius:8px;" />
+            <button onclick="app.saveGeminiKey()" class="btn-main" style="width:auto;padding:10px 16px;margin:0;white-space:nowrap;">儲存</button>
+          </div>
+        </div>
+
+        <!-- Main news content (hidden until key is set) -->
+        <div id="news-main" class="hidden">
+
+          <!-- Daily news card -->
+          <div class="dashboard-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <div>
+                <h4 style="margin:0;font-size:1rem;">📰 今日のニュース</h4>
+                <small id="news-date-label" style="color:var(--text-sub);"></small>
+              </div>
+              <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
+                <button class="news-level-chip active" data-level="N5" onclick="app.setNewsLevel('N5')">N5</button>
+                <button class="news-level-chip" data-level="N4" onclick="app.setNewsLevel('N4')">N4</button>
+                <button class="news-level-chip" data-level="N3" onclick="app.setNewsLevel('N3')">N3</button>
+                <button class="news-level-chip" data-level="N2" onclick="app.setNewsLevel('N2')">N2</button>
+                <button class="news-level-chip" data-level="N1" onclick="app.setNewsLevel('N1')">N1</button>
+                <button onclick="app.refreshNews()" class="btn-sm" id="news-refresh-btn" title="新しい記事を生成">🔄</button>
+              </div>
+            </div>
+
+            <div id="news-loading" class="hidden" style="text-align:center;padding:24px;color:var(--text-sub);">
+              ✨ AIが記事を生成中... (AI 生成中，請稍候...)
+            </div>
+
+            <div id="news-content">
+              <h3 id="news-title" style="font-size:1.1rem;margin:0 0 8px 0;color:var(--text-main);"></h3>
+              <div id="news-article" class="news-article"></div>
+              <details style="margin-bottom:10px;">
+                <summary style="font-size:0.82rem;color:var(--text-sub);cursor:pointer;user-select:none;">繁體中文翻譯 ▼</summary>
+                <div id="news-translation" class="news-translation" style="margin-top:6px;"></div>
+              </details>
+              <div id="news-vocab" class="vocab-strip"></div>
+              <div id="news-vocab-export"></div>
+              <div id="news-source-link" style="display:none;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);">
+                <a id="news-nhk-link" href="#" target="_blank" style="font-size:0.82rem;color:var(--primary);">📡 NHK Web Easy 原文を読む →</a>
+                <span style="font-size:0.75rem;color:var(--text-sub);margin-left:8px;">(原始日語，比本頁難)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI teacher chat card -->
+          <div class="dashboard-card">
+            <h4 style="margin:0 0 12px 0;font-size:1rem;">💬 AI 日語老師</h4>
+            <div id="chat-messages" class="chat-messages">
+              <div class="chat-bubble chat-bubble-ai">こんにちは！今日の記事について質問があれば、何でも聞いてください。<br><small style="opacity:0.7;">(哈囉！關於今天的文章有任何問題，請隨時問我。)</small></div>
+            </div>
+            <div class="chat-input-row">
+              <input type="text" id="chat-input" placeholder="有什麼問題嗎？Ask anything..."
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();app.sendChat();}" />
+              <button onclick="app.sendChat()" class="btn-main" style="width:auto;padding:11px 16px;margin:0;white-space:nowrap;">送出</button>
+            </div>
+          </div>
+
+          <div style="text-align:right;margin-top:-8px;margin-bottom:16px;">
+            <button onclick="app.clearGeminiKey()" class="btn-sm" style="font-size:0.72rem;color:var(--text-sub);">🔑 更改 API Key</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Word lookup popup (appears on article text selection) -->
+    <div id="word-lookup-popup" style="display:none;position:fixed;z-index:9999;background:white;border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 6px 24px rgba(0,0,0,0.15);min-width:160px;max-width:240px;">
+      <div id="word-popup-word" style="font-size:1.1rem;font-weight:bold;margin-bottom:8px;color:var(--text-main);"></div>
+      <button id="word-popup-btn" onclick="app.lookupAndAdd()" style="width:100%;padding:8px;border-radius:8px;border:none;background:var(--text-main);color:white;font-size:0.82rem;cursor:pointer;font-weight:bold;font-family:inherit;">✚ 查詢並加入清單</button>
+      <div id="word-popup-status" style="display:none;font-size:0.76rem;color:var(--text-sub);margin-top:6px;text-align:center;line-height:1.5;"></div>
     </div>
 
     <script>
@@ -958,6 +1142,14 @@
         currentQuizIndex: 0,
         quizTimerInterval: null,
         isRandomQuizMode: false,
+
+        geminiApiKey: "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",
+        newsArticle: null,
+        chatHistory: [],
+        newsLevel: "N5",
+        selectedVocabIndices: new Set(),
+        customVocab: [],
+        pendingWord: null,
 
         // 學習天數統計資料
         studyStats: {
@@ -999,12 +1191,11 @@
         // 測驗完成後更新學習天數統計
         updateStudyStatsOnQuizComplete: async function () {
           const today = this.getTodayLocalDate();
-          const lastDate = this.studyStats.last_study_date;
 
-          // 判斷是否是新的一天（today > lastDate 或 lastDate 為 null）
-          const isNewDay = !lastDate || today > lastDate;
-
-          if (!isNewDay) return; // 今天已經學習過，不重複計算
+          // Each mode tracks its own "last completed date" independently
+          const lsKey = this.isRandomQuizMode ? 'kaizen_last_mastered_date' : 'kaizen_last_non_mastered_date';
+          const lastModeDate = localStorage.getItem(lsKey);
+          if (lastModeDate === today) return; // already counted this mode today
 
           // 根據測驗模式決定增加哪個計數
           const newNonMasteredDays = this.isRandomQuizMode
@@ -1033,6 +1224,7 @@
             this.studyStats.non_mastered_days = newNonMasteredDays;
             this.studyStats.mastered_days = newMasteredDays;
             this.studyStats.last_study_date = today;
+            localStorage.setItem(lsKey, today);
 
             // 更新 UI
             this.updateStreakUI();
@@ -1045,10 +1237,12 @@
           document.getElementById("page-home").classList.add("hidden");
           document.getElementById("page-quiz").classList.add("hidden");
           document.getElementById("page-db").classList.add("hidden");
+          document.getElementById("page-news").classList.add("hidden");
           document.getElementById(`page-${pageId}`).classList.remove("hidden");
 
           document.getElementById("nav-study").classList.remove("active");
           document.getElementById("nav-db").classList.remove("active");
+          document.getElementById("nav-news").classList.remove("active");
 
           if (pageId === "home") {
             document.getElementById("nav-study").classList.add("active");
@@ -1056,6 +1250,10 @@
           }
           if (pageId === "db") {
             document.getElementById("nav-db").classList.add("active");
+          }
+          if (pageId === "news") {
+            document.getElementById("nav-news").classList.add("active");
+            this.initNewsPage();
           }
 
           if (pageId !== "quiz") {
@@ -1955,6 +2153,578 @@
               },
             },
           );
+        },
+
+        // ── Gemini News & AI Teacher ─────────────────────────
+
+        saveGeminiKey: function () {
+          const key = document.getElementById("gemini-key-input").value.trim();
+          if (!key) { alert("請輸入 API Key！"); return; }
+          localStorage.setItem("kaizen_gemini_key", key);
+          this.geminiApiKey = key;
+          this.initNewsPage();
+        },
+
+        clearGeminiKey: function () {
+          if (!confirm("確定要更換 API Key 嗎？")) return;
+          localStorage.removeItem("kaizen_gemini_key");
+          this.geminiApiKey = null;
+          document.getElementById("news-key-setup").classList.remove("hidden");
+          document.getElementById("news-main").classList.add("hidden");
+          document.getElementById("gemini-key-input").value = "";
+        },
+
+        initNewsPage: function () {
+          this.geminiApiKey = localStorage.getItem("kaizen_gemini_key") || this.geminiApiKey;
+          if (!this.geminiApiKey) {
+            document.getElementById("news-key-setup").classList.remove("hidden");
+            document.getElementById("news-main").classList.add("hidden");
+            return;
+          }
+          document.getElementById("news-key-setup").classList.add("hidden");
+          document.getElementById("news-main").classList.remove("hidden");
+
+          // Attach article text-selection listener (once only)
+          const articleEl = document.getElementById("news-article");
+          if (articleEl && !articleEl._selListenerAdded) {
+            articleEl._selListenerAdded = true;
+            const onSel = () => {
+              const sel = window.getSelection();
+              const text = (sel?.toString() || "").trim().replace(/[ぁ-ゟ゠-ヿ]/g, m =>
+                // strip any stray furigana that got included in selection
+                m).replace(/\s/g, "");
+              if (text.length >= 1 && text.length <= 20 && articleEl.contains(sel?.anchorNode)) {
+                app.showWordPopup(text);
+              } else {
+                app.hideWordPopup();
+              }
+            };
+            articleEl.addEventListener("mouseup", onSel);
+            articleEl.addEventListener("touchend", () => setTimeout(onSel, 80));
+            document.addEventListener("mousedown", (e) => {
+              if (!document.getElementById("word-lookup-popup")?.contains(e.target) &&
+                  !articleEl.contains(e.target)) {
+                app.hideWordPopup();
+              }
+            });
+          }
+
+          // Restore saved level
+          const savedLevel = localStorage.getItem("kaizen_news_level") || "N5";
+          this.newsLevel = savedLevel;
+          document.querySelectorAll(".news-level-chip").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.level === savedLevel);
+          });
+
+          const today = this.getTodayLocalDate();
+          const cached = localStorage.getItem(`kaizen_news_${today}_${this.newsLevel}`);
+          if (cached) {
+            try {
+              this.newsArticle = JSON.parse(cached);
+              this.renderNews();
+              return;
+            } catch (e) {}
+          }
+          this.loadNews(false);
+        },
+
+        loadNews: async function (forceRefresh) {
+          const today = this.getTodayLocalDate();
+          const cacheKey = `kaizen_news_${today}_${this.newsLevel}`;
+          if (!forceRefresh) {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+              try { this.newsArticle = JSON.parse(cached); this.renderNews(); return; } catch (e) {}
+            }
+          }
+
+          document.getElementById("news-loading").classList.remove("hidden");
+          document.getElementById("news-content").style.opacity = "0.3";
+          document.getElementById("news-refresh-btn").disabled = true;
+
+          // Try to get a real NHK Web Easy headline
+          let nhk = null;
+          try {
+            nhk = await this.fetchNHKHeadline();
+          } catch (e) {
+            console.warn("NHK fetch failed, using AI topic:", e.message);
+          }
+
+          const levelGuide = {
+            N5: "JLPT N5 (complete beginner): only hiragana/katakana and N5 kanji; basic particles は、が、を、に、で; only ～です/～ます sentences; 3-4 short sentences",
+            N4: "JLPT N4 (elementary): N4 kanji with furigana ruby tags; patterns like ～ている、～てください、～たい; natural everyday tone; 3-4 sentences",
+            N3: "JLPT N3 (intermediate): N3 kanji with furigana; conjunctions like ～ので、～から、～が、～ながら; 4-5 sentences; more nuanced",
+            N2: "JLPT N2 (upper-intermediate): N2 kanji with furigana on first use; formal patterns like ～によると、～に対して、～を受けて; 5-6 sentences; newspaper adjacent",
+            N1: "JLPT N1 (advanced): any kanji with furigana on first use; advanced formal grammar ～に際して、～をもって、～に至る; authentic press-release style; 5-7 sentences",
+          };
+
+          const prompt = nhk
+            ? `You are a Japanese language teacher. Here is a real NHK Web Easy news article:
+
+Title: ${nhk.title}
+Content: ${nhk.body || "(body unavailable)"}
+
+Rewrite and adapt this article for: ${levelGuide[this.newsLevel]}
+- Use the ACTUAL facts, events, and details from the content above — do NOT invent new facts
+- Add furigana ruby tags for ALL kanji: <ruby>東京<rt>とうきょう</rt></ruby>
+- Keep the journalistic tone of the original
+
+Return ONLY valid JSON (no markdown):
+{
+  "title": "Japanese title matching the level",
+  "article": "sentences with ruby tags for all kanji",
+  "translation": "Traditional Chinese (繁體中文) translation",
+  "vocabulary": [{"word": "...", "reading": "...", "meaning": "...", "jlpt": 5, "pos": "名詞"}]
+}
+Include 4-5 key vocabulary items from the article. For "pos" use ONLY one of: 名詞, 動詞(Group 1), 動詞(Group 2), 動詞(Group 3), I形容詞, Na形容詞, 代名詞, 副詞, 助詞, 感嘆詞, 慣用語, 接尾詞, 疑問詞. Set "jlpt" to the correct JLPT level number (1-5). If word has no kanji, leave "word" empty string. For verbs (動詞), MUST use ます form in both "word" and "reading" fields (e.g., word=食べます reading=たべます, NOT 食べる/たべる).`
+            : `You are a Japanese language teacher. Write a daily news article for: ${levelGuide[this.newsLevel]}
+
+- Choose an engaging topic: Japanese nature, festivals, food, daily life, travel, animals, current events
+- Add furigana ruby tags for ALL kanji: <ruby>東京<rt>とうきょう</rt></ruby>
+- Make it feel like real news, not a textbook drill
+
+Return ONLY valid JSON (no markdown):
+{
+  "title": "Japanese title",
+  "article": "sentences with ruby tags for all kanji",
+  "translation": "Traditional Chinese (繁體中文) translation",
+  "vocabulary": [{"word": "...", "reading": "...", "meaning": "...", "jlpt": 5, "pos": "名詞"}]
+}
+Include 4-5 key vocabulary items from the article. For "pos" use ONLY one of: 名詞, 動詞(Group 1), 動詞(Group 2), 動詞(Group 3), I形容詞, Na形容詞, 代名詞, 副詞, 助詞, 感嘆詞, 慣用語, 接尾詞, 疑問詞. Set "jlpt" to the correct JLPT level number (1-5). If word has no kanji, leave "word" empty string. For verbs (動詞), always use ます form in both "word" and "reading" fields (e.g., word=食べます reading=たべます, NOT 食べる/たべる). Today: ${today}`;
+
+          try {
+            const res = await fetch(
+              "https://api.groq.com/openai/v1/chat/completions",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${this.geminiApiKey}`,
+                },
+                body: JSON.stringify({
+                  model: "llama-3.3-70b-versatile",
+                  messages: [
+                    { role: "system", content: "CRITICAL RULE: ALL verbs in vocabulary lists MUST use ます form. NEVER use dictionary/plain form. Examples: 食べます ✓ NOT 食べる ✗, 行きます ✓ NOT 行く ✗, します ✓ NOT する ✗. Apply this to every single verb in the vocabulary array without exception." },
+                    { role: "user", content: prompt }
+                  ],
+                  temperature: 0.85,
+                  max_tokens: 1024,
+                }),
+              }
+            );
+
+            if (!res.ok) {
+              const e = await res.json();
+              throw new Error(e.error?.message || `HTTP ${res.status}`);
+            }
+
+            const data = await res.json();
+            const raw = (data.choices?.[0]?.message?.content || "")
+              .replace(/^```json\n?|\n?```$/g, "").trim();
+            const article = JSON.parse(raw);
+            if (Array.isArray(article.vocabulary)) article.vocabulary = this.normalizeMasuForm(article.vocabulary);
+            article._source = nhk ? "nhk" : "ai";
+            article._nhkTitle = nhk?.title || null;
+            article._newsId = nhk?.newsId || null;
+
+            localStorage.setItem(cacheKey, JSON.stringify(article));
+            this.newsArticle = article;
+            this.chatHistory = [];
+            this.renderNews();
+            this.cleanOldNewsCache();
+          } catch (err) {
+            console.error("新聞生成失敗:", err);
+            document.getElementById("news-content").innerHTML =
+              `<div style="color:var(--danger);padding:12px;border-radius:8px;background:#fff5f5;">
+                ❌ 生成失敗：${err.message}<br>
+                <small style="color:var(--text-sub);">請確認 API Key 是否正確，或稍後再試。</small>
+              </div>`;
+          } finally {
+            document.getElementById("news-loading").classList.add("hidden");
+            document.getElementById("news-content").style.opacity = "1";
+            document.getElementById("news-refresh-btn").disabled = false;
+          }
+        },
+
+        refreshNews: function () {
+          document.getElementById("chat-messages").innerHTML =
+            `<div class="chat-bubble chat-bubble-ai">こんにちは！今日の記事について質問があれば、何でも聞いてください。<br><small style="opacity:0.7;">(哈囉！關於今天的文章有任何問題，請隨時問我。)</small></div>`;
+          this.chatHistory = [];
+          this.loadNews(true);
+        },
+
+        renderNews: function () {
+          if (!this.newsArticle) return;
+          const { title, article, translation, vocabulary, _source, _newsId } = this.newsArticle;
+          const isMobile = window.innerWidth < 768;
+
+          document.getElementById("news-date-label").innerText = this.getTodayLocalDate() + "  ·  " + this.newsLevel;
+          document.getElementById("news-title").innerHTML = title || "";
+          document.getElementById("news-article").innerHTML = article || "";
+          document.getElementById("news-translation").innerHTML = translation || "";
+
+          // NHK source link
+          const linkEl = document.getElementById("news-source-link");
+          const anchorEl = document.getElementById("news-nhk-link");
+          if (_source === "nhk" && _newsId && linkEl && anchorEl) {
+            anchorEl.href = `https://www3.nhk.or.jp/news/easy/${_newsId}/${_newsId}.html`;
+            linkEl.style.display = "block";
+          } else if (linkEl) {
+            linkEl.style.display = "none";
+          }
+
+          const vocabEl = document.getElementById("news-vocab");
+          const exportEl = document.getElementById("news-vocab-export");
+
+          if (vocabulary && vocabulary.length > 0) {
+            this.selectedVocabIndices = new Set();
+            this.customVocab = [];
+            vocabEl.innerHTML = vocabulary
+              .map((v, i) => `<span class="vocab-chip" data-idx="${i}" onclick="app.toggleVocabSelect(${i})"><b>${v.word || v.reading}</b> <span style="color:var(--text-sub);">「${v.meaning}」</span></span>`)
+              .join("");
+            if (exportEl) exportEl.innerHTML = `<p style="font-size:0.82rem;color:var(--text-sub);margin-top:8px;margin-bottom:0;">👆 點擊單字加入匯入清單</p>`;
+          } else {
+            if (vocabEl) vocabEl.innerHTML = "";
+            if (exportEl) exportEl.innerHTML = "";
+          }
+        },
+
+        toggleVocabSelect: function (idx) {
+          if (this.selectedVocabIndices.has(idx)) {
+            this.selectedVocabIndices.delete(idx);
+          } else {
+            this.selectedVocabIndices.add(idx);
+          }
+          document.querySelectorAll(".vocab-chip").forEach(chip => {
+            const i = parseInt(chip.dataset.idx);
+            chip.classList.toggle("selected", this.selectedVocabIndices.has(i));
+          });
+          this.updateVocabExport();
+        },
+
+        updateVocabExport: function () {
+          const exportEl = document.getElementById("news-vocab-export");
+          if (!exportEl) return;
+          const isMobile = window.innerWidth < 768;
+
+          const chipSelected = this.newsArticle?.vocabulary
+            ? [...this.selectedVocabIndices].sort((a, b) => a - b).map(i => this.newsArticle.vocabulary[i])
+            : [];
+          const allSelected = [...chipSelected, ...this.customVocab];
+
+          if (allSelected.length === 0) {
+            exportEl.innerHTML = `<p style="font-size:0.82rem;color:var(--text-sub);margin-top:8px;margin-bottom:0;">👆 點擊單字加入匯入清單，或在文章中選取任何詞</p>`;
+            return;
+          }
+
+          const csvLines = allSelected.map(v =>
+            `${v.word || ""},${v.reading || ""},${v.meaning || ""},${v.jlpt || ""},${v.pos || ""}`
+          );
+
+          let displayHtml;
+          if (isMobile) {
+            displayHtml = `<pre style="font-size:0.76rem;background:var(--bg-light);border:1px solid var(--line);border-radius:8px;padding:10px;overflow-x:auto;white-space:pre;margin:0;">${csvLines.join("\n")}</pre>`;
+          } else {
+            const header = `| 漢字 | 平假名/片假名 | 中文意思 | JLPT | 詞性 |\n|---|---|---|---|---|`;
+            const rows = allSelected.map(v =>
+              `| ${v.word || ""} | ${v.reading || ""} | ${v.meaning || ""} | ${v.jlpt || ""} | ${v.pos || ""} |`
+            ).join("\n");
+            displayHtml = `<pre style="font-size:0.76rem;background:var(--bg-light);border:1px solid var(--line);border-radius:8px;padding:10px;overflow-x:auto;white-space:pre;margin:0;">${header}\n${rows}</pre>`;
+          }
+
+          exportEl.innerHTML = `
+            <div style="margin-top:12px;">
+              <div style="font-size:0.82rem;color:var(--text-sub);margin-bottom:6px;">已選 ${allSelected.length} 個單字</div>
+              ${displayHtml}
+              <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+                <button onclick="app.copyVocabImport()" class="btn-sm" style="font-size:0.78rem;">📋 複製 → 貼到「単語帳 ＞ ＋ 新增」</button>
+                <button onclick="app.clearVocabSelection()" class="btn-sm" style="font-size:0.78rem;color:var(--text-sub);">✕ 清除</button>
+              </div>
+            </div>`;
+        },
+
+        normalizeMasuForm: function (vocab) {
+          if (!Array.isArray(vocab)) return vocab;
+          const g1 = { 'う':'います','く':'きます','ぐ':'ぎます','す':'します','つ':'ちます','ぬ':'にます','ぶ':'びます','む':'みます','る':'ります' };
+          const conv = (str, group) => {
+            if (!str || str.endsWith('ます')) return str;
+            if (group === 3) {
+              if (str.endsWith('する')) return str.slice(0, -2) + 'します';
+              if (str === 'くる') return 'きます';
+              if (str.endsWith('くる')) return str.slice(0, -2) + 'きます';
+              if (str === '来る') return '来ます';
+            }
+            if (group === 2 && str.endsWith('る')) return str.slice(0, -1) + 'ます';
+            if (group === 1) { const e = g1[str.slice(-1)]; if (e) return str.slice(0, -1) + e; }
+            return str;
+          };
+          return vocab.map(v => {
+            if (!v.pos || !v.pos.includes('動詞')) return v;
+            const g = v.pos.includes('Group 1') ? 1 : v.pos.includes('Group 2') ? 2 : v.pos.includes('Group 3') ? 3 : 0;
+            if (!g) return v;
+            return { ...v, word: conv(v.word, g), reading: conv(v.reading, g) };
+          });
+        },
+
+        clearVocabSelection: function () {
+          this.selectedVocabIndices = new Set();
+          this.customVocab = [];
+          document.querySelectorAll(".vocab-chip").forEach(c => c.classList.remove("selected"));
+          const exportEl = document.getElementById("news-vocab-export");
+          if (exportEl) exportEl.innerHTML = `<p style="font-size:0.82rem;color:var(--text-sub);margin-top:8px;margin-bottom:0;">👆 點擊單字加入匯入清單，或在文章中選取任何詞</p>`;
+        },
+
+        copyVocabImport: function () {
+          if (!this.newsArticle?.vocabulary || this.selectedVocabIndices.size === 0) return;
+          const selected = [...this.selectedVocabIndices].sort((a, b) => a - b)
+            .map(i => this.newsArticle.vocabulary[i]);
+          const lines = selected.map(v =>
+            `${v.word || ""},${v.reading || ""},${v.meaning || ""},${v.jlpt || ""},${v.pos || ""}`
+          );
+          navigator.clipboard.writeText(lines.join("\n"))
+            .then(() => alert("已複製 " + selected.length + " 個單字！\n切換到「単語帳 ＞ ＋ 新增」，貼上後按「追加する」即可匯入。"))
+            .catch(() => alert("複製失敗，請手動選取文字並複製。"));
+        },
+
+        showWordPopup: function (word) {
+          this.pendingWord = word;
+          const popup = document.getElementById("word-lookup-popup");
+          const sel = window.getSelection();
+          if (!popup || !sel.rangeCount) return;
+
+          document.getElementById("word-popup-word").textContent = word;
+          document.getElementById("word-popup-status").style.display = "none";
+          const btn = document.getElementById("word-popup-btn");
+          btn.disabled = false;
+          btn.textContent = "✚ 查詢並加入清單";
+
+          const rect = sel.getRangeAt(0).getBoundingClientRect();
+          popup.style.display = "block";
+          const pw = popup.offsetWidth || 200;
+          let left = rect.left + rect.width / 2 - pw / 2;
+          let top = rect.top - popup.offsetHeight - 10 + window.scrollY;
+          left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
+          if (top < window.scrollY + 8) top = rect.bottom + 10 + window.scrollY;
+          popup.style.left = left + "px";
+          popup.style.top = top + "px";
+        },
+
+        hideWordPopup: function () {
+          const popup = document.getElementById("word-lookup-popup");
+          if (popup) popup.style.display = "none";
+          this.pendingWord = null;
+        },
+
+        lookupAndAdd: async function () {
+          const word = this.pendingWord;
+          if (!word) return;
+          const btn = document.getElementById("word-popup-btn");
+          const status = document.getElementById("word-popup-status");
+          btn.disabled = true;
+          btn.textContent = "查詢中...";
+          status.style.display = "none";
+
+          try {
+            const item = await this.lookupWord(word);
+            const key = item.word || item.reading;
+            const dupe = this.customVocab.some(v => (v.word || v.reading) === key) ||
+              [...this.selectedVocabIndices].some(i => {
+                const v = this.newsArticle?.vocabulary?.[i];
+                return v && (v.word || v.reading) === key;
+              });
+
+            if (!dupe) {
+              this.customVocab.push(item);
+              this.updateVocabExport();
+            }
+
+            btn.textContent = dupe ? "✓ 已在清單" : "✓ 已加入";
+            status.textContent = `${item.reading}【${item.meaning}】`;
+            status.style.display = "block";
+            setTimeout(() => this.hideWordPopup(), 1800);
+          } catch (err) {
+            btn.disabled = false;
+            btn.textContent = "✚ 查詢並加入清單";
+            status.textContent = "查詢失敗，請重試";
+            status.style.display = "block";
+          }
+        },
+
+        lookupWord: async function (word) {
+          const prompt = `Look up this Japanese word or phrase: "${word}"
+
+Return ONLY valid JSON, no markdown:
+{
+  "word": "kanji form (empty string if the word has no kanji)",
+  "reading": "hiragana or katakana reading",
+  "meaning": "Traditional Chinese (繁體中文) meaning, concise",
+  "jlpt": 5,
+  "pos": "名詞"
+}
+pos must be exactly one of: 名詞, 動詞(Group 1), 動詞(Group 2), 動詞(Group 3), I形容詞, Na形容詞, 代名詞, 副詞, 助詞, 感嘆詞, 慣用語, 接尾詞, 疑問詞
+jlpt must be a number 1-5.
+For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べます/たべます not 食べる/たべる).`;
+
+          const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${this.geminiApiKey}` },
+            body: JSON.stringify({
+              model: "llama-3.3-70b-versatile",
+              messages: [{ role: "user", content: prompt }],
+              temperature: 0.1,
+              max_tokens: 200,
+            }),
+          });
+          if (!res.ok) throw new Error("API error");
+          const data = await res.json();
+          const raw = (data.choices?.[0]?.message?.content || "").replace(/^```json\n?|\n?```$/g, "").trim();
+          const result = JSON.parse(raw);
+          if (result.pos && result.pos.includes('動詞')) {
+            const normalized = this.normalizeMasuForm([result]);
+            return normalized[0];
+          }
+          return result;
+        },
+
+        setNewsLevel: function (level) {
+          this.newsLevel = level;
+          localStorage.setItem("kaizen_news_level", level);
+          document.querySelectorAll(".news-level-chip").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.level === level);
+          });
+          this.refreshNews();
+        },
+
+        cleanOldNewsCache: function () {
+          const cutoff = new Date();
+          cutoff.setDate(cutoff.getDate() - 7);
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith("kaizen_news_")) {
+              const datePart = key.replace("kaizen_news_", "").substring(0, 10);
+              if (new Date(datePart) < cutoff) localStorage.removeItem(key);
+            }
+          }
+        },
+
+        fetchNHKHeadline: async function () {
+          const proxy = "https://api.allorigins.win/get?url=";
+
+          // Step 1: get article list
+          const listRes = await fetch(proxy + encodeURIComponent("https://www3.nhk.or.jp/news/easy/news-list.json"),
+            { signal: AbortSignal.timeout(8000) });
+          if (!listRes.ok) throw new Error(`Proxy ${listRes.status}`);
+          const listData = await listRes.json();
+          if (listData.status?.http_code !== 200) throw new Error("NHK unreachable");
+          const list = JSON.parse(listData.contents);
+          const dates = Object.keys(list).sort().reverse();
+          if (!dates.length) throw new Error("Empty list");
+          const articles = list[dates[0]];
+          if (!articles?.length) throw new Error("No articles");
+          const pick = articles[Math.floor(Math.random() * Math.min(articles.length, 6))];
+
+          // Step 2: fetch the actual article HTML
+          const articleUrl = `https://www3.nhk.or.jp/news/easy/${pick.news_id}/${pick.news_id}.html`;
+          const articleRes = await fetch(proxy + encodeURIComponent(articleUrl),
+            { signal: AbortSignal.timeout(10000) });
+          if (!articleRes.ok) throw new Error(`Article HTTP ${articleRes.status}`);
+          const articleData = await articleRes.json();
+
+          // Step 3: extract body text (strip furigana rt tags for clean text)
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(articleData.contents || "", "text/html");
+          doc.querySelectorAll("rt, rp").forEach(el => el.remove());
+          const bodyEl = doc.querySelector(".article-body") ||
+                         doc.querySelector("#newsarticle") ||
+                         doc.querySelector(".news-article") ||
+                         doc.querySelector("section.module--detail-body") ||
+                         doc.querySelector("div[class*='body']") ||
+                         doc.querySelector("article");
+          const paras = bodyEl
+            ? [...bodyEl.querySelectorAll("p")].map(p => p.textContent.trim()).filter(Boolean)
+            : [...doc.querySelectorAll("p")].map(p => p.textContent.trim()).filter(t => t.length > 20);
+          const body = paras.join(" ").substring(0, 900);
+
+          return { title: pick.title, newsId: pick.news_id, body };
+        },
+
+        sendChat: async function () {
+          const input = document.getElementById("chat-input");
+          const userMsg = input.value.trim();
+          if (!userMsg || !this.geminiApiKey) return;
+
+          input.value = "";
+          input.disabled = true;
+
+          const messagesEl = document.getElementById("chat-messages");
+
+          const userBubble = document.createElement("div");
+          userBubble.className = "chat-bubble chat-bubble-user";
+          userBubble.textContent = userMsg;
+          messagesEl.appendChild(userBubble);
+
+          const aiBubble = document.createElement("div");
+          aiBubble.className = "chat-bubble chat-bubble-ai";
+          aiBubble.innerHTML = `<span style="opacity:0.5">✨ 思考中...</span>`;
+          messagesEl.appendChild(aiBubble);
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+
+          const articleText = this.newsArticle
+            ? `${this.newsArticle.title}\n${(this.newsArticle.article || "").replace(/<[^>]+>/g, "")}`
+            : "";
+
+          const isMobile = window.innerWidth < 768;
+          const vocabFmt = isMobile
+            ? "When listing vocabulary, use comma-separated format (one word per line): 漢字,平假名/片假名,中文意思,JLPT數字,詞性 — leave 漢字 blank if none, e.g.: ,たべます,吃,5,動詞(Group 2)"
+            : "When listing vocabulary, use a markdown table with columns: 漢字 | 平假名/片假名 | 中文意思 | JLPT | 詞性 — leave 漢字 cell empty if the word has no kanji. POS must be one of: 名詞, 動詞(Group 1), 動詞(Group 2), 動詞(Group 3), I形容詞, Na形容詞, 代名詞, 副詞, 助詞, 感嘆詞, 慣用語, 接尾詞, 疑問詞";
+
+          const sysPrompt = `You are a helpful Japanese language teacher in the KAIZEN vocabulary app. The student is studying at JLPT ${this.newsLevel} level. Today's news article: "${articleText}". Always reply in Traditional Chinese (繁體中文) unless asked to reply in Japanese. Be concise, kind, and encouraging. When explaining grammar, give simple examples. ${vocabFmt}.`;
+
+          const messages = [
+            { role: "system", content: sysPrompt },
+            ...this.chatHistory,
+            { role: "user", content: userMsg },
+          ];
+
+          try {
+            const res = await fetch(
+              "https://api.groq.com/openai/v1/chat/completions",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${this.geminiApiKey}`,
+                },
+                body: JSON.stringify({
+                  model: "llama-3.3-70b-versatile",
+                  messages,
+                  temperature: 0.7,
+                  max_tokens: 700,
+                }),
+              }
+            );
+
+            if (!res.ok) {
+              const e = await res.json();
+              throw new Error(e.error?.message || `HTTP ${res.status}`);
+            }
+
+            const data = await res.json();
+            const aiText = data.choices?.[0]?.message?.content || "（無回應）";
+            aiBubble.innerHTML = aiText.replace(/\n/g, "<br>");
+
+            this.chatHistory.push(
+              { role: "user", content: userMsg },
+              { role: "assistant", content: aiText }
+            );
+            if (this.chatHistory.length > 18) this.chatHistory = this.chatHistory.slice(-18);
+          } catch (err) {
+            aiBubble.innerHTML = `<span style="color:var(--danger)">❌ 錯誤：${err.message}</span>`;
+          } finally {
+            input.disabled = false;
+            input.focus();
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+          }
         },
       };
 
