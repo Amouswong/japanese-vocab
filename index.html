@@ -271,6 +271,8 @@
         color: var(--primary);
         font-size: 0.5em;
         font-weight: normal;
+        user-select: none;
+        pointer-events: none;
       }
 
       .streak-number {
@@ -1098,6 +1100,12 @@
                 <div id="news-translation" class="news-translation" style="margin-top:6px;"></div>
               </details>
               <div id="news-vocab" class="vocab-strip"></div>
+              <div style="display:flex;gap:6px;align-items:center;margin-top:8px;margin-bottom:4px;">
+                <input type="text" id="manual-lookup-input" placeholder="輸入單字直接查詢 (e.g. さいだい)..."
+                  style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:0.85rem;margin:0;"
+                  onkeydown="if(event.key==='Enter')app.manualLookup()" />
+                <button onclick="app.manualLookup()" id="manual-lookup-btn" class="btn-sm" style="white-space:nowrap;">查詢</button>
+              </div>
               <div id="news-vocab-export"></div>
               <div id="news-source-link" style="display:none;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);">
                 <a id="news-nhk-link" href="#" target="_blank" style="font-size:0.82rem;color:var(--primary);">📡 NHK Web Easy 原文を読む →</a>
@@ -2191,10 +2199,18 @@
             articleEl._selListenerAdded = true;
             const onSel = () => {
               const sel = window.getSelection();
-              const text = (sel?.toString() || "").trim().replace(/[ぁ-ゟ゠-ヿ]/g, m =>
-                // strip any stray furigana that got included in selection
-                m).replace(/\s/g, "");
-              if (text.length >= 1 && text.length <= 20 && articleEl.contains(sel?.anchorNode)) {
+              if (!sel || !sel.rangeCount) { app.hideWordPopup(); return; }
+              // Clone the selection range, strip rt/rp so furigana is excluded from text
+              let text = "";
+              try {
+                const div = document.createElement("div");
+                div.appendChild(sel.getRangeAt(0).cloneContents());
+                div.querySelectorAll("rt, rp").forEach(el => el.remove());
+                text = div.textContent.replace(/\s/g, "").trim();
+              } catch (e) {
+                text = sel.toString().replace(/\s/g, "").trim();
+              }
+              if (text.length >= 1 && text.length <= 20 && articleEl.contains(sel.anchorNode)) {
                 app.showWordPopup(text);
               } else {
                 app.hideWordPopup();
@@ -2642,6 +2658,30 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
             return normalized[0];
           }
           return result;
+        },
+
+        manualLookup: async function () {
+          const input = document.getElementById("manual-lookup-input");
+          const btn = document.getElementById("manual-lookup-btn");
+          const word = (input.value || "").trim();
+          if (!word || !this.geminiApiKey) return;
+          input.value = "";
+          btn.disabled = true;
+          btn.textContent = "查詢中...";
+          try {
+            const item = await this.lookupWord(word);
+            const key = item.word || item.reading;
+            const dupe = this.customVocab.some(v => (v.word || v.reading) === key) ||
+              [...this.selectedVocabIndices].some(i => {
+                const v = this.newsArticle?.vocabulary?.[i];
+                return v && (v.word || v.reading) === key;
+              });
+            if (!dupe) { this.customVocab.push(item); this.updateVocabExport(); }
+            btn.textContent = dupe ? "✓ 已在清單" : "✓ 已加入";
+          } catch (e) {
+            btn.textContent = "查詢失敗";
+          }
+          setTimeout(() => { btn.textContent = "查詢"; btn.disabled = false; }, 1800);
         },
 
         setNewsLevel: function (level) {
