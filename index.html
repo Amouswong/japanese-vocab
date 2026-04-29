@@ -1092,10 +1092,7 @@
             <div id="news-content">
               <h3 id="news-title" style="font-size:1.1rem;margin:0 0 8px 0;color:var(--text-main);"></h3>
               <div id="news-article" class="news-article"></div>
-              <details style="margin-bottom:10px;">
-                <summary style="font-size:0.82rem;color:var(--text-sub);cursor:pointer;user-select:none;">繁體中文翻譯 ▼</summary>
-                <div id="news-translation" class="news-translation" style="margin-top:6px;"></div>
-              </details>
+              <div id="news-translation" class="news-translation" style="margin-bottom:10px;"></div>
               <div id="news-vocab" class="vocab-strip"></div>
               <div id="news-vocab-export"></div>
               <div id="news-source-link" style="display:none;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);">
@@ -2242,76 +2239,79 @@
           document.getElementById("news-content").style.opacity = "0.3";
           document.getElementById("news-refresh-btn").disabled = true;
 
-          // Try to get a real NHK Web Easy headline
           let nhk = null;
           try {
             nhk = await this.fetchNHKHeadline();
           } catch (e) {
-            console.warn("NHK fetch failed, using AI topic:", e.message);
+            console.warn("NHK fetch failed:", e.message);
           }
 
-          const levelGuide = {
-            N5: "JLPT N5 (complete beginner): only hiragana/katakana and N5 kanji; basic particles は、が、を、に、で; only ～です/～ます sentences; 3-4 short sentences",
-            N4: "JLPT N4 (elementary): N4 kanji with furigana ruby tags; patterns like ～ている、～てください、～たい; natural everyday tone; 3-4 sentences",
-            N3: "JLPT N3 (intermediate): N3 kanji with furigana; conjunctions like ～ので、～から、～が、～ながら; 4-5 sentences; more nuanced",
-            N2: "JLPT N2 (upper-intermediate): N2 kanji with furigana on first use; formal patterns like ～によると、～に対して、～を受けて; 5-6 sentences; newspaper adjacent",
-            N1: "JLPT N1 (advanced): any kanji with furigana on first use; advanced formal grammar ～に際して、～をもって、～に至る; authentic press-release style; 5-7 sentences",
-          };
-
-          const prompt = nhk
-            ? `You are a Japanese language teacher. Here is a real NHK Web Easy news article:
-
+          let prompt, maxTokens;
+          if (nhk) {
+            // NHK article captured — display it as-is; AI only translates + extracts vocab
+            maxTokens = 700;
+            prompt = `NHK Web Easy article:
 Title: ${nhk.title}
-Content: ${nhk.body || "(body unavailable)"}
+Body: ${nhk.body}
 
-Rewrite and adapt this article for: ${levelGuide[this.newsLevel]}
-- Use the ACTUAL facts, events, and details from the content above — do NOT invent new facts
-- Add furigana ruby tags for ALL kanji: <ruby>東京<rt>とうきょう</rt></ruby>
-- Keep the journalistic tone of the original
-
+Provide a complete Traditional Chinese (繁體中文) translation and extract 5-6 vocabulary items useful for a ${this.newsLevel} learner.
 Return ONLY valid JSON (no markdown):
 {
-  "title": "Japanese title matching the level",
-  "article": "sentences with ruby tags for all kanji",
-  "translation": "Traditional Chinese (繁體中文) translation",
-  "vocabulary": [{"word": "...", "reading": "...", "meaning": "...", "jlpt": 5, "pos": "名詞"}]
+  "translation": "完整繁體中文翻譯",
+  "vocabulary": [{"word": "kanji or empty string", "reading": "hiragana/katakana", "meaning": "繁體中文", "jlpt": 5, "pos": "名詞"}]
 }
-Include 4-5 key vocabulary items from the article. For "pos" use ONLY one of: 名詞, 動詞(Group 1), 動詞(Group 2), 動詞(Group 3), I形容詞, Na形容詞, 代名詞, 副詞, 助詞, 感嘆詞, 慣用語, 接尾詞, 疑問詞. Set "jlpt" to the correct JLPT level number (1-5). If word has no kanji, leave "word" empty string. For verbs (動詞), MUST use ます form in both "word" and "reading" fields (e.g., word=食べます reading=たべます, NOT 食べる/たべる).`
-            : `You are a Japanese language teacher. Write a daily news article for: ${levelGuide[this.newsLevel]}
-
-- Choose an engaging topic: Japanese nature, festivals, food, daily life, travel, animals, current events
-- Add furigana ruby tags for ALL kanji: <ruby>東京<rt>とうきょう</rt></ruby>
-- Make it feel like real news, not a textbook drill
+Rules: word = kanji form, empty string if no kanji. pos must be one of: 名詞,動詞(Group 1),動詞(Group 2),動詞(Group 3),I形容詞,Na形容詞,代名詞,副詞,助詞,感嘆詞,慣用語,接尾詞,疑問詞. jlpt = 1-5. Verbs: ます form only.`;
+          } else {
+            // Fallback: rotate through 20 diverse topics so content always varies
+            maxTokens = 1024;
+            const topics = [
+              "桜の開花と花見の準備","富士山の登山ルール変更","東京バスの運転手不足",
+              "AIを使った農業の新技術","外国人が増える日本の学校","電力不足と省エネの取り組み",
+              "日本の伝統工芸を守る若者","コンビニで広がる新しいサービス","猫の殺処分ゼロを目指す活動",
+              "新しい宇宙ロケットの打ち上げ","川の水質が改善した話","給食に地元の食材を使う取り組み",
+              "高齢者向けのテクノロジー","外来種の駆除ボランティア","日本の子どもの読書離れ",
+              "再生可能エネルギーの普及","スポーツと健康づくりの新しい取り組み","SNSと若者のメンタルヘルス",
+              "地方の空き家問題と移住支援","日本語学習者が過去最多"
+            ];
+            const topic = topics[Math.floor(Date.now() / 86400000 + Math.random() * 7) % topics.length];
+            const levelGuide = {
+              N5: "JLPT N5: only hiragana/katakana + N5 kanji; basic particles は、が、を、に、で; only ～です/～ます; 3-4 short sentences",
+              N4: "JLPT N4: N4 kanji with furigana; patterns ～ている、～てください、～たい; 3-4 sentences",
+              N3: "JLPT N3: N3 kanji with furigana; conjunctions ～ので、～から、～ながら; 4-5 sentences",
+              N2: "JLPT N2: N2 kanji with furigana on first use; formal patterns ～によると、～に対して; 5-6 sentences",
+              N1: "JLPT N1: any kanji with furigana; advanced grammar ～に際して、～をもって; 5-7 sentences",
+            };
+            prompt = `Write a Japanese news article about:「${topic}」
+Level: ${levelGuide[this.newsLevel]}
+Add furigana ruby tags for ALL kanji: <ruby>漢字<rt>かな</rt></ruby>
 
 Return ONLY valid JSON (no markdown):
 {
   "title": "Japanese title",
-  "article": "sentences with ruby tags for all kanji",
+  "article": "article with ruby tags for all kanji",
   "translation": "Traditional Chinese (繁體中文) translation",
-  "vocabulary": [{"word": "...", "reading": "...", "meaning": "...", "jlpt": 5, "pos": "名詞"}]
+  "vocabulary": [{"word": "", "reading": "", "meaning": "", "jlpt": 5, "pos": "名詞"}]
 }
-Include 4-5 key vocabulary items from the article. For "pos" use ONLY one of: 名詞, 動詞(Group 1), 動詞(Group 2), 動詞(Group 3), I形容詞, Na形容詞, 代名詞, 副詞, 助詞, 感嘆詞, 慣用語, 接尾詞, 疑問詞. Set "jlpt" to the correct JLPT level number (1-5). If word has no kanji, leave "word" empty string. For verbs (動詞), always use ます form in both "word" and "reading" fields (e.g., word=食べます reading=たべます, NOT 食べる/たべる). Today: ${today}`;
+4-5 vocabulary items. pos from: 名詞,動詞(Group 1),動詞(Group 2),動詞(Group 3),I形容詞,Na形容詞,代名詞,副詞,助詞,感嘆詞,慣用語,接尾詞,疑問詞. jlpt 1-5. Verbs: ます form. Date: ${today}`;
+          }
 
           try {
-            const res = await fetch(
-              "https://api.groq.com/openai/v1/chat/completions",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${this.geminiApiKey}`,
-                },
-                body: JSON.stringify({
-                  model: "llama-3.3-70b-versatile",
-                  messages: [
-                    { role: "system", content: "CRITICAL RULE: ALL verbs in vocabulary lists MUST use ます form. NEVER use dictionary/plain form. Examples: 食べます ✓ NOT 食べる ✗, 行きます ✓ NOT 行く ✗, します ✓ NOT する ✗. Apply this to every single verb in the vocabulary array without exception." },
-                    { role: "user", content: prompt }
-                  ],
-                  temperature: 0.85,
-                  max_tokens: 1024,
-                }),
-              }
-            );
+            const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.geminiApiKey}`,
+              },
+              body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                  { role: "system", content: "CRITICAL: ALL verbs in vocabulary must use ます form, never dictionary form." },
+                  { role: "user", content: prompt }
+                ],
+                temperature: 0.7,
+                max_tokens: maxTokens,
+              }),
+            });
 
             if (!res.ok) {
               const e = await res.json();
@@ -2321,11 +2321,12 @@ Include 4-5 key vocabulary items from the article. For "pos" use ONLY one of: �
             const data = await res.json();
             const raw = (data.choices?.[0]?.message?.content || "")
               .replace(/^```json\n?|\n?```$/g, "").trim();
-            const article = JSON.parse(raw);
-            if (Array.isArray(article.vocabulary)) article.vocabulary = this.normalizeMasuForm(article.vocabulary);
-            article._source = nhk ? "nhk" : "ai";
-            article._nhkTitle = nhk?.title || null;
-            article._newsId = nhk?.newsId || null;
+            const aiResult = JSON.parse(raw);
+            if (Array.isArray(aiResult.vocabulary)) aiResult.vocabulary = this.normalizeMasuForm(aiResult.vocabulary);
+
+            const article = nhk
+              ? { title: nhk.title, article: nhk.articleHtml, translation: aiResult.translation || "", vocabulary: aiResult.vocabulary || [], _source: "nhk", _nhkTitle: nhk.title, _newsId: nhk.newsId }
+              : Object.assign(aiResult, { _source: "ai", _nhkTitle: null, _newsId: null });
 
             localStorage.setItem(cacheKey, JSON.stringify(article));
             this.newsArticle = article;
@@ -2379,9 +2380,15 @@ Include 4-5 key vocabulary items from the article. For "pos" use ONLY one of: �
           if (vocabulary && vocabulary.length > 0) {
             this.selectedVocabIndices = new Set();
             this.customVocab = [];
-            vocabEl.innerHTML = vocabulary
-              .map((v, i) => `<span class="vocab-chip" data-idx="${i}" onclick="app.toggleVocabSelect(${i})"><b>${v.word || v.reading}</b> <span style="color:var(--text-sub);">「${v.meaning}」</span></span>`)
-              .join("");
+            vocabEl.innerHTML = vocabulary.map((v, i) => {
+              const base = v.word || v.reading || "";
+              const pos = v.pos || "";
+              let polite = base;
+              if (pos.includes("動詞")) polite = base; // already masu form
+              else if (pos.includes("名詞") || pos.includes("代名詞")) polite = base + "です";
+              else if (pos.includes("形容詞")) polite = base + "です";
+              return `<span class="vocab-chip" data-idx="${i}" onclick="app.toggleVocabSelect(${i})"><b>${polite}</b> <span style="color:var(--text-sub);">「${v.meaning}」</span></span>`;
+            }).join("");
             if (exportEl) exportEl.innerHTML = `<p style="font-size:0.82rem;color:var(--text-sub);margin-top:8px;margin-bottom:0;">👆 點擊單字加入匯入清單</p>`;
           } else {
             if (vocabEl) vocabEl.innerHTML = "";
@@ -2390,16 +2397,43 @@ Include 4-5 key vocabulary items from the article. For "pos" use ONLY one of: �
         },
 
         toggleVocabSelect: function (idx) {
+          const v = this.newsArticle?.vocabulary?.[idx];
           if (this.selectedVocabIndices.has(idx)) {
             this.selectedVocabIndices.delete(idx);
           } else {
             this.selectedVocabIndices.add(idx);
+            if (v) {
+              const line = `${v.word || ""},${v.reading || ""},${v.meaning || ""},${v.jlpt || ""},${v.pos || ""}`;
+              navigator.clipboard.writeText(line).catch(() => {});
+              this.showImportToast(line, v);
+            }
           }
           document.querySelectorAll(".vocab-chip").forEach(chip => {
             const i = parseInt(chip.dataset.idx);
             chip.classList.toggle("selected", this.selectedVocabIndices.has(i));
           });
           this.updateVocabExport();
+        },
+
+        showImportToast: function (line, v) {
+          let toast = document.getElementById("import-toast");
+          if (!toast) {
+            toast = document.createElement("div");
+            toast.id = "import-toast";
+            toast.style.cssText = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:12px 18px;border-radius:12px;font-size:0.78rem;max-width:92vw;word-break:break-all;z-index:9999;box-shadow:0 6px 24px rgba(0,0,0,0.35);transition:opacity 0.35s;pointer-events:none;";
+            document.body.appendChild(toast);
+          }
+          // Show polite usage form as hint
+          const pos = v.pos || "";
+          const base = v.word || v.reading || "";
+          let usage = base;
+          if (pos.includes("動詞")) usage = (v.word || v.reading || "") + "（ます形）";
+          else if (pos.includes("名詞") || pos.includes("代名詞")) usage = base + "です";
+          else if (pos.includes("形容詞")) usage = base + "です";
+          toast.innerHTML = `<div style="opacity:0.6;font-size:0.7rem;margin-bottom:4px;">📋 已複製匯入格式 · ${usage}</div><div style="font-family:monospace;">${line}</div>`;
+          toast.style.opacity = "1";
+          clearTimeout(toast._timer);
+          toast._timer = setTimeout(() => { toast.style.opacity = "0"; }, 3000);
         },
 
         updateVocabExport: function () {
@@ -2608,44 +2642,90 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
         },
 
         fetchNHKHeadline: async function () {
-          const proxy = "https://api.allorigins.win/get?url=";
+          // Dual-proxy: corsproxy.io (direct) → allorigins.win (JSON-wrapped)
+          const fetchText = async (url, timeout) => {
+            timeout = timeout || 8000;
+            try {
+              const r = await fetch("https://corsproxy.io/?" + encodeURIComponent(url),
+                { signal: AbortSignal.timeout(timeout) });
+              if (r.ok) { const t = await r.text(); if (t && t.length > 20) return t; }
+            } catch (e) {}
+            const r2 = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(url),
+              { signal: AbortSignal.timeout(timeout) });
+            if (!r2.ok) throw new Error("Proxy HTTP " + r2.status);
+            const d = await r2.json();
+            if (!d.status || d.status.http_code !== 200) throw new Error("NHK unreachable");
+            if (!d.contents) throw new Error("Empty proxy response");
+            return d.contents;
+          };
 
-          // Step 1: get article list
-          const listRes = await fetch(proxy + encodeURIComponent("https://www3.nhk.or.jp/news/easy/news-list.json"),
-            { signal: AbortSignal.timeout(8000) });
-          if (!listRes.ok) throw new Error(`Proxy ${listRes.status}`);
-          const listData = await listRes.json();
-          if (listData.status?.http_code !== 200) throw new Error("NHK unreachable");
-          const list = JSON.parse(listData.contents);
+          // Step 1: article list
+          const listText = await fetchText("https://www3.nhk.or.jp/news/easy/news-list.json");
+          const list = JSON.parse(listText);
           const dates = Object.keys(list).sort().reverse();
           if (!dates.length) throw new Error("Empty list");
           const articles = list[dates[0]];
-          if (!articles?.length) throw new Error("No articles");
+          if (!articles || !articles.length) throw new Error("No articles");
           const pick = articles[Math.floor(Math.random() * Math.min(articles.length, 6))];
+          const newsId = pick.news_id;
+          const title = pick.title;
 
-          // Step 2: fetch the actual article HTML
-          const articleUrl = `https://www3.nhk.or.jp/news/easy/${pick.news_id}/${pick.news_id}.html`;
-          const articleRes = await fetch(proxy + encodeURIComponent(articleUrl),
-            { signal: AbortSignal.timeout(10000) });
-          if (!articleRes.ok) throw new Error(`Article HTTP ${articleRes.status}`);
-          const articleData = await articleRes.json();
+          let articleHtml = "";
+          let body = "";
 
-          // Step 3: extract body text (strip furigana rt tags for clean text)
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(articleData.contents || "", "text/html");
-          doc.querySelectorAll("rt, rp").forEach(el => el.remove());
-          const bodyEl = doc.querySelector(".article-body") ||
-                         doc.querySelector("#newsarticle") ||
-                         doc.querySelector(".news-article") ||
-                         doc.querySelector("section.module--detail-body") ||
-                         doc.querySelector("div[class*='body']") ||
-                         doc.querySelector("article");
-          const paras = bodyEl
-            ? [...bodyEl.querySelectorAll("p")].map(p => p.textContent.trim()).filter(Boolean)
-            : [...doc.querySelectorAll("p")].map(p => p.textContent.trim()).filter(t => t.length > 20);
-          const body = paras.join(" ").substring(0, 900);
+          // Step 2a: try NHK article JSON (several possible key names)
+          try {
+            const jsonText = await fetchText(
+              "https://www3.nhk.or.jp/news/easy/" + newsId + "/" + newsId + ".json", 8000
+            );
+            const j = JSON.parse(jsonText);
+            const raw = j.news_article || j.news_intro || j.body || j.text || j.detail || "";
+            if (raw && raw.length > 20) {
+              const tmp = document.createElement("div");
+              tmp.innerHTML = raw;
+              tmp.querySelectorAll("a, button, img, figure").forEach(el => el.remove());
+              articleHtml = tmp.innerHTML;
+              tmp.querySelectorAll("rt, rp").forEach(el => el.remove());
+              body = tmp.textContent.trim().substring(0, 900);
+            }
+          } catch (e) { console.warn("NHK JSON failed:", e.message); }
 
-          return { title: pick.title, newsId: pick.news_id, body };
+          // Step 2b: HTML scraping fallback (or if JSON had no content)
+          if (!articleHtml) {
+            const htmlText = await fetchText(
+              "https://www3.nhk.or.jp/news/easy/" + newsId + "/" + newsId + ".html", 12000
+            );
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, "text/html");
+            doc.querySelectorAll("script, style, noscript").forEach(el => el.remove());
+
+            const bodyEl = doc.querySelector("#js-article-body") ||
+                           doc.querySelector(".article-body") ||
+                           doc.querySelector("#newsarticle") ||
+                           doc.querySelector("[class*='article-body']") ||
+                           doc.querySelector("[class*='news-article']") ||
+                           doc.querySelector("article");
+
+            if (bodyEl) {
+              const cl = bodyEl.cloneNode(true);
+              cl.querySelectorAll("a, button, img, figure, .module, nav, header, footer").forEach(el => el.remove());
+              articleHtml = cl.innerHTML;
+              cl.querySelectorAll("rt, rp").forEach(el => el.remove());
+              body = cl.textContent.trim().substring(0, 900);
+            } else {
+              const paras = [...doc.querySelectorAll("p")]
+                .filter(p => p.textContent.trim().length > 20).slice(0, 12);
+              articleHtml = paras.map(p => p.outerHTML).join("\n");
+              body = paras.map(p => {
+                const cl = p.cloneNode(true);
+                cl.querySelectorAll("rt, rp").forEach(el => el.remove());
+                return cl.textContent.trim();
+              }).join(" ").substring(0, 900);
+            }
+          }
+
+          if (!articleHtml) throw new Error("Could not extract article body");
+          return { title, newsId, articleHtml, body };
         },
 
         sendChat: async function () {
