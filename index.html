@@ -721,6 +721,13 @@
           <!-- Right column: charts -->
           <div class="home-col-right">
             <div class="dashboard-card" style="padding: 16px">
+              <div style="display:flex; gap:6px; margin-bottom:10px;">
+                <button class="filter-chip active" data-chart-range="" onclick="app.setChartRange('')">全部</button>
+                <button class="filter-chip" data-chart-range="week" onclick="app.setChartRange('week')">今週</button>
+                <button class="filter-chip" data-chart-range="biweek" onclick="app.setChartRange('biweek')">隔週</button>
+                <button class="filter-chip" data-chart-range="month" onclick="app.setChartRange('month')">今月</button>
+                <button class="filter-chip" data-chart-range="3month" onclick="app.setChartRange('3month')">3ヶ月</button>
+              </div>
               <div style="display: flex; gap: 8px; margin-bottom: 14px">
                 <button
                   class="chart-tab active"
@@ -917,115 +924,44 @@
               <div class="filter-section">
                 <span class="filter-label">JLPT</span>
                 <div class="chip-group">
-                  <button
-                    class="filter-chip"
-                    data-group="jlpt"
-                    data-val=""
-                    onclick="app.setFilter('jlpt', '')"
-                  >
-                    全部
-                  </button>
-                  <button
-                    class="filter-chip"
-                    data-group="jlpt"
-                    data-val="1"
-                    onclick="app.setFilter('jlpt', '1')"
-                  >
-                    N1
-                  </button>
-                  <button
-                    class="filter-chip"
-                    data-group="jlpt"
-                    data-val="2"
-                    onclick="app.setFilter('jlpt', '2')"
-                  >
-                    N2
-                  </button>
-                  <button
-                    class="filter-chip"
-                    data-group="jlpt"
-                    data-val="3"
-                    onclick="app.setFilter('jlpt', '3')"
-                  >
-                    N3
-                  </button>
-                  <button
-                    class="filter-chip"
-                    data-group="jlpt"
-                    data-val="4"
-                    onclick="app.setFilter('jlpt', '4')"
-                  >
-                    N4
-                  </button>
-                  <button
-                    class="filter-chip"
-                    data-group="jlpt"
-                    data-val="5"
-                    onclick="app.setFilter('jlpt', '5')"
-                  >
-                    N5
-                  </button>
+                  <button class="filter-chip" data-group="jlpt" data-val="" onclick="app.setFilter('jlpt', '')">全部</button>
+                  <button class="filter-chip" data-group="jlpt" data-val="1" onclick="app.setFilter('jlpt', '1')">N1</button>
+                  <button class="filter-chip" data-group="jlpt" data-val="2" onclick="app.setFilter('jlpt', '2')">N2</button>
+                  <button class="filter-chip" data-group="jlpt" data-val="3" onclick="app.setFilter('jlpt', '3')">N3</button>
+                  <button class="filter-chip" data-group="jlpt" data-val="4" onclick="app.setFilter('jlpt', '4')">N4</button>
+                  <button class="filter-chip" data-group="jlpt" data-val="5" onclick="app.setFilter('jlpt', '5')">N5</button>
+                </div>
+              </div>
+              <div class="filter-section" style="margin-top: 8px">
+                <span class="filter-label">追加日</span>
+                <div class="chip-group">
+                  <button class="filter-chip active" data-group="daterange" data-val="" onclick="app.setFilter('daterange', '')">全部</button>
+                  <button class="filter-chip" data-group="daterange" data-val="week" onclick="app.setFilter('daterange', 'week')">今週</button>
+                  <button class="filter-chip" data-group="daterange" data-val="month" onclick="app.setFilter('daterange', 'month')">今月</button>
                 </div>
               </div>
               <div class="filter-section" style="margin-top: 8px">
                 <span class="filter-label">Stage</span>
                 <div class="chip-group">
-                  <button
-                    class="filter-chip"
-                    data-group="stage"
-                    data-val=""
-                    onclick="app.setFilter('stage', '')"
-                  >
-                    全部
-                  </button>
-                  <button
-                    class="filter-chip"
-                    data-group="stage"
-                    data-val="0"
-                    onclick="app.setFilter('stage', '0')"
-                  >
-                    0
-                  </button>
-                  <button
-                    class="filter-chip"
-                    data-group="stage"
-                    data-val="1"
-                    onclick="app.setFilter('stage', '1')"
-                  >
-                    1
-                  </button>
-                  <button
-                    class="filter-chip"
-                    data-group="stage"
-                    data-val="2"
-                    onclick="app.setFilter('stage', '2')"
-                  >
-                    2
-                  </button>
-                  <button
-                    class="filter-chip"
-                    data-group="stage"
-                    data-val="3"
-                    onclick="app.setFilter('stage', '3')"
-                  >
-                    3
-                  </button>
-                  <button
-                    class="filter-chip"
-                    data-group="stage"
-                    data-val="4"
-                    onclick="app.setFilter('stage', '4')"
-                  >
-                    4
-                  </button>
-                  <button
-                    class="filter-chip"
-                    data-group="stage"
-                    data-val="5"
-                    onclick="app.setFilter('stage', '5')"
-                  >
-                    5+
-                  </button>
+                  <button class="filter-chip" data-group="stage" data-val="" onclick="app.setFilter('stage', '')">全部</button>
+                  <button class="filter-chip" data-group="stage" data-val="0" onclick="app.setFilter('stage', '0')">0</button>
+                  <button class="filter-chip" data-group="stage" data-val="1" onclick="app.setFilter('stage', '1')">1</button>
+                  <button class="filter-chip" data-group="stage" data-val="2" onclick="app.setFilter('stage', '2')">2</button>
+                  <button class="filter-chip" data-group="stage" data-val="3" onclick="app.setFilter('stage', '3')">3</button>
+                  <button class="filter-chip" data-group="stage" data-val="4" onclick="app.setFilter('stage', '4')">4</button>
+                  <button class="filter-chip" data-group="stage" data-val="5" onclick="app.setFilter('stage', '5')">5+</button>
+                </div>
+              </div>
+              <div class="filter-section" style="margin-top: 8px">
+                <span class="filter-label">品詞</span>
+                <div class="chip-group">
+                  <button class="filter-chip" data-group="pos" data-val="" onclick="app.setFilter('pos', '')">全部</button>
+                  <button class="filter-chip" data-group="pos" data-val="名詞" onclick="app.setFilter('pos', '名詞')">名詞</button>
+                  <button class="filter-chip" data-group="pos" data-val="動詞" onclick="app.setFilter('pos', '動詞')">動詞</button>
+                  <button class="filter-chip" data-group="pos" data-val="I形容詞" onclick="app.setFilter('pos', 'I形容詞')">I形容詞</button>
+                  <button class="filter-chip" data-group="pos" data-val="Na形容詞" onclick="app.setFilter('pos', 'Na形容詞')">Na形容詞</button>
+                  <button class="filter-chip" data-group="pos" data-val="副詞" onclick="app.setFilter('pos', '副詞')">副詞</button>
+                  <button class="filter-chip" data-group="pos" data-val="慣用語" onclick="app.setFilter('pos', '慣用語')">慣用語</button>
                 </div>
               </div>
             </div>
@@ -1323,15 +1259,28 @@
         },
 
         searchDebounceTimer: null,
-        activeFilters: { jlpt: "", stage: "" },
+        activeFilters: { jlpt: new Set(), stage: new Set(), daterange: new Set(), pos: new Set() },
 
         setFilter: function (group, val) {
-          this.activeFilters[group] = val;
-          document
-            .querySelectorAll(`.filter-chip[data-group="${group}"]`)
-            .forEach((btn) => {
-              btn.classList.toggle("active", btn.dataset.val === val);
-            });
+          const set = this.activeFilters[group];
+          if (val === "") {
+            // "全部" clears the set
+            set.clear();
+          } else {
+            if (set.has(val)) {
+              set.delete(val);
+            } else {
+              set.add(val);
+            }
+          }
+          // Update chip active states
+          document.querySelectorAll(`.filter-chip[data-group="${group}"]`).forEach((btn) => {
+            if (btn.dataset.val === "") {
+              btn.classList.toggle("active", set.size === 0);
+            } else {
+              btn.classList.toggle("active", set.has(btn.dataset.val));
+            }
+          });
           this.scheduleSearch();
         },
 
@@ -1362,10 +1311,10 @@
 
         renderList: async function () {
           const searchQ = document.getElementById("db-search").value.trim();
-          const { jlpt, stage } = this.activeFilters;
+          const { jlpt, stage, daterange, pos } = this.activeFilters;
           const listContainer = document.getElementById("db-list");
 
-          const hasFilter = searchQ || jlpt || stage;
+          const hasFilter = searchQ || jlpt.size || stage.size || daterange.size || pos.size;
           if (!hasFilter) {
             listContainer.innerHTML =
               '<div style="text-align:center; padding:30px; color:#aaa; font-size:0.9rem;">請輸入關鍵字或選擇篩選條件</div>';
@@ -1382,18 +1331,34 @@
               `kanji.ilike.%${searchQ}%,definition.ilike.%${searchQ}%,"Hiragana/Katakana".ilike.%${searchQ}%`,
             );
           }
-          if (jlpt) query = query.eq("JLPT", parseInt(jlpt));
-          if (stage) {
-            if (stage === "5") {
+          if (jlpt.size) {
+            const vals = [...jlpt].map(v => parseInt(v));
+            query = vals.length === 1 ? query.eq("JLPT", vals[0]) : query.in("JLPT", vals);
+          }
+          if (stage.size) {
+            const stageVals = [...stage];
+            const hasMax = stageVals.includes("5");
+            const exactVals = stageVals.filter(v => v !== "5").map(v => parseInt(v));
+            if (hasMax && exactVals.length === 0) {
               query = query.gte("stage", 5);
+            } else if (hasMax) {
+              query = query.or(`stage.gte.5,stage.in.(${exactVals.join(",")})`);
             } else {
-              query = query.eq("stage", parseInt(stage));
+              query = exactVals.length === 1 ? query.eq("stage", exactVals[0]) : query.in("stage", exactVals);
             }
+          }
+          if (daterange.size) {
+            // Use the most permissive (earliest) cutoff when multiple selected
+            const now = new Date();
+            let cutoff = new Date();
+            if (daterange.has("month")) cutoff.setMonth(now.getMonth() - 1);
+            else if (daterange.has("week")) cutoff.setDate(now.getDate() - 7);
+            query = query.gte("created_at", cutoff.toISOString());
           }
 
           const { data, error } = await query
             .order("id", { ascending: false })
-            .limit(50);
+            .limit(200);
 
           if (error) {
             listContainer.innerHTML =
@@ -1401,7 +1366,14 @@
             return;
           }
 
-          const results = data || [];
+          // pos filter is client-side (pos field uses prefix matching e.g. "動詞(Group 1)")
+          let results = data || [];
+          if (pos.size) {
+            results = results.filter(item => {
+              if (!item.pos) return false;
+              return [...pos].some(p => item.pos.startsWith(p));
+            });
+          }
           if (results.length === 0) {
             listContainer.innerHTML =
               '<div style="text-align:center; padding:20px; color:#888;">見つかりませんでした (找不到符合條件的單字)</div>';
@@ -1808,6 +1780,14 @@
                 <div style="font-size: 1rem; color: var(--text-sub);">${meaning}</div>
             `;
 
+          if (!isCorrect && this.isRandomQuizMode) {
+            feedbackHtml += `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line);">
+              <div style="font-size:0.82rem;color:var(--text-sub);margin-bottom:8px;">這個單字要降一級嗎？ (Demote this word?)</div>
+              <button id="demote-btn" onclick="app.demoteWord()" style="background:var(--danger);color:white;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:bold;font-family:inherit;">⬇️ 降一級 (Lv.${currentWord.stage} → Lv.${Math.max((currentWord.stage ?? 5) - 1, 0)})</button>
+              <button onclick="this.parentElement.remove()" style="background:none;border:1px solid var(--line);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:0.88rem;margin-left:8px;font-family:inherit;">跳過</button>
+            </div>`;
+          }
+
           // 使用 innerHTML 正確渲染 Ruby 標籤
           feedbackEl.innerHTML = feedbackHtml;
           feedbackEl.classList.remove("hidden");
@@ -1820,6 +1800,35 @@
           window.speechSynthesis.cancel();
           this.currentQuizIndex++;
           this.renderQuizQuestion();
+        },
+
+        demoteWord: function () {
+          const currentWord = this.quizQueue[this.currentQuizIndex];
+          if (!currentWord) return;
+
+          const currentStage = currentWord.stage ?? 5;
+          const newStage = Math.max(currentStage - 1, 0);
+          const nextTime = new Date();
+          nextTime.setDate(nextTime.getDate() + 1);
+          const newNextReview = nextTime.toISOString();
+
+          currentWord.stage = newStage;
+          currentWord.mastered = false;
+          currentWord.nextReview = newNextReview;
+
+          this.dbClient
+            .from("vocab")
+            .update({ stage: newStage, mastered: false, nextReview: newNextReview })
+            .eq("id", currentWord.id)
+            .then(({ error }) => {
+              if (error) console.error("降級失敗:", error);
+            });
+
+          // Update the demote button area to show confirmation
+          const btn = document.getElementById("demote-btn");
+          if (btn) {
+            btn.parentElement.innerHTML = `<div style="font-size:0.82rem;color:var(--danger);">⬇️ 已降至 Lv.${newStage}，加入復習佇列</div>`;
+          }
         },
 
         deleteVocab: async function (id) {
@@ -1952,7 +1961,7 @@
                 .single(),
               this.dbClient
                 .from("vocab")
-                .select("id, stage, mastered, nextReview, JLPT"),
+                .select("id, stage, mastered, nextReview, JLPT, created_at"),
             ]);
 
             if (!statsResult.error && statsResult.data) {
@@ -2008,6 +2017,15 @@
 
         // ── Charts ──────────────────────────────────────────────
         charts: {},
+        chartRange: "",
+
+        setChartRange: function (range) {
+          this.chartRange = range;
+          document.querySelectorAll("[data-chart-range]").forEach((btn) => {
+            btn.classList.toggle("active", btn.dataset.chartRange === range);
+          });
+          this.renderCharts();
+        },
 
         switchChart: function (tab) {
           ["jlpt", "mastered", "trend"].forEach((t) => {
@@ -2031,12 +2049,23 @@
             "#59a14f",
           ];
 
+          // Filter data by chart date range
+          let data = this.vocabData;
+          if (this.chartRange) {
+            const cutoff = new Date();
+            if (this.chartRange === "week") cutoff.setDate(cutoff.getDate() - 7);
+            else if (this.chartRange === "biweek") cutoff.setDate(cutoff.getDate() - 14);
+            else if (this.chartRange === "month") cutoff.setMonth(cutoff.getMonth() - 1);
+            else if (this.chartRange === "3month") cutoff.setMonth(cutoff.getMonth() - 3);
+            data = data.filter(item => item.created_at && new Date(item.created_at) >= cutoff);
+          }
+
           const jlptCounts = [0, 0, 0, 0, 0];
           let masteredCount = 0,
             notMasteredCount = 0;
           const monthMap = {};
 
-          this.vocabData.forEach((item) => {
+          data.forEach((item) => {
             const n = item.JLPT;
             if (n >= 1 && n <= 5) jlptCounts[n - 1]++;
 
@@ -2113,7 +2142,7 @@
             },
           );
 
-          // Trend line — use created_at if available, else show total as single point
+          // Trend line
           const sortedMonths = Object.keys(monthMap).sort();
           let trendLabels, trendData;
           if (sortedMonths.length > 0) {
@@ -2125,7 +2154,7 @@
             });
           } else {
             trendLabels = ["合計"];
-            trendData = [this.vocabData.length];
+            trendData = [data.length];
           }
 
           this.charts.trend = new Chart(
