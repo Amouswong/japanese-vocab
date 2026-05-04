@@ -840,6 +840,7 @@
           <div id="q-sub" style="color: var(--text-sub)">
             正しい意味を選択してください
           </div>
+          <div id="q-meta" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px;"></div>
         </div>
 
         <div id="ans-mc-area"></div>
@@ -1694,6 +1695,11 @@
           // 使用 innerHTML 正確渲染 Ruby 標籤
           document.getElementById("q-text").innerHTML = questionHtml;
           document.getElementById("q-sub").innerText = questionSub;
+
+          const qMetaEl = document.getElementById("q-meta");
+          const qJlpt = currentWord.JLPT ? `<span style="background:var(--jlpt-bg);border:1px solid var(--jlpt-border);border-radius:12px;padding:2px 9px;font-size:0.78rem;color:var(--jlpt-color);font-weight:bold;">N${currentWord.JLPT}</span>` : "";
+          const qPos = currentWord.pos ? `<span style="background:var(--bg-light);border:1px solid var(--line);border-radius:12px;padding:2px 9px;font-size:0.78rem;color:var(--text-sub);">${currentWord.pos}</span>` : "";
+          qMetaEl.innerHTML = qJlpt + qPos;
 
           const audioBtn = document.getElementById("q-audio-btn");
           audioBtn.onclick = () => this.playAudio(kanaForAudio);
