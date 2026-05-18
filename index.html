@@ -1824,13 +1824,13 @@
 
         <!-- API Key setup (shown only when key is missing or invalid) -->
         <div id="news-key-setup" class="dashboard-card" style="border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.06);">
-          <h4 style="margin:0 0 8px 0;color:var(--warning);">⚙️ Groq API Key 設定</h4>
+          <h4 style="margin:0 0 8px 0;color:var(--warning);">⚙️ Gemini API Key 設定</h4>
           <p style="font-size:0.82rem;color:var(--text-sub);margin:0 0 10px 0;">
-            需要 Groq API Key 才能使用日文新聞與 AI 老師功能。<br>
-            請至 <a href="https://console.groq.com/keys" target="_blank" style="color:var(--primary);">console.groq.com/keys</a> 免費取得（需 Google 帳號）。
+            需要 Gemini API Key 才能使用日文新聞與 AI 老師功能。<br>
+            請至 <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--primary);">aistudio.google.com</a> 免費取得。
           </p>
           <div style="display:flex;gap:8px;">
-            <input type="password" id="gemini-key-input" placeholder="貼上 Groq API Key (gsk_...)..." style="padding:10px;" />
+            <input type="password" id="gemini-key-input" placeholder="貼上 Gemini API Key (AIza...)..." style="padding:10px;" />
             <button onclick="app.saveGeminiKey()" class="btn-main" style="width:auto;padding:10px 16px;margin:0;white-space:nowrap;">儲存</button>
           </div>
         </div>
@@ -1895,7 +1895,7 @@
           </div>
 
           <div style="text-align:right;margin-top:-8px;margin-bottom:16px;">
-            <button onclick="app.clearGeminiKey()" class="btn-sm" style="font-size:0.72rem;color:var(--text-sub);">🔑 更改 Groq API Key</button>
+            <button onclick="app.clearGeminiKey()" class="btn-sm" style="font-size:0.72rem;color:var(--text-sub);">🔑 更改 Gemini API Key</button>
           </div>
         </div>
       </div>
@@ -1942,6 +1942,10 @@
         <div class="modal-section-title">例文 · Example Sentences</div>
         <div id="modal-examples">
           <!-- Rendered by openVocabDetail -->
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;">
+          <input type="text" id="example-input" placeholder="例文を追加... (Add example sentence)" style="flex:1;padding:8px 10px;font-size:0.82rem;font-family:'Noto Sans JP',sans-serif;" onkeydown="if(event.key==='Enter')app.addExample()" />
+          <button class="btn-sm" onclick="app.addExample()">+ 追加</button>
         </div>
 
         <hr class="modal-divider">
@@ -2004,7 +2008,7 @@
         _detailItem: null,
         _detailSynonyms: {},  // { itemId: [synonyms] }
 
-        geminiApiKey: "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",
+        geminiApiKey: null,
         newsArticle: null,
         chatHistory: [],
         newsLevel: "N5",
@@ -2822,6 +2826,15 @@
             <div style="font-size:1rem;color:var(--text-sub);">${meaning}</div>
           `;
 
+          // Show example sentences if any
+          const examples = currentWord.examples;
+          if (examples && examples.length > 0) {
+            feedbackHtml += `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line);text-align:left;">
+              <div style="font-size:0.72rem;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">例文</div>
+              ${examples.map(s => `<div style="font-family:'Noto Sans JP',sans-serif;font-size:0.9rem;color:var(--text-main);margin-bottom:4px;">${s}</div>`).join("")}
+            </div>`;
+          }
+
           if (!isCorrect && this.isRandomQuizMode) {
             feedbackHtml += `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">
               <div style="font-size:0.82rem;color:var(--text-sub);margin-bottom:8px;">這個單字要降一級嗎？ (Demote this word?)</div>
@@ -2992,6 +3005,11 @@
 
         init: async function () {
           try {
+            // Clear any stale non-Gemini API key from localStorage
+            const storedKey = localStorage.getItem("kaizen_gemini_key");
+            if (storedKey && !storedKey.startsWith("AIza")) {
+              localStorage.removeItem("kaizen_gemini_key");
+            }
             const url = "https://ogjzoudptzwwmpwtpaar.supabase.co";
             const key =
               "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nanpvdWRwdHp3d21wd3RwYWFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjAxMzgsImV4cCI6MjA5MjIzNjEzOH0.7rpYyglHCONhrTTMwk--i-lfVxx7VyWi49MMftMqyE0";
@@ -3208,6 +3226,47 @@
 
         // ── Gemini News & AI Teacher ─────────────────────────
 
+        // Shared Gemini API helper (replaces Groq calls)
+        _geminiChat: async function(messages, maxTokens) {
+          maxTokens = maxTokens || 1024;
+          const models = ["gemini-2.5-flash", "gemini-flash-latest"];
+
+          // Convert OpenAI-style messages to Gemini format
+          const systemMsg = messages.find(m => m.role === "system");
+          const userMsgs = messages.filter(m => m.role !== "system");
+
+          const contents = userMsgs.map(m => ({
+            role: m.role === "assistant" ? "model" : "user",
+            parts: [{ text: m.content }]
+          }));
+
+          const body = {
+            contents,
+            generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 }
+          };
+          if (systemMsg) {
+            body.systemInstruction = { parts: [{ text: systemMsg.content }] };
+          }
+
+          let lastError;
+          for (const model of models) {
+            const res = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.geminiApiKey}`,
+              { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
+            );
+            if (!res.ok) {
+              const e = await res.json();
+              lastError = new Error(e.error?.message || `HTTP ${res.status}`);
+              // Only retry on overload/unavailable errors
+              if (res.status === 503 || res.status === 429 || (e.error?.message || "").includes("high demand") || (e.error?.message || "").includes("no longer available") || (e.error?.message || "").includes("not found")) continue;
+              throw lastError;
+            }
+            const data = await res.json();
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          }
+          throw lastError;
+        },
+
         saveGeminiKey: function () {
           const key = document.getElementById("gemini-key-input").value.trim();
           if (!key) { alert("請輸入 API Key！"); return; }
@@ -3226,7 +3285,10 @@
         },
 
         initNewsPage: function () {
-          this.geminiApiKey = localStorage.getItem("kaizen_gemini_key") || this.geminiApiKey;
+          const stored = localStorage.getItem("kaizen_gemini_key");
+          if (stored && stored.startsWith("AIza")) {
+            this.geminiApiKey = stored;
+          }
           if (!this.geminiApiKey) {
             document.getElementById("news-key-setup").classList.remove("hidden");
             document.getElementById("news-main").classList.add("hidden");
@@ -3311,7 +3373,7 @@
           let prompt, maxTokens;
           if (nhk) {
             // NHK article captured — display it as-is; AI only translates + extracts vocab
-            maxTokens = 700;
+            maxTokens = 2000;
             prompt = `NHK Web Easy article:
 Title: ${nhk.title}
 Body: ${nhk.body}
@@ -3325,7 +3387,7 @@ Return ONLY valid JSON (no markdown):
 Rules: word = kanji form, empty string if no kanji. pos must be one of: 名詞,動詞(Group 1),動詞(Group 2),動詞(Group 3),I形容詞,Na形容詞,代名詞,副詞,助詞,感嘆詞,慣用語,接尾詞,疑問詞. jlpt = 1-5. Verbs: ます form only.`;
           } else {
             // Fallback: rotate through 20 diverse topics so content always varies
-            maxTokens = 1024;
+            maxTokens = 8000;
             const topics = [
               "桜の開花と花見の準備","富士山の登山ルール変更","東京バスの運転手不足",
               "AIを使った農業の新技術","外国人が増える日本の学校","電力不足と省エネの取り組み",
@@ -3345,45 +3407,32 @@ Rules: word = kanji form, empty string if no kanji. pos must be one of: 名詞,�
             };
             prompt = `Write a Japanese news article about:「${topic}」
 Level: ${levelGuide[this.newsLevel]}
-Add furigana ruby tags for ALL kanji: <ruby>漢字<rt>かな</rt></ruby>
+Keep the article to 3 sentences maximum. Keep translation to 1-2 sentences.
+Do NOT add ruby/furigana tags — plain Japanese text only.
 
-Return ONLY valid JSON (no markdown):
+Return ONLY a raw JSON object, no markdown fences, no extra text:
 {
   "title": "Japanese title",
-  "article": "article with ruby tags for all kanji",
+  "article": "plain Japanese article text, no HTML tags",
   "translation": "Traditional Chinese (繁體中文) translation",
   "vocabulary": [{"word": "", "reading": "", "meaning": "", "jlpt": 5, "pos": "名詞"}]
 }
-4-5 vocabulary items. pos from: 名詞,動詞(Group 1),動詞(Group 2),動詞(Group 3),I形容詞,Na形容詞,代名詞,副詞,助詞,感嘆詞,慣用語,接尾詞,疑問詞. jlpt 1-5. Verbs: ます form. Date: ${today}`;
+3 vocabulary items only. pos from: 名詞,動詞(Group 1),動詞(Group 2),動詞(Group 3),I形容詞,Na形容詞,代名詞,副詞,助詞,感嘆詞,慣用語,接尾詞,疑問詞. jlpt 1-5. Verbs: ます form. Date: ${today}`;
           }
 
           try {
-            const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${this.geminiApiKey}`,
-              },
-              body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
-                messages: [
-                  { role: "system", content: "CRITICAL: ALL verbs in vocabulary must use ます form, never dictionary form." },
-                  { role: "user", content: prompt }
-                ],
-                temperature: 0.7,
-                max_tokens: maxTokens,
-              }),
-            });
+            const rawFull = await this._geminiChat([
+              { role: "system", content: "CRITICAL: ALL verbs in vocabulary must use ます form, never dictionary form. Return ONLY valid JSON, no markdown, no extra text." },
+              { role: "user", content: prompt }
+            ], maxTokens);
+            console.log("Gemini raw response:", rawFull);
+            // Strip any markdown fences (with or without leading spaces/newlines)
+            const raw = rawFull.replace(/[\s\S]*?(\{[\s\S]*\})[\s\S]*/m, "$1").trim();
 
-            if (!res.ok) {
-              const e = await res.json();
-              throw new Error(e.error?.message || `HTTP ${res.status}`);
-            }
-
-            const data = await res.json();
-            const raw = (data.choices?.[0]?.message?.content || "")
-              .replace(/^```json\n?|\n?```$/g, "").trim();
-            const aiResult = JSON.parse(raw);
+            // Extract JSON object robustly in case of extra text
+            const jsonMatch = raw.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) throw new Error("No JSON found in response: " + raw.substring(0, 200));
+            const aiResult = JSON.parse(jsonMatch[0]);
             if (Array.isArray(aiResult.vocabulary)) aiResult.vocabulary = this.normalizeMasuForm(aiResult.vocabulary);
 
             const article = nhk
@@ -3681,19 +3730,8 @@ pos must be exactly one of: 名詞, 動詞(Group 1), 動詞(Group 2), 動詞(Gro
 jlpt must be a number 1-5.
 For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べます/たべます not 食べる/たべる).`;
 
-          const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${this.geminiApiKey}` },
-            body: JSON.stringify({
-              model: "llama-3.3-70b-versatile",
-              messages: [{ role: "user", content: prompt }],
-              temperature: 0.1,
-              max_tokens: 200,
-            }),
-          });
-          if (!res.ok) throw new Error("API error");
-          const data = await res.json();
-          const raw = (data.choices?.[0]?.message?.content || "").replace(/^```json\n?|\n?```$/g, "").trim();
+          const raw = (await this._geminiChat([{ role: "user", content: prompt }], 500))
+            .replace(/[\s\S]*?(\{[\s\S]*\})[\s\S]*/m, "$1").trim();
           const result = JSON.parse(raw);
           if (result.pos && result.pos.includes('動詞')) {
             const normalized = this.normalizeMasuForm([result]);
@@ -3873,30 +3911,7 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
           ];
 
           try {
-            const res = await fetch(
-              "https://api.groq.com/openai/v1/chat/completions",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${this.geminiApiKey}`,
-                },
-                body: JSON.stringify({
-                  model: "llama-3.3-70b-versatile",
-                  messages,
-                  temperature: 0.7,
-                  max_tokens: 700,
-                }),
-              }
-            );
-
-            if (!res.ok) {
-              const e = await res.json();
-              throw new Error(e.error?.message || `HTTP ${res.status}`);
-            }
-
-            const data = await res.json();
-            const aiText = data.choices?.[0]?.message?.content || "（無回應）";
+            const aiText = (await this._geminiChat(messages, 700)) || "（無回應）";
             aiBubble.innerHTML = aiText.replace(/\n/g, "<br>");
 
             this.chatHistory.push(
@@ -4013,19 +4028,9 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
           const posBadge = item.pos ? `<span class="pos-pill">${item.pos}</span>` : "";
           document.getElementById("modal-tags").innerHTML = jlptBadge + posBadge;
 
-          // Example sentences — use word in a simple template if no data
-          const word = item.kanji || item["Hiragana/Katakana"] || "";
-          const reading = item["Hiragana/Katakana"] || "";
-          const meaning = item.definition || "";
-          const examplesEl = document.getElementById("modal-examples");
-          examplesEl.innerHTML = `
-            <div class="example-sentence">
-              <div class="example-jp" id="ex-jp-1">
-                <ruby>${word}<rt>${reading}</rt></ruby>を使った例文です。
-              </div>
-              <div class="example-en">This is an example sentence using "${meaning}".</div>
-              <button class="btn-toggle-furigana" onclick="app.toggleFurigana('ex-jp-1', this)">+ Show / Hide Furigana</button>
-            </div>`;
+          // Example sentences — load from item.examples array
+          document.getElementById("example-input").value = "";
+          this._renderExamples(item.examples || []);
 
           // Synonyms
           const syns = this._detailSynonyms[item.id] || [];
@@ -4041,6 +4046,55 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
           document.getElementById("vocab-detail-modal").classList.remove("open");
           document.body.style.overflow = "";
           this._detailItem = null;
+        },
+
+        _renderExamples: function (examples) {
+          const el = document.getElementById("modal-examples");
+          if (!el) return;
+          if (!examples || examples.length === 0) {
+            el.innerHTML = `<span style="font-size:0.78rem;color:var(--text-sub);">例文はまだありません。(No examples yet.)</span>`;
+            return;
+          }
+          el.innerHTML = examples.map((s, i) => `
+            <div class="example-sentence" style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+              <div class="example-jp" style="flex:1;">${s}</div>
+              <button onclick="app.deleteExample(${i})" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:0.8rem;padding:2px 4px;flex-shrink:0;">✕</button>
+            </div>`).join("");
+        },
+
+        addExample: async function () {
+          const input = document.getElementById("example-input");
+          const val = (input.value || "").trim();
+          if (!val || !this._detailItem) return;
+          const item = this._detailItem;
+          const examples = [...(item.examples || []), val];
+          input.value = "";
+          try {
+            const { error } = await this.dbClient.from("vocab").update({ examples }).eq("id", item.id);
+            if (error) throw error;
+            item.examples = examples;
+            const idx = this.vocabData.findIndex(v => v.id === item.id);
+            if (idx !== -1) this.vocabData[idx].examples = examples;
+            this._renderExamples(examples);
+          } catch (err) {
+            alert("保存失敗: " + err.message);
+          }
+        },
+
+        deleteExample: async function (index) {
+          if (!this._detailItem) return;
+          const item = this._detailItem;
+          const examples = (item.examples || []).filter((_, i) => i !== index);
+          try {
+            const { error } = await this.dbClient.from("vocab").update({ examples }).eq("id", item.id);
+            if (error) throw error;
+            item.examples = examples;
+            const idx = this.vocabData.findIndex(v => v.id === item.id);
+            if (idx !== -1) this.vocabData[idx].examples = examples;
+            this._renderExamples(examples);
+          } catch (err) {
+            alert("削除失敗: " + err.message);
+          }
         },
 
         toggleFurigana: function (elId, btn) {
@@ -4100,7 +4154,8 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
             return;
           }
           const matches = this.vocabData.filter(w => {
-            return (w.kanji && w.kanji.toLowerCase().includes(q)) ||
+            return (w.kanji && (w.kanji.includes(query.trim()) || w.kanji.toLowerCase().includes(q))) ||
+              (w["Hiragana/Katakana"] && w["Hiragana/Katakana"].includes(query.trim())) ||
               (w["Hiragana/Katakana"] && w["Hiragana/Katakana"].toLowerCase().includes(q)) ||
               (w.definition && w.definition.toLowerCase().includes(q));
           }).slice(0, 8);
