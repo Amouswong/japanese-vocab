@@ -1494,6 +1494,51 @@
         transform: translateY(-1px);
       }
       .next-quiz-unit { font-size: 0.72rem; color: var(--primary); }
+
+      /* ── Minna Quiz Page ─────────────────────────────────── */
+      .minna-setup-card { background: var(--bg-surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+      .minna-tab-row { display: flex; gap: 8px; margin-bottom: 16px; }
+      .minna-tab { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: none; color: var(--text-sub); font-family: inherit; font-size: 0.88rem; cursor: pointer; transition: all 0.15s; }
+      .minna-tab.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
+      .minna-chip-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+      .minna-chip { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: none; color: var(--text-main); font-size: 0.82rem; cursor: pointer; font-family: inherit; transition: all 0.15s; text-align: center; line-height: 1.5; }
+      .minna-chip:hover { background: var(--bg-hover); color: var(--text-main); }
+      .minna-chip.selected { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
+      .minna-count-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-size: 0.85rem; color: var(--text-sub); }
+      .minna-count-row input[type=range] { flex: 1; accent-color: var(--primary); }
+      #minna-quiz-area, #minna-setup { margin-top: 8px; max-width: 80%; margin-left: auto; margin-right: auto; }
+      .minna-count-btn { padding: 7px 18px; border-radius: 8px; border: 1px solid var(--line); background: none; color: var(--text-sub); font-family: inherit; font-size: 0.88rem; cursor: pointer; transition: all 0.15s; }
+      .minna-count-btn:hover { background: var(--bg-hover); color: var(--text-main); }
+      .minna-count-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
+      .minna-q-card { background: var(--bg-surface); border: 1px solid var(--line); border-radius: 16px; padding: 24px 20px; margin-bottom: 14px; }
+      .minna-q-num { font-size: 0.75rem; color: var(--text-sub); margin-bottom: 8px; }
+      .minna-q-text { font-size: 1.15rem; color: var(--text-main); line-height: 1.7; margin-bottom: 18px; font-family: 'Noto Sans JP', sans-serif; }
+      .minna-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      @media (max-width: 480px) { .minna-options { grid-template-columns: 1fr; } }
+      .minna-opt { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-card); color: var(--text-main); font-family: 'Noto Sans JP', sans-serif; font-size: 0.92rem; cursor: pointer; text-align: left; transition: all 0.15s; }
+      .minna-opt:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--primary); }
+      .minna-opt.correct { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #22c55e; font-weight: 600; }
+      .minna-opt.wrong { background: rgba(239,68,68,0.12); border-color: #ef4444; color: #ef4444; }
+      .minna-opt:disabled { cursor: default; }
+      /* Choice buttons used in quiz */
+      .minna-choice-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-card); color: var(--text-main); font-family: 'Noto Sans JP', sans-serif; font-size: 0.88rem; cursor: pointer; text-align: left; transition: all 0.15s; }
+      .minna-choice-btn:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--primary); }
+      .minna-choice-btn.correct { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #22c55e; font-weight: 600; }
+      .minna-choice-btn.wrong { background: rgba(239,68,68,0.12); border-color: #ef4444; color: #ef4444; }
+      .minna-choice-btn:disabled { cursor: default; }
+      .minna-choice-label { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--line); color: var(--text-sub); font-size: 0.72rem; font-weight: 700; flex-shrink: 0; }
+      .minna-choice-btn.correct .minna-choice-label { background: #22c55e; color: white; }
+      .minna-choice-btn.wrong .minna-choice-label { background: #ef4444; color: white; }
+      /* Topic badge in quiz header */
+      .minna-topic-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(139,92,246,0.12); border-radius: 20px; font-size: 0.76rem; color: var(--primary); font-weight: 600; margin-bottom: 10px; }
+      /* Question number pill */
+      .minna-q-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; background: var(--bg-hover); border-radius: 20px; font-size: 0.75rem; color: var(--text-sub); font-weight: 600; }
+      .minna-q-pill-current { color: var(--primary); font-size: 0.9rem; }
+      .minna-explain { margin-top: 12px; padding: 12px; background: rgba(139,92,246,0.08); border-radius: 10px; font-size: 0.84rem; color: var(--text-sub); line-height: 1.6; border-left: 3px solid var(--primary); }
+      .minna-score-card { text-align: center; padding: 32px 20px; background: var(--bg-surface); border: 1px solid var(--line); border-radius: 16px; }
+      .minna-score-num { font-size: 3rem; font-weight: 700; color: var(--primary); }
+      .minna-score-label { font-size: 0.9rem; color: var(--text-sub); margin-top: 4px; margin-bottom: 20px; }
+      .minna-loading { text-align: center; padding: 48px; color: var(--text-sub); font-size: 0.9rem; }
     </style>
   </head>
   <body>
@@ -1503,6 +1548,7 @@
         <button id="nav-study" class="active" onclick="app.showPage('home')">学習</button>
         <button id="nav-db" onclick="app.showPage('db')">単語帳</button>
         <button id="nav-news" onclick="app.showPage('news')">ニュース</button>
+        <button id="nav-minna" onclick="app.showPage('minna')">文法練習</button>
       </div>
     </nav>
     <div class="container">
@@ -1901,6 +1947,92 @@
       </div>
     </div>
 
+    <!-- ── Minna no Nihongo Grammar Quiz Page ─────────────────── -->
+    <div id="page-minna" class="hidden">
+
+      <!-- Setup screen -->
+      <div id="minna-setup">
+        <div class="dashboard-card">
+          <h4 style="margin:0 0 14px 0;font-size:1rem;">📚 文法練習 — みんなの日本語</h4>
+
+          <!-- Mode tabs -->
+          <div style="display:flex;gap:6px;margin-bottom:16px;">
+            <button id="minna-tab-lesson" class="minna-tab active" onclick="app.minnaSetTab('lesson')">📖 課別</button>
+            <button id="minna-tab-topic" class="minna-tab" onclick="app.minnaSetTab('topic')">🔤 文法主題</button>
+          </div>
+
+          <!-- Lesson picker -->
+          <div id="minna-lesson-panel">
+            <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:8px;">課を選択（複数可）</div>
+            <div id="minna-lesson-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
+          </div>
+
+          <!-- Topic picker -->
+          <div id="minna-topic-panel" class="hidden">
+            <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:8px;">文法テーマを選択（複数可）</div>
+            <div id="minna-topic-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
+          </div>
+
+          <!-- Question count -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <span style="font-size:0.85rem;color:var(--text-sub);">問題数：</span>
+            <button class="minna-count-btn active" data-count="5" onclick="app.minnaSetCount(5)">5問</button>
+            <button class="minna-count-btn" data-count="10" onclick="app.minnaSetCount(10)">10問</button>
+            <button class="minna-count-btn" data-count="15" onclick="app.minnaSetCount(15)">15問</button>
+          </div>
+
+          <button onclick="app.minnaStart()" class="btn-main" style="width:100%;">🚀 クイズを開始</button>
+        </div>
+      </div>
+
+      <!-- Quiz screen -->
+      <div id="minna-quiz-area" class="hidden">
+        <!-- Topic + quit header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div>
+            <div id="minna-topic-label" style="font-size:0.7rem;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">トピック</div>
+            <div id="minna-topic-name" style="font-size:0.9rem;font-weight:600;color:var(--text-main);"></div>
+          </div>
+          <span onclick="app.minnaQuit()" style="cursor:pointer;color:var(--primary);font-weight:600;font-size:0.82rem;padding:4px 10px;border:1px solid var(--primary);border-radius:20px;">終了</span>
+        </div>
+        <!-- Progress: Q3/5 pill + bar -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span id="minna-q-num" style="font-size:0.75rem;font-weight:700;color:white;background:var(--primary);padding:2px 10px;border-radius:20px;white-space:nowrap;">Q1 / 5</span>
+          <div class="progress-bg" style="flex:1;margin:0;">
+            <div id="minna-q-progress-fill" class="progress-fill"></div>
+          </div>
+        </div>
+
+        <div id="minna-loading" class="hidden" style="text-align:center;padding:48px 0;color:var(--text-sub);">
+          ✨ AI が問題を生成中... (請稍候)
+        </div>
+
+        <div id="minna-question-wrap" class="hidden">
+          <div class="dashboard-card" style="margin-bottom:12px;">
+            <div id="minna-q-type" style="font-size:0.72rem;color:var(--primary);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;"></div>
+            <div id="minna-q-text" style="font-size:1.1rem;font-family:'Noto Sans JP',sans-serif;line-height:1.7;color:var(--text-main);"></div>
+          </div>
+          <div id="minna-choices" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+          <div id="minna-explanation" class="hidden" style="margin-top:4px;padding:14px 16px;background:rgba(139,92,246,0.08);border-radius:12px;font-size:0.85rem;color:var(--text-sub);line-height:1.6;border-left:3px solid var(--primary);"></div>
+          <button id="minna-next-btn" class="btn-main hidden" style="margin-top:14px;" onclick="app.minnaNext()">次へ →</button>
+        </div>
+      </div>
+
+      <!-- Result screen -->
+      <div id="minna-result" class="hidden">
+        <div class="dashboard-card" style="text-align:center;padding:32px 20px;">
+          <div style="font-size:3rem;font-weight:700;color:var(--primary);margin-bottom:4px;" id="minna-score"></div>
+          <div style="font-size:0.9rem;color:var(--text-sub);margin-bottom:6px;" id="minna-score-pct"></div>
+          <div style="font-size:1.1rem;font-weight:600;color:var(--text-main);margin-bottom:20px;" id="minna-grade"></div>
+          <div style="display:flex;gap:8px;justify-content:center;">
+            <button onclick="app.minnaRetry()" class="btn-main" style="width:auto;padding:10px 20px;">もう一度</button>
+            <button onclick="app.minnaBackSetup()" class="btn-sm" style="padding:10px 16px;">設定へ戻る</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
     <!-- Word lookup popup (appears on article text selection) -->
     <div id="word-lookup-popup" style="display:none;position:fixed;z-index:9999;background:var(--bg-surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 8px 32px rgba(0,0,0,0.5);min-width:160px;max-width:240px;">
       <div id="word-popup-word" style="font-size:1.1rem;font-weight:bold;margin-bottom:8px;color:var(--text-main);font-family:'Noto Sans JP',sans-serif;"></div>
@@ -2103,6 +2235,7 @@
           document.getElementById("page-quiz").classList.add("hidden");
           document.getElementById("page-db").classList.add("hidden");
           document.getElementById("page-news").classList.add("hidden");
+          document.getElementById("page-minna").classList.add("hidden");
           document.getElementById(`page-${pageId}`).classList.remove("hidden");
 
           document.getElementById("nav-study").classList.remove("active");
@@ -2123,6 +2256,10 @@
           if (pageId === "news") {
             document.getElementById("nav-news").classList.add("active");
             this.initNewsPage();
+          }
+          if (pageId === "minna") {
+            document.getElementById("nav-minna").classList.add("active");
+            this.initMinnaPage();
           }
 
           if (pageId !== "quiz") {
@@ -3005,9 +3142,11 @@
 
         init: async function () {
           try {
-            // Clear any stale non-Gemini API key from localStorage
+            // Load Gemini API key from localStorage
             const storedKey = localStorage.getItem("kaizen_gemini_key");
-            if (storedKey && !storedKey.startsWith("AIza")) {
+            if (storedKey && storedKey.startsWith("AIza")) {
+              this.geminiApiKey = storedKey;
+            } else {
               localStorage.removeItem("kaizen_gemini_key");
             }
             const url = "https://ogjzoudptzwwmpwtpaar.supabase.co";
@@ -3224,12 +3363,12 @@
           });
         },
 
-        // ── Gemini News & AI Teacher ─────────────────────────
+        // ── News & AI Teacher ─────────────────────────
 
-        // Shared Gemini API helper (replaces Groq calls)
+        // Shared Gemini API helper
         _geminiChat: async function(messages, maxTokens) {
           maxTokens = maxTokens || 1024;
-          const models = ["gemini-2.5-flash", "gemini-flash-latest"];
+          const models = ["gemini-2.5-flash-preview-05-20", "gemini-2.5-flash", "gemini-2.5-pro"];
 
           // Convert OpenAI-style messages to Gemini format
           const systemMsg = messages.find(m => m.role === "system");
@@ -3250,19 +3389,34 @@
 
           let lastError;
           for (const model of models) {
-            const res = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.geminiApiKey}`,
-              { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
-            );
-            if (!res.ok) {
-              const e = await res.json();
-              lastError = new Error(e.error?.message || `HTTP ${res.status}`);
-              // Only retry on overload/unavailable errors
-              if (res.status === 503 || res.status === 429 || (e.error?.message || "").includes("high demand") || (e.error?.message || "").includes("no longer available") || (e.error?.message || "").includes("not found")) continue;
-              throw lastError;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            try {
+              const res = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.geminiApiKey}`,
+                { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: controller.signal }
+              );
+              clearTimeout(timeoutId);
+              if (!res.ok) {
+                const e = await res.json();
+                lastError = new Error(e.error?.message || `HTTP ${res.status}`);
+                if (res.status === 503 || res.status === 429 || res.status === 404 ||
+                    (e.error?.message || "").includes("high demand") ||
+                    (e.error?.message || "").includes("no longer available") ||
+                    (e.error?.message || "").includes("is not found") ||
+                    (e.error?.message || "").includes("not supported")) continue;
+                throw lastError;
+              }
+              const data = await res.json();
+              return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            } catch (e) {
+              clearTimeout(timeoutId);
+              if (e.name === "AbortError") {
+                lastError = new Error(`請求逾時 (${model})`);
+                continue;
+              }
+              throw e;
             }
-            const data = await res.json();
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
           }
           throw lastError;
         },
@@ -3285,15 +3439,6 @@
         },
 
         initNewsPage: function () {
-          const stored = localStorage.getItem("kaizen_gemini_key");
-          if (stored && stored.startsWith("AIza")) {
-            this.geminiApiKey = stored;
-          }
-          if (!this.geminiApiKey) {
-            document.getElementById("news-key-setup").classList.remove("hidden");
-            document.getElementById("news-main").classList.add("hidden");
-            return;
-          }
           document.getElementById("news-key-setup").classList.add("hidden");
           document.getElementById("news-main").classList.remove("hidden");
 
@@ -3425,7 +3570,7 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
               { role: "system", content: "CRITICAL: ALL verbs in vocabulary must use ます form, never dictionary form. Return ONLY valid JSON, no markdown, no extra text." },
               { role: "user", content: prompt }
             ], maxTokens);
-            console.log("Gemini raw response:", rawFull);
+            console.log("Claude raw response:", rawFull);
             // Strip any markdown fences (with or without leading spaces/newlines)
             const raw = rawFull.replace(/[\s\S]*?(\{[\s\S]*\})[\s\S]*/m, "$1").trim();
 
@@ -3744,7 +3889,7 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
           const input = document.getElementById("manual-lookup-input");
           const btn = document.getElementById("manual-lookup-btn");
           const word = (input.value || "").trim();
-          if (!word || !this.geminiApiKey) return;
+          if (!word) return;
           input.value = "";
           btn.disabled = true;
           btn.textContent = "查詢中...";
@@ -3875,7 +4020,7 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
         sendChat: async function () {
           const input = document.getElementById("chat-input");
           const userMsg = input.value.trim();
-          if (!userMsg || !this.geminiApiKey) return;
+          if (!userMsg) return;
 
           input.value = "";
           input.disabled = true;
@@ -3926,6 +4071,323 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
             input.focus();
             messagesEl.scrollTop = messagesEl.scrollHeight;
           }
+        },
+
+        // ── みんなの日本語 Grammar Quiz ──────────────────────
+        minnaState: {
+          mode: null,        // 'lesson' | 'topic'
+          selection: null,   // lesson number or topic key
+          questions: [],
+          currentIdx: 0,
+          score: 0,
+          loading: false,
+        },
+
+        initMinnaPage: function () {
+          document.getElementById("minna-setup").classList.remove("hidden");
+          document.getElementById("minna-quiz-area").classList.add("hidden");
+          document.getElementById("minna-result").classList.add("hidden");
+          this.minnaState.mode = "lesson";
+          this.minnaState.selection = null;
+          this.minnaState.qCount = 5;
+          this.renderMinnaSelector("lesson");
+        },
+
+        // Aliases used by HTML buttons
+        minnaSetTab: function (tab) { this.switchMinnaTab(tab); },
+        minnaStart: function () { this.startMinnaQuiz(); },
+        minnaQuit: function () {
+          document.getElementById("minna-quiz-area").classList.add("hidden");
+          document.getElementById("minna-result").classList.add("hidden");
+          this.initMinnaPage();
+        },
+        minnaNext: function () { this.nextMinnaQuestion(); },
+        minnaRetry: function () { this.retryMinna(); },
+        minnaBackSetup: function () { this.initMinnaPage(); },
+        minnaSetCount: function (n) {
+          this.minnaState.qCount = n;
+          document.querySelectorAll(".minna-count-btn").forEach(b =>
+            b.classList.toggle("active", parseInt(b.dataset.count) === n));
+        },
+
+        switchMinnaTab: function (tab) {
+          this.minnaState.mode = tab;
+          this.minnaState.selection = null;
+          document.getElementById("minna-tab-lesson").classList.toggle("active", tab === "lesson");
+          document.getElementById("minna-tab-topic").classList.toggle("active", tab === "topic");
+          document.getElementById("minna-lesson-panel").classList.toggle("hidden", tab !== "lesson");
+          document.getElementById("minna-topic-panel").classList.toggle("hidden", tab !== "topic");
+          this.renderMinnaSelector(tab);
+        },
+
+        renderMinnaSelector: function (tab) {
+          const lessonContainer = document.getElementById("minna-lesson-chips");
+          const topicContainer = document.getElementById("minna-topic-chips");
+          if (!lessonContainer || !topicContainer) return;
+          if (tab === "lesson") {
+            const lessons = [];
+            const lessonTopics = {
+                1:  { ja:"～は～です / ～の",       zh:"是～／的" },
+                2:  { ja:"これ/それ/あれ",           zh:"這個／那個／那個" },
+                3:  { ja:"動詞ます形",               zh:"動詞禮貌形" },
+                4:  { ja:"～を / ここ/そこ/あそこ",  zh:"助詞を／這裡那裡" },
+                5:  { ja:"助詞 で/に/へ",            zh:"助詞 で・に・へ" },
+                6:  { ja:"時間表現 / 数量",          zh:"時間表達／數量" },
+                7:  { ja:"～ている (動作)",          zh:"正在做～" },
+                8:  { ja:"て形 / ～てください",      zh:"て形／請做～" },
+                9:  { ja:"ない形 / ～てはいけない",  zh:"否定形／禁止" },
+                10: { ja:"助詞 に/で / ～にいる・ある", zh:"存在表達" },
+                11: { ja:"形容詞 い/な",             zh:"い形・な形容詞" },
+                12: { ja:"形容詞比較",               zh:"比較表達" },
+                13: { ja:"～たい / ～ながら",        zh:"想做～／邊做邊" },
+                14: { ja:"～たり～たり / ～し",      zh:"列舉動作／理由" },
+                15: { ja:"て形応用 / ～てみる",      zh:"て形應用／試試看" },
+                16: { ja:"普通形 / 名詞修飾",        zh:"普通形／名詞修飾" },
+                17: { ja:"～と思います / ～でしょう",zh:"我認為～／大概" },
+                18: { ja:"動詞た形 / 過去",          zh:"過去形" },
+                19: { ja:"条件 ～たら",              zh:"條件～的話" },
+                20: { ja:"受け身形",                 zh:"被動形" },
+                21: { ja:"使役形",                   zh:"使役形" },
+                22: { ja:"使役受け身",               zh:"使役被動形" },
+                23: { ja:"～てあげる/もらう/くれる", zh:"授受動詞" },
+                24: { ja:"敬語 尊敬語",              zh:"敬語（尊敬）" },
+                25: { ja:"敬語 謙譲語",              zh:"敬語（謙讓）" },
+              };
+            for (let i = 1; i <= 25; i++) {
+              const t = lessonTopics[i] || { ja: "", zh: "" };
+              lessons.push(`<button class="minna-chip" onclick="app.selectMinna('lesson',${i})">
+                <span style="font-weight:700;">第${i}課</span><br>
+                <small style="color:var(--text-sub);">${t.zh}</small><br>
+                <small style="color:var(--text-sub);font-size:0.7rem;">${t.ja}</small>
+              </button>`);
+            }
+            lessonContainer.innerHTML = lessons.join("");
+          } else {
+            const topics = {
+              present:"現在形・常態 (ます/です)",
+              past:"過去形 (ました/でした)",
+              te:"て形・ている",
+              nai:"ない形・ないで",
+              ta:"た形・たことがある",
+              potential:"可能形 (～られます)",
+              passive:"受け身形 (被動)",
+              causative:"使役形・使役受け身",
+              conditional:"条件形 (たら/ば/なら)",
+              giving:"授受動詞 (あげる/もらう/くれる)",
+              keigo:"敬語 (尊敬語/謙譲語)",
+              adjective:"形容詞活用",
+              comparison:"比較表現",
+            };
+            topicContainer.innerHTML = Object.entries(topics).map(([k,v]) =>
+              `<button class="minna-chip" onclick="app.selectMinna('topic','${k}')">
+                ${v}
+              </button>`
+            ).join("");
+          }
+        },
+
+        selectMinna: function (mode, selection) {
+          this.minnaState.mode = mode;
+          this.minnaState.selection = selection;
+          document.querySelectorAll(".minna-chip").forEach(b => b.classList.remove("selected"));
+          event.target.closest(".minna-chip").classList.add("selected");
+        },
+
+        startMinnaQuiz: async function () {
+          if (!this.minnaState.selection) {
+            alert("請先選擇課別或文法主題！"); return;
+          }
+          if (!this.geminiApiKey) {
+            alert("請先在ニュース頁面設定 Gemini API Key！"); return;
+          }
+
+          document.getElementById("minna-setup").classList.add("hidden");
+          document.getElementById("minna-quiz-area").classList.remove("hidden");
+          document.getElementById("minna-result").classList.add("hidden");
+          document.getElementById("minna-loading").classList.remove("hidden");
+          document.getElementById("minna-question-wrap").classList.add("hidden");
+
+          const { mode, selection } = this.minnaState;
+          const qCount = this.minnaState.qCount || 5;
+
+          const topicLabels = {
+            present:"現在形・常態 (ます/です)",past:"過去形 (ました/でした)",
+            te:"て形・ている",nai:"ない形",ta:"た形・たことがある",
+            potential:"可能形",passive:"受け身形",causative:"使役形",
+            conditional:"条件形 (たら/ば/なら)",giving:"授受動詞",
+            keigo:"敬語",adjective:"形容詞活用",comparison:"比較表現",
+          };
+
+          const topicDesc = mode === "lesson"
+            ? `みんなの日本語 第${selection}課の文法内容`
+            : topicLabels[selection] || selection;
+          this.minnaState.topicLabel = mode === "lesson" ? `第 ${selection} 課` : (topicLabels[selection] || selection);
+
+          const prompt = `You are a Japanese language quiz generator for みんなの日本語 textbook.
+Generate exactly ${qCount} multiple-choice questions about: ${topicDesc}
+
+Rules:
+- Each question tests one specific grammar point or vocabulary from the topic
+- 4 answer choices per question (A/B/C/D), only one is correct
+- Vary question types: fill-in-the-blank, verb conjugation, choose correct particle, sentence meaning, translation
+- Difficulty: beginner to intermediate (JLPT N4-N5 level)
+- Include a brief explanation in Traditional Chinese (繁體中文) for why the correct answer is right
+
+CRITICAL: Return ONLY a valid JSON array. No markdown fences. No extra text before or after.
+In the explanation field, do NOT use double quotes (") inside the text. Use single quotes or rephrase.
+Format:
+[{"q":"question","choices":["A. opt","B. opt","C. opt","D. opt"],"answer":0,"type":"fill-in","explanation":"解釋文字不含雙引號"}]
+"answer" is the 0-based index of the correct choice. Ensure all 4 choices look plausible.`;
+
+          try {
+            const raw = await this._geminiChat([
+              { role: "system", content: "Return ONLY valid JSON array, no markdown fences, no extra text." },
+              { role: "user", content: prompt }
+            ], 8192);
+
+            // Robust JSON extraction and parsing
+            let cleaned = raw
+              .replace(/```json\s*/gi, "")
+              .replace(/```\s*/g, "")
+              .trim();
+            const startIdx = cleaned.indexOf("[");
+            const endIdx = cleaned.lastIndexOf("]");
+            if (startIdx === -1 || endIdx === -1) throw new Error("AI 沒有回傳正確格式");
+            let jsonStr = cleaned.slice(startIdx, endIdx + 1)
+              .replace(/,\s*([}\]])/g, "$1");
+
+            // Fix invalid JSON: repair unescaped double quotes inside string values
+            // by using a character-by-character parser approach
+            function repairJson(str) {
+              let result = "";
+              let inString = false;
+              let escape = false;
+              for (let i = 0; i < str.length; i++) {
+                const ch = str[i];
+                if (escape) { result += ch; escape = false; continue; }
+                if (ch === "\\") { result += ch; escape = true; continue; }
+                if (ch === "\"") {
+                  if (!inString) { inString = true; result += ch; continue; }
+                  // Check if this quote ends the string (next non-space is : , } ])
+                  let j = i + 1;
+                  while (j < str.length && str[j] === " ") j++;
+                  const next = str[j];
+                  if (next === ":" || next === "," || next === "}" || next === "]" || j >= str.length) {
+                    inString = false; result += ch;
+                  } else {
+                    result += "\\\""; // escape the rogue quote
+                  }
+                  continue;
+                }
+                if (inString && (ch === "\n" || ch === "\r")) { result += " "; continue; }
+                result += ch;
+              }
+              return result;
+            }
+
+            let questions;
+            try {
+              questions = JSON.parse(jsonStr);
+            } catch (parseErr) {
+              try {
+                questions = JSON.parse(repairJson(jsonStr));
+              } catch(e2) {
+                throw new Error("JSON 格式錯誤：" + parseErr.message);
+              }
+            }
+            if (!Array.isArray(questions) || questions.length === 0) throw new Error("題目解析失敗");
+
+            this.minnaState.questions = questions;
+            this.minnaState.currentIdx = 0;
+            this.minnaState.score = 0;
+
+            document.getElementById("minna-loading").classList.add("hidden");
+            document.getElementById("minna-question-wrap").classList.remove("hidden");
+            this.renderMinnaQuestion();
+          } catch (err) {
+            document.getElementById("minna-loading").innerHTML =
+              `<div style="color:var(--danger)">❌ 出題失敗：${err.message}<br><small>請稍後再試</small></div>
+               <button onclick="app.initMinnaPage()" class="btn-main" style="margin-top:12px;">← 返回</button>`;
+          }
+        },
+
+        renderMinnaQuestion: function () {
+          const { questions, currentIdx } = this.minnaState;
+          const q = questions[currentIdx];
+          if (!q) return;
+
+          document.getElementById("minna-q-num").textContent = `Q${currentIdx + 1} / ${questions.length}`;
+          // Show selected topic name
+          const topicEl = document.getElementById("minna-topic-name");
+          if (topicEl) topicEl.textContent = this.minnaState.topicLabel || "";
+          document.getElementById("minna-q-progress-fill").style.width = `${(currentIdx / questions.length) * 100}%`;
+          document.getElementById("minna-q-type").textContent = q.type || "";
+          document.getElementById("minna-q-text").innerHTML = (q.q || "").replace(/___/g, '<span class="minna-blank">___</span>');
+          document.getElementById("minna-explanation").classList.add("hidden");
+          document.getElementById("minna-next-btn").classList.add("hidden");
+
+          const choicesEl = document.getElementById("minna-choices");
+          const labels = ["A", "B", "C", "D"];
+          choicesEl.innerHTML = q.choices.map((c, i) =>
+            `<button class="minna-choice-btn" onclick="app.answerMinna(${i})"><span class="minna-choice-label">${labels[i]}</span>${c}</button>`
+          ).join("");
+        },
+
+        answerMinna: function (idx) {
+          const { questions, currentIdx } = this.minnaState;
+          const q = questions[currentIdx];
+          const correct = q.answer;
+          const isCorrect = idx === correct;
+
+          if (isCorrect) this.minnaState.score++;
+
+          // Disable all choices and highlight
+          document.querySelectorAll(".minna-choice-btn").forEach((btn, i) => {
+            btn.disabled = true;
+            if (i === correct) btn.classList.add("correct");
+            else if (i === idx && !isCorrect) btn.classList.add("wrong");
+          });
+
+          // Show explanation
+          const expEl = document.getElementById("minna-explanation");
+          expEl.innerHTML = `<div class="minna-exp-icon">${isCorrect ? "✅" : "❌"}</div>
+            <div class="minna-exp-text">${q.explanation || ""}</div>`;
+          expEl.classList.remove("hidden");
+
+          document.getElementById("minna-next-btn").classList.remove("hidden");
+        },
+
+        nextMinnaQuestion: function () {
+          this.minnaState.currentIdx++;
+          if (this.minnaState.currentIdx >= this.minnaState.questions.length) {
+            this.showMinnaResult();
+          } else {
+            this.renderMinnaQuestion();
+          }
+        },
+
+        showMinnaResult: function () {
+          document.getElementById("minna-question-wrap").classList.add("hidden");
+          document.getElementById("minna-result").classList.remove("hidden");
+
+          const { score, questions } = this.minnaState;
+          const total = questions.length;
+          const pct = Math.round((score / total) * 100);
+          const grade = pct >= 80 ? "🎉 優秀！" : pct >= 60 ? "👍 良好" : "💪 繼續加油！";
+
+          document.getElementById("minna-score").textContent = `${score} / ${total}`;
+          document.getElementById("minna-score-pct").textContent = `${pct}%`;
+          document.getElementById("minna-grade").textContent = grade;
+        },
+
+        retryMinna: function () {
+          this.minnaState.currentIdx = 0;
+          this.minnaState.score = 0;
+          document.getElementById("minna-result").classList.add("hidden");
+          document.getElementById("minna-quiz-area").classList.remove("hidden");
+          document.getElementById("minna-loading").classList.add("hidden");
+          document.getElementById("minna-question-wrap").classList.remove("hidden");
+          this.renderMinnaQuestion();
         },
 
         // ── Mobile quiz bar helpers ──────────────────────────
