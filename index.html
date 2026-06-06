@@ -305,6 +305,16 @@
         margin-bottom: 8px;
         overflow: hidden;
       }
+      @keyframes indeterminate-slide {
+        0% { transform: translateX(-100%) scaleX(0.5); }
+        50% { transform: translateX(60%) scaleX(0.4); }
+        100% { transform: translateX(300%) scaleX(0.5); }
+      }
+      .progress-indeterminate {
+        animation: indeterminate-slide 1.4s ease-in-out infinite;
+        transform-origin: left center;
+        width: 50%;
+      }
       .progress-fill {
         height: 100%;
         background: var(--primary);
@@ -1589,7 +1599,7 @@
                 <div class="action-due-num" id="next-quiz-count">0</div>
                 <div class="action-due-lbl">問 待ち</div>
               </div>
-              <button class="btn-main btn-start btn-start-hero" onclick="app.startSession(false)">
+<button class="btn-main btn-start btn-start-hero" onclick="app.startSession(false)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                 全ての復習を開始
               </button>
@@ -1902,7 +1912,10 @@
             </div>
 
             <div id="news-loading" class="hidden" style="text-align:center;padding:24px;color:var(--text-sub);">
-              ✨ AIが記事を生成中... (AI 生成中，請稍候...)
+              <div style="margin-bottom:10px;font-size:0.9rem;">✨ AIが記事を生成中... (AI 生成中，請稍候...)</div>
+              <div style="width:100%;max-width:340px;margin:0 auto;height:6px;background:var(--line);border-radius:99px;overflow:hidden;">
+                <div class="progress-indeterminate" style="height:100%;border-radius:99px;background:var(--primary);"></div>
+              </div>
             </div>
 
             <div id="news-content">
@@ -1974,11 +1987,19 @@
           </div>
 
           <!-- Question count -->
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
             <span style="font-size:0.85rem;color:var(--text-sub);">問題数：</span>
             <button class="minna-count-btn active" data-count="5" onclick="app.minnaSetCount(5)">5問</button>
             <button class="minna-count-btn" data-count="10" onclick="app.minnaSetCount(10)">10問</button>
             <button class="minna-count-btn" data-count="15" onclick="app.minnaSetCount(15)">15問</button>
+          </div>
+
+          <!-- Difficulty selector -->
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+            <span style="font-size:0.85rem;color:var(--text-sub);white-space:nowrap;">難易度：</span>
+            <button class="minna-diff-btn active" data-diff="n5" onclick="app.minnaSetDiff('n5',this)" style="font-size:0.75rem;padding:4px 11px;border-radius:20px;border:1px solid var(--n5);background:var(--n5);color:#000;cursor:pointer;font-weight:700;">🟦 N5 入門</button>
+            <button class="minna-diff-btn" data-diff="n4" onclick="app.minnaSetDiff('n4',this)" style="font-size:0.75rem;padding:4px 11px;border-radius:20px;border:1px solid var(--n4);background:transparent;color:var(--n4);cursor:pointer;">🟩 N4 初級</button>
+            <button class="minna-diff-btn" data-diff="mixed" onclick="app.minnaSetDiff('mixed',this)" style="font-size:0.75rem;padding:4px 11px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--text-sub);cursor:pointer;">🔀 混合</button>
           </div>
 
           <button onclick="app.minnaStart()" class="btn-main" style="width:100%;">🚀 クイズを開始</button>
@@ -2004,7 +2025,10 @@
         </div>
 
         <div id="minna-loading" class="hidden" style="text-align:center;padding:48px 0;color:var(--text-sub);">
-          ✨ AI が問題を生成中... (請稍候)
+          <div style="margin-bottom:12px;font-size:0.9rem;">✨ AI が問題を生成中... (請稍候)</div>
+          <div style="width:100%;max-width:340px;margin:0 auto;height:6px;background:var(--line);border-radius:99px;overflow:hidden;">
+            <div class="progress-indeterminate" style="height:100%;border-radius:99px;background:var(--primary);"></div>
+          </div>
         </div>
 
         <div id="minna-question-wrap" class="hidden">
@@ -2857,12 +2881,16 @@
           }
 
           let options = [currentWord];
-          let otherWords = this.vocabData.filter(
-            (item) => item.id !== currentWord.id,
-          );
-          otherWords = otherWords.sort(() => 0.5 - Math.random());
+          // Prefer distractors from the same JLPT level; fall back to adjacent levels
+          const sameLevel = this.vocabData.filter(
+            (item) => item.id !== currentWord.id && item.JLPT === currentWord.JLPT,
+          ).sort(() => 0.5 - Math.random());
+          const otherLevel = this.vocabData.filter(
+            (item) => item.id !== currentWord.id && item.JLPT !== currentWord.JLPT,
+          ).sort(() => 0.5 - Math.random());
+          const distractorPool = [...sameLevel, ...otherLevel];
 
-          options = options.concat(otherWords.slice(0, 3));
+          options = options.concat(distractorPool.slice(0, 3));
           options = options.sort(() => 0.5 - Math.random());
 
           const mcArea = document.getElementById("ans-mc-area");
@@ -3390,7 +3418,7 @@
           let lastError;
           for (const model of models) {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const timeoutId = setTimeout(() => controller.abort(), 60000);
             try {
               const res = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.geminiApiKey}`,
@@ -3523,26 +3551,26 @@
 Title: ${nhk.title}
 Body: ${nhk.body}
 
-Provide a complete Traditional Chinese (繁體中文) translation and extract 5-6 vocabulary items useful for a ${this.newsLevel} learner.
+Provide a complete Traditional Chinese (繁體中文) translation, extract 5-6 vocabulary items useful for a ${this.newsLevel} learner, and rewrite the title adding <ruby> furigana for every kanji word.
 Return ONLY valid JSON (no markdown):
 {
+  "title_html": "title with <ruby>漢字<rt>よみ</rt></ruby> for every kanji word",
   "translation": "完整繁體中文翻譯",
   "vocabulary": [{"word": "kanji or empty string", "reading": "hiragana/katakana", "meaning": "繁體中文", "jlpt": 5, "pos": "名詞"}]
 }
 Rules: word = kanji form, empty string if no kanji. pos must be one of: 名詞,動詞(Group 1),動詞(Group 2),動詞(Group 3),I形容詞,Na形容詞,代名詞,副詞,助詞,感嘆詞,慣用語,接尾詞,疑問詞. jlpt = 1-5. Verbs: ます form only.`;
           } else {
-            // Fallback: rotate through 20 diverse topics so content always varies
+            // Fallback: ask Gemini to pick a fresh real-world topic, avoiding recently used ones
             maxTokens = 8000;
-            const topics = [
-              "桜の開花と花見の準備","富士山の登山ルール変更","東京バスの運転手不足",
-              "AIを使った農業の新技術","外国人が増える日本の学校","電力不足と省エネの取り組み",
-              "日本の伝統工芸を守る若者","コンビニで広がる新しいサービス","猫の殺処分ゼロを目指す活動",
-              "新しい宇宙ロケットの打ち上げ","川の水質が改善した話","給食に地元の食材を使う取り組み",
-              "高齢者向けのテクノロジー","外来種の駆除ボランティア","日本の子どもの読書離れ",
-              "再生可能エネルギーの普及","スポーツと健康づくりの新しい取り組み","SNSと若者のメンタルヘルス",
-              "地方の空き家問題と移住支援","日本語学習者が過去最多"
-            ];
-            const topic = topics[Math.floor(Date.now() / 86400000 + Math.random() * 7) % topics.length];
+            const usedTopicsKey = "kaizen_used_topics";
+            let usedTopics = [];
+            try { usedTopics = JSON.parse(localStorage.getItem(usedTopicsKey) || "[]"); } catch(e) {}
+            // Keep only last 30 to avoid the avoid-list growing forever
+            if (usedTopics.length > 30) usedTopics = usedTopics.slice(-30);
+            const avoidClause = usedTopics.length
+              ? `Do NOT use any of these recently used topics: ${usedTopics.slice(-10).join("、")}.`
+              : "";
+
             const levelGuide = {
               N5: "JLPT N5: only hiragana/katakana + N5 kanji; basic particles は、が、を、に、で; only ～です/～ます; 3-4 short sentences",
               N4: "JLPT N4: N4 kanji with furigana; patterns ～ている、～てください、～たい; 3-4 sentences",
@@ -3550,19 +3578,24 @@ Rules: word = kanji form, empty string if no kanji. pos must be one of: 名詞,�
               N2: "JLPT N2: N2 kanji with furigana on first use; formal patterns ～によると、～に対して; 5-6 sentences",
               N1: "JLPT N1: any kanji with furigana; advanced grammar ～に際して、～をもって; 5-7 sentences",
             };
-            prompt = `Write a Japanese news article about:「${topic}」
+            prompt = `Today is ${today}. You are writing a Japanese-learner news digest.
+Pick ONE specific, realistic news topic that could plausibly appear in Japanese news around this date. Choose from a wide variety of categories: politics, economy, technology, environment, sports, culture, health, science, local events, international affairs, etc. Make the topic feel like a real headline, not a generic theme.
+${avoidClause}
+
+Write a short Japanese news article about that topic.
 Level: ${levelGuide[this.newsLevel]}
-Keep the article to 3 sentences maximum. Keep translation to 1-2 sentences.
-Do NOT add ruby/furigana tags — plain Japanese text only.
+Keep the article to 3-4 sentences. Keep translation to 1-2 sentences.
+Add <ruby> furigana for EVERY kanji word. Example: <ruby>東京<rt>とうきょう</rt></ruby>
 
 Return ONLY a raw JSON object, no markdown fences, no extra text:
 {
-  "title": "Japanese title",
-  "article": "plain Japanese article text, no HTML tags",
+  "topic_used": "the topic you chose, in Japanese (short phrase)",
+  "title": "Japanese title with <ruby>漢字<rt>よみ</rt></ruby> for every kanji word",
+  "article": "Japanese article HTML with <ruby>漢字<rt>よみ</rt></ruby> for every kanji word",
   "translation": "Traditional Chinese (繁體中文) translation",
   "vocabulary": [{"word": "", "reading": "", "meaning": "", "jlpt": 5, "pos": "名詞"}]
 }
-3 vocabulary items only. pos from: 名詞,動詞(Group 1),動詞(Group 2),動詞(Group 3),I形容詞,Na形容詞,代名詞,副詞,助詞,感嘆詞,慣用語,接尾詞,疑問詞. jlpt 1-5. Verbs: ます form. Date: ${today}`;
+3 vocabulary items only. pos from: 名詞,動詞(Group 1),動詞(Group 2),動詞(Group 3),I形容詞,Na形容詞,代名詞,副詞,助詞,感嘆詞,慣用語,接尾詞,疑問詞. jlpt 1-5. Verbs: ます form.`;
           }
 
           try {
@@ -3580,8 +3613,18 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
             const aiResult = JSON.parse(jsonMatch[0]);
             if (Array.isArray(aiResult.vocabulary)) aiResult.vocabulary = this.normalizeMasuForm(aiResult.vocabulary);
 
+            // Track used topics to avoid repetition
+            if (!nhk && aiResult.topic_used) {
+              try {
+                const usedTopicsKey = "kaizen_used_topics";
+                const used = JSON.parse(localStorage.getItem(usedTopicsKey) || "[]");
+                used.push(aiResult.topic_used);
+                localStorage.setItem(usedTopicsKey, JSON.stringify(used.slice(-30)));
+              } catch(e) {}
+            }
+
             const article = nhk
-              ? { title: nhk.title, article: nhk.articleHtml, translation: aiResult.translation || "", vocabulary: aiResult.vocabulary || [], _source: "nhk", _nhkTitle: nhk.title, _newsId: nhk.newsId }
+              ? { title: aiResult.title_html || nhk.title, article: nhk.articleHtml, translation: aiResult.translation || "", vocabulary: aiResult.vocabulary || [], _source: "nhk", _nhkTitle: nhk.title, _newsId: nhk.newsId }
               : Object.assign(aiResult, { _source: "ai", _nhkTitle: null, _newsId: null });
 
             localStorage.setItem(cacheKey, JSON.stringify(article));
@@ -3716,7 +3759,7 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
                 <span style="font-size:0.78rem;color:var(--text-sub);margin-left:4px;">「${v.meaning}」</span>
                 <div style="font-size:0.7rem;color:#aaa;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${line}</div>
               </div>
-              <button onclick="app.copyExportLine(${idx},this)" class="btn-sm" style="flex-shrink:0;font-size:0.72rem;padding:4px 8px;">📋</button>
+              <button onclick="app.addExportLineToDb(${idx},this)" class="btn-sm" style="flex-shrink:0;font-size:0.72rem;padding:4px 8px;background:rgba(50,115,246,0.15);border-color:var(--primary);color:var(--primary);">＋ 加入DB</button>
               <button onclick="app.removeVocabItem('${source}',${key})" class="btn-danger" style="flex-shrink:0;font-size:0.72rem;padding:4px 8px;">×</button>
             </div>`;
           }).join("");
@@ -3725,7 +3768,7 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
             <div style="margin-top:12px;border-top:1px solid var(--line);">
               ${rows}
               <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-                <button onclick="app.copyVocabImport()" class="btn-sm" style="font-size:0.78rem;">📋 全部複製 → 貼到「単語帳 ＞ ＋ 新增」</button>
+                <button onclick="app.addAllExportToDb(this)" class="btn-sm" style="font-size:0.78rem;background:rgba(50,115,246,0.15);border-color:var(--primary);color:var(--primary);">＋ 全部加入DB</button>
                 <button onclick="app.clearVocabSelection()" class="btn-sm" style="font-size:0.78rem;color:var(--text-sub);">✕ 清除全部</button>
               </div>
             </div>`;
@@ -3739,6 +3782,76 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
           navigator.clipboard.writeText(line).then(() => {
             if (btn) { const o = btn.textContent; btn.textContent = "✓"; setTimeout(() => { btn.textContent = o; }, 900); }
           }).catch(() => {});
+        },
+
+        _vocabItemToInsert: function (v) {
+          let kanji = (v.word || "").trim() || null;
+          let reading = (v.reading || "").trim() || null;
+          let definition = (v.meaning || "").trim();
+          let jlptVal = parseInt(v.jlpt);
+          if (isNaN(jlptVal) || jlptVal < 1 || jlptVal > 5) jlptVal = null;
+          const posVal = (v.pos || "").trim() || null;
+          return {
+            kanji, "Hiragana/Katakana": reading, definition,
+            JLPT: jlptVal, pos: posVal,
+            stage: 0, nextReview: new Date().toISOString(),
+            mastered: false, created_at: new Date().toISOString(),
+          };
+        },
+
+        addExportLineToDb: async function (idx, btn) {
+          const item = this._exportItems?.[idx];
+          if (!item) return;
+          if (!this.dbClient) { alert("資料庫未連線！"); return; }
+          const orig = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = "加入中...";
+          try {
+            const row = this._vocabItemToInsert(item.v);
+            const { data, error } = await this.dbClient.from("vocab").insert([row]).select();
+            if (error) throw error;
+            btn.textContent = "✓ 已加入";
+            btn.style.color = "var(--success)";
+            btn.style.borderColor = "var(--success)";
+            if (data && data.length > 0) {
+              this.vocabData = [...data, ...this.vocabData];
+              this.vocabFullyLoaded = false;
+              this.updateDashboardStats();
+              this.renderList();
+            }
+          } catch (err) {
+            btn.disabled = false;
+            btn.textContent = orig;
+            alert("加入失敗：" + err.message);
+          }
+        },
+
+        addAllExportToDb: async function (btn) {
+          const items = this._exportItems;
+          if (!items || items.length === 0) return;
+          if (!this.dbClient) { alert("資料庫未連線！"); return; }
+          if (!confirm(`確定要將 ${items.length} 個單字全部加入資料庫？`)) return;
+          const orig = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = "加入中...";
+          try {
+            const rows = items.map(({ v }) => this._vocabItemToInsert(v));
+            const { data, error } = await this.dbClient.from("vocab").insert(rows).select();
+            if (error) throw error;
+            btn.textContent = `✓ 已加入 ${rows.length} 個`;
+            btn.style.color = "var(--success)";
+            btn.style.borderColor = "var(--success)";
+            if (data && data.length > 0) {
+              this.vocabData = [...data, ...this.vocabData];
+              this.vocabFullyLoaded = false;
+              this.updateDashboardStats();
+              this.renderList();
+            }
+          } catch (err) {
+            btn.disabled = false;
+            btn.textContent = orig;
+            alert("加入失敗：" + err.message);
+          }
         },
 
         removeVocabItem: function (source, key) {
@@ -3875,7 +3988,7 @@ pos must be exactly one of: 名詞, 動詞(Group 1), 動詞(Group 2), 動詞(Gro
 jlpt must be a number 1-5.
 For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べます/たべます not 食べる/たべる).`;
 
-          const raw = (await this._geminiChat([{ role: "user", content: prompt }], 500))
+          const raw = (await this._geminiChat([{ role: "user", content: prompt }], 1024))
             .replace(/[\s\S]*?(\{[\s\S]*\})[\s\S]*/m, "$1").trim();
           const result = JSON.parse(raw);
           if (result.pos && result.pos.includes('動詞')) {
@@ -4056,7 +4169,7 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
           ];
 
           try {
-            const aiText = (await this._geminiChat(messages, 700)) || "（無回應）";
+            const aiText = (await this._geminiChat(messages, 4096)) || "（無回應）";
             aiBubble.innerHTML = aiText.replace(/\n/g, "<br>");
 
             this.chatHistory.push(
@@ -4108,6 +4221,22 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
           this.minnaState.qCount = n;
           document.querySelectorAll(".minna-count-btn").forEach(b =>
             b.classList.toggle("active", parseInt(b.dataset.count) === n));
+        },
+
+        minnaSetDiff: function (diff, btn) {
+          this.minnaState.difficulty = diff;
+          document.querySelectorAll(".minna-diff-btn").forEach(b => {
+            const d = b.dataset.diff;
+            b.style.background = "transparent";
+            b.style.fontWeight = "normal";
+            if (d === "n5") b.style.color = "var(--n5)";
+            else if (d === "n4") b.style.color = "var(--n4)";
+            else b.style.color = "var(--text-sub)";
+          });
+          if (diff === "n5") { btn.style.background = "var(--n5)"; btn.style.color = "#000"; }
+          else if (diff === "n4") { btn.style.background = "var(--n4)"; btn.style.color = "#000"; }
+          else { btn.style.background = "var(--primary)"; btn.style.color = "white"; }
+          btn.style.fontWeight = "700";
         },
 
         switchMinnaTab: function (tab) {
@@ -4223,14 +4352,24 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
             : topicLabels[selection] || selection;
           this.minnaState.topicLabel = mode === "lesson" ? `第 ${selection} 課` : (topicLabels[selection] || selection);
 
+          const diff = this.minnaState.difficulty || "n5";
+          const difficultyDesc = diff === "n5"
+            ? "STRICTLY JLPT N5 level — absolute beginner. Use only the simplest vocabulary (numbers, greetings, basic nouns like 水/本/人, basic verbs like 食べる/飲む/行く). Sentences must be very short (under 10 words). Wrong choices must also be N5-level words so learners are not confused by unknown vocabulary. Do NOT use any N4, N3, N2, or N1 grammar or vocabulary."
+            : diff === "n4"
+            ? "JLPT N4 level — elementary. Use N4-N5 vocabulary and grammar. Sentences can be slightly longer. Include て形, ない形, たい, ている, and common particles. Do NOT use N3 or above patterns."
+            : "Mixed difficulty N5~N4. Include a range from simple N5 questions to slightly harder N4 patterns.";
+
           const prompt = `You are a Japanese language quiz generator for みんなの日本語 textbook.
 Generate exactly ${qCount} multiple-choice questions about: ${topicDesc}
+
+DIFFICULTY REQUIREMENT (MUST FOLLOW STRICTLY):
+${difficultyDesc}
 
 Rules:
 - Each question tests one specific grammar point or vocabulary from the topic
 - 4 answer choices per question (A/B/C/D), only one is correct
 - Vary question types: fill-in-the-blank, verb conjugation, choose correct particle, sentence meaning, translation
-- Difficulty: beginner to intermediate (JLPT N4-N5 level)
+- ALL vocabulary in questions AND answer choices must match the difficulty level above
 - Include a brief explanation in Traditional Chinese (繁體中文) for why the correct answer is right
 
 CRITICAL: Return ONLY a valid JSON array. No markdown fences. No extra text before or after.
