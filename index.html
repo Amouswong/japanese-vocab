@@ -1220,7 +1220,7 @@
       }
       #page-db { margin-top: -8px; }
       .db-sidebar {
-        width: 260px;
+        width: 390px;
         flex-shrink: 0;
         border-right: 1px solid var(--line);
         background: var(--bg-surface);
@@ -1360,7 +1360,7 @@
       }
       .db-row {
         display: grid;
-        grid-template-columns: 1fr 2fr auto auto;
+        grid-template-columns: 20px 1fr 2fr auto auto;
         align-items: center;
         gap: 12px;
         padding: 10px 12px;
@@ -1438,6 +1438,102 @@
       .db-action-btn svg { width: 14px; height: 14px; }
       .db-action-btn:hover { background: var(--bg-hover); color: var(--text-main); border-color: var(--text-sub); }
       .db-action-btn.danger:hover { background: rgba(244,63,94,0.1); color: var(--danger); border-color: var(--danger); }
+      /* Multi-select styles */
+      .db-row-checkbox {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 20px;
+      }
+      .db-row-checkbox input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: var(--primary);
+        border-radius: 3px;
+      }
+      .db-row.selected { background: rgba(139,92,246,0.08); }
+      .db-select-bar {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--primary);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        font-size: 0.82rem;
+        color: var(--text-main);
+      }
+      .db-select-bar.visible { display: flex; }
+      .db-select-bar-count { font-weight: 600; color: var(--primary); flex: 1; }
+      .db-select-bar-btn {
+        padding: 5px 12px;
+        border-radius: 5px;
+        border: 1px solid var(--line);
+        background: var(--bg-surface);
+        color: var(--text-main);
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: all 0.12s;
+      }
+      .db-select-bar-btn:hover { background: var(--bg-hover); border-color: var(--text-sub); }
+      .db-select-bar-btn.danger { color: var(--danger); border-color: var(--danger); }
+      .db-select-bar-btn.danger:hover { background: rgba(244,63,94,0.1); }
+      .db-select-all-btn {
+        font-size: 0.75rem;
+        color: var(--text-sub);
+        cursor: pointer;
+        text-decoration: underline;
+        background: none;
+        border: none;
+        padding: 0;
+      }
+      .db-select-all-btn:hover { color: var(--text-main); }
+      .db-table-header-select {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* Multi-select bulk action bar */
+      .bulk-action-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--primary);
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        font-size: 0.82rem;
+        animation: modal-in 0.15s ease;
+      }
+      .bulk-selected-count {
+        font-weight: 600;
+      }
+      .bulk-action-btn {
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 5px;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: background 0.12s;
+      }
+      .bulk-action-btn:hover {
+        background: rgba(255,255,255,0.3);
+      }
+      .row-select-cb {
+        cursor: pointer;
+        width: 15px;
+        height: 15px;
+      }
+      .db-row.selected {
+        background: rgba(var(--primary-rgb, 99,102,241), 0.08);
+      }
       .db-action-btn[title]:hover::after {
         content: attr(title);
         position: absolute;
@@ -1459,6 +1555,343 @@
         .db-sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--line); }
         .db-row { grid-template-columns: 1fr 1fr auto; }
         .db-row-meta { display: none; }
+      }
+
+      /* ── Edit Modal ─────────────────────────────────────────── */
+      .edit-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(4px);
+        align-items: center;
+        justify-content: center;
+      }
+      .edit-modal-overlay.open { display: flex; }
+      .edit-modal {
+        background: var(--bg-surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 28px 28px 24px;
+        width: 480px;
+        max-width: calc(100vw - 32px);
+        box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+        animation: modal-in 0.2s ease;
+      }
+      @keyframes modal-in {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      .edit-modal-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 20px 0;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .edit-modal-close {
+        background: none;
+        border: none;
+        color: var(--text-sub);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        transition: color 0.15s;
+      }
+      .edit-modal-close:hover { color: var(--text-main); }
+      .edit-modal-field { margin-bottom: 14px; }
+      .edit-modal-field label {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-sub);
+        margin-bottom: 5px;
+      }
+      .edit-modal-field input, .edit-modal-field select {
+        width: 100%;
+        padding: 9px 11px;
+        background: var(--bg-app);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--text-main);
+        font-size: 0.9rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .edit-modal-field input:focus, .edit-modal-field select:focus { border-color: var(--primary); }
+      .edit-modal-field select { cursor: pointer; }
+      .edit-modal-row { display: flex; gap: 12px; }
+      .edit-modal-row .edit-modal-field { flex: 1; }
+      .edit-modal-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 20px;
+      }
+      .edit-modal-actions .btn-cancel {
+        flex: 1;
+        padding: 11px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--text-sub);
+        font-size: 0.9rem;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .edit-modal-actions .btn-cancel:hover { background: var(--bg-hover); }
+      .edit-modal-actions .btn-save {
+        flex: 2;
+        padding: 11px;
+        border-radius: 8px;
+        border: none;
+        background: var(--primary);
+        color: #fff;
+        font-size: 0.9rem;
+        font-family: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .edit-modal-actions .btn-save:hover { background: #2563EB; }
+      .edit-modal-actions .btn-save:disabled { background: #374151; color: #6B7280; cursor: not-allowed; }
+
+      /* ── Bulk Upload Modal ──────────────────────────────────── */
+      .bulk-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(4px);
+        align-items: center;
+        justify-content: center;
+      }
+      .bulk-modal-overlay.open { display: flex; }
+      .bulk-modal {
+        background: var(--bg-surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 28px 28px 24px;
+        width: 560px;
+        max-width: calc(100vw - 32px);
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+        animation: modal-in 0.2s ease;
+      }
+      .bulk-modal-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 6px 0;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .bulk-modal textarea {
+        width: 100%;
+        min-height: 180px;
+        background: var(--bg-app);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--text-main);
+        font-size: 0.82rem;
+        font-family: "Noto Sans JP", "Inter", monospace;
+        padding: 10px;
+        resize: vertical;
+        outline: none;
+        margin-top: 12px;
+        transition: border-color 0.15s;
+        line-height: 1.6;
+      }
+      .bulk-modal textarea:focus { border-color: var(--primary); }
+      .bulk-upload-drop {
+        border: 2px dashed var(--line);
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+        margin-bottom: 12px;
+        font-size: 0.85rem;
+        color: var(--text-sub);
+      }
+      .bulk-upload-drop:hover, .bulk-upload-drop.drag-over {
+        border-color: var(--primary);
+        background: var(--primary-dim);
+        color: var(--primary);
+      }
+      .bulk-preview-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.78rem;
+        margin-top: 12px;
+      }
+      .bulk-preview-table th {
+        text-align: left;
+        padding: 5px 8px;
+        color: var(--text-sub);
+        font-weight: 600;
+        border-bottom: 1px solid var(--line);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .bulk-preview-table td {
+        padding: 5px 8px;
+        border-bottom: 1px solid var(--line);
+        color: var(--text-main);
+        font-family: "Noto Sans JP", sans-serif;
+      }
+      .bulk-preview-table tr:last-child td { border-bottom: none; }
+      .bulk-preview-wrap {
+        max-height: 180px;
+        overflow-y: auto;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        margin-top: 8px;
+      }
+
+      /* ── Edit Modal ─────────────────────────────────────────── */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+      }
+      .modal-overlay.open { display: flex; }
+      .modal-box {
+        background: var(--bg-surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        width: 480px;
+        max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        animation: modal-in 0.2s ease;
+      }
+      @keyframes modal-in {
+        from { opacity: 0; transform: translateY(-16px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      .modal-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-main);
+      }
+      .modal-close {
+        width: 30px; height: 30px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--text-sub);
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: all 0.12s;
+      }
+      .modal-close:hover { background: var(--bg-hover); color: var(--text-main); }
+      .modal-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+      .modal-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-sub); }
+      .modal-input {
+        width: 100%;
+        padding: 9px 12px;
+        background: var(--bg-app);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--text-main);
+        font-size: 0.9rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .modal-input:focus { border-color: var(--primary); }
+      .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .modal-footer { display: flex; gap: 10px; margin-top: 20px; }
+      .modal-btn-cancel {
+        flex: 1; padding: 10px; border-radius: 8px;
+        border: 1px solid var(--line); background: transparent;
+        color: var(--text-sub); font-size: 0.88rem; font-family: inherit;
+        cursor: pointer; transition: all 0.12s;
+      }
+      .modal-btn-cancel:hover { background: var(--bg-hover); color: var(--text-main); }
+      .modal-btn-save {
+        flex: 2; padding: 10px; border-radius: 8px;
+        border: none; background: var(--primary);
+        color: #fff; font-size: 0.88rem; font-family: inherit;
+        font-weight: 600; cursor: pointer; transition: background 0.15s;
+      }
+      .modal-btn-save:hover { background: #2563EB; }
+      .modal-btn-save:disabled { background: #374151; color: #6B7280; cursor: not-allowed; }
+
+      /* ── Bulk Upload Modal ──────────────────────────────────── */
+      .bulk-upload-box {
+        width: 580px;
+      }
+      .bulk-textarea {
+        width: 100%;
+        min-height: 200px;
+        background: var(--bg-app);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--text-main);
+        font-size: 0.82rem;
+        font-family: "Courier New", monospace;
+        padding: 10px;
+        resize: vertical;
+        outline: none;
+        line-height: 1.6;
+        transition: border-color 0.15s;
+      }
+      .bulk-textarea:focus { border-color: var(--primary); }
+      .bulk-hint {
+        font-size: 0.72rem;
+        color: var(--text-sub);
+        line-height: 1.5;
+        padding: 8px 10px;
+        background: var(--bg-app);
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        margin-bottom: 10px;
+      }
+      .bulk-hint code {
+        font-family: "Courier New", monospace;
+        color: var(--primary);
+        font-size: 0.75rem;
+      }
+      .bulk-progress-wrap { display: none; margin-top: 10px; }
+      .bulk-progress-wrap.show { display: block; }
+      .bulk-progress-bar-bg {
+        width: 100%; height: 6px; background: var(--line);
+        border-radius: 3px; overflow: hidden;
+      }
+      .bulk-progress-bar-fill {
+        height: 100%; background: var(--primary);
+        border-radius: 3px; transition: width 0.2s ease;
+        width: 0%;
+      }
+      .bulk-progress-text {
+        font-size: 0.72rem; color: var(--text-sub); margin-top: 4px;
       }
 
       /* Bento action cell button overrides */
@@ -1783,6 +2216,10 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
                   新增
                 </button>
+                <button class="db-icon-btn toolbar-btn" onclick="app.openBulkUploadModal()" title="一括アップロード">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  一括
+                </button>
                 <button class="db-icon-btn toolbar-btn" id="toolbar-edit-btn" onclick="app.togglePanel('panel-edit')" title="一括編集">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   編集
@@ -1888,7 +2325,9 @@
           <div style="display:flex;gap:8px;">
             <input type="password" id="gemini-key-input" placeholder="貼上 Gemini API Key (AIza...)..." style="padding:10px;" />
             <button onclick="app.saveGeminiKey()" class="btn-main" style="width:auto;padding:10px 16px;margin:0;white-space:nowrap;">儲存</button>
+            <button onclick="app.testGeminiKey()" class="btn-sm" style="width:auto;padding:10px 14px;margin:0;white-space:nowrap;background:rgba(99,102,241,0.12);color:var(--primary);border:1px solid rgba(99,102,241,0.3);border-radius:8px;cursor:pointer;">🔍 測試</button>
           </div>
+          <div id="gemini-key-test-result" style="margin-top:8px;font-size:0.82rem;display:none;"></div>
         </div>
 
         <!-- Main news content (hidden until key is set) -->
@@ -2524,7 +2963,25 @@
             return;
           }
 
-          let htmlString = `<div class="db-table-header"><span class="db-table-count">${results.length} 件</span></div>`;
+          // Initialize selection set if not exists
+          if (!this._selectedIds) this._selectedIds = new Set();
+          this._selectedIds.clear();
+
+          let htmlString = `<div class="db-table-header">
+            <span class="db-table-count">${results.length} 件</span>
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--text-sub);cursor:pointer;">
+              <input type="checkbox" id="select-all-cb" onchange="app.toggleSelectAll(this.checked)" style="accent-color:var(--primary);" />
+              全選択
+            </label>
+          </div>
+          <div id="bulk-action-bar" class="bulk-action-bar" style="display:none;">
+            <span id="bulk-selected-count" class="bulk-selected-count"></span>
+            <div style="display:flex;gap:8px;">
+              <button class="bulk-action-btn" onclick="app.bulkDeleteSelected()">🗑 削除</button>
+              <button class="bulk-action-btn" onclick="app.bulkResetStageSelected()">↩ ステージリセット</button>
+              <button class="bulk-action-btn" onclick="app.bulkExportSelected()">📋 コピー</button>
+            </div>
+          </div>`;
           results.forEach((item) => {
             const wordHtml = this.generateRubyHtml(item.kanji, item["Hiragana/Katakana"]);
             const kanaOnly = item["Hiragana/Katakana"] || "";
@@ -2552,6 +3009,7 @@
 
             htmlString += `
               <div class="db-row" id="row-${item.id}">
+                <input type="checkbox" class="row-select-cb" data-id="${item.id}" onchange="app.toggleRowSelect(${item.id}, this.checked)" style="accent-color:var(--primary);flex-shrink:0;" />
                 <div class="db-row-word" onclick="app.openVocabDetail(${item.id})">
                   <span class="db-row-kanji">${wordHtml}</span>
                   <span class="db-row-kana">${kanaOnly}</span>
@@ -2585,13 +3043,189 @@
         },
 
         loadForEdit: function (id, kanji, kana, definition, jlpt, pos) {
-          this.togglePanel("panel-edit");
-          const inputEl = document.getElementById("bulk-edit-input");
-          const line = `${id},${kanji},${kana},${definition},${jlpt},${pos}`;
-          inputEl.value = inputEl.value ? inputEl.value + "\n" + line : line;
-          inputEl.scrollIntoView({ behavior: "smooth", block: "center" });
-          inputEl.focus();
+          document.getElementById("edit-modal-id").value = id;
+          document.getElementById("edit-modal-kanji").value = kanji || "";
+          document.getElementById("edit-modal-kana").value = kana || "";
+          document.getElementById("edit-modal-def").value = definition || "";
+          document.getElementById("edit-modal-jlpt").value = jlpt || "";
+          document.getElementById("edit-modal-pos").value = pos || "";
+          document.getElementById("edit-modal-overlay").classList.add("open");
         },
+
+        closeEditModal: function () {
+          document.getElementById("edit-modal-overlay").classList.remove("open");
+        },
+
+        saveEditModal: async function () {
+          const id = document.getElementById("edit-modal-id").value;
+          const kanji = document.getElementById("edit-modal-kanji").value.trim();
+          const kana = document.getElementById("edit-modal-kana").value.trim();
+          const def = document.getElementById("edit-modal-def").value.trim();
+          const jlpt = document.getElementById("edit-modal-jlpt").value;
+          const pos = document.getElementById("edit-modal-pos").value.trim();
+
+          if (!kana || !def) { alert("読み と 意味 は必須項目です。"); return; }
+
+          const btn = document.getElementById("edit-modal-save-btn");
+          btn.textContent = "保存中…"; btn.disabled = true;
+
+          const { error } = await supabase.from("vocab").update({
+            kanji: kanji || null,
+            "Hiragana/Katakana": kana,
+            definition: def,
+            JLPT: jlpt ? parseInt(jlpt) : null,
+            pos: pos || null,
+          }).eq("id", id);
+
+          btn.textContent = "保存する"; btn.disabled = false;
+
+          if (error) { alert("保存失敗: " + error.message); return; }
+
+          this.closeEditModal();
+          await this.loadVocabList();
+        },
+
+        openBulkUploadModal: function () {
+          document.getElementById("bulk-upload-modal-overlay").classList.add("open");
+          document.getElementById("bulk-upload-textarea").value = "";
+          document.getElementById("bulk-upload-file").value = "";
+          document.getElementById("bulk-upload-preview").style.display = "none";
+          document.getElementById("bulk-upload-preview-content").textContent = "";
+        },
+
+        closeBulkUploadModal: function () {
+          document.getElementById("bulk-upload-modal-overlay").classList.remove("open");
+        },
+
+        loadBulkUploadFile: function (event) {
+          const file = event.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const text = e.target.result;
+            document.getElementById("bulk-upload-textarea").value = text;
+            const lines = text.trim().split("\n").filter(l => l.trim());
+            const previewEl = document.getElementById("bulk-upload-preview");
+            const previewContent = document.getElementById("bulk-upload-preview-content");
+            previewContent.textContent = `${lines.length} 行を読み込みました:\n` + lines.slice(0, 5).join("\n") + (lines.length > 5 ? `\n...（他 ${lines.length - 5} 行）` : "");
+            previewEl.style.display = "block";
+          };
+          reader.readAsText(file, "UTF-8");
+        },
+
+        executeBulkUpload: async function () {
+          const rawText = document.getElementById("bulk-upload-textarea").value.trim();
+          const btn = document.getElementById("bulk-upload-save-btn");
+          if (!rawText) { alert("データを入力またはファイルをアップロードしてください。"); return; }
+
+          const lines = rawText.split("\n").filter(l => l.trim());
+          const records = [];
+          const errors = [];
+
+          lines.forEach((line, i) => {
+            const parts = line.split(",");
+            if (parts.length < 3) { errors.push(`行 ${i+1}: フィールドが不足しています`); return; }
+            const [kanji, kana, definition, jlpt, pos] = parts.map(p => p.trim());
+            if (!kana || !definition) { errors.push(`行 ${i+1}: 読み・意味は必須です`); return; }
+            records.push({
+              kanji: kanji || null,
+              "Hiragana/Katakana": kana,
+              definition,
+              JLPT: jlpt ? parseInt(jlpt) : null,
+              pos: pos || null,
+              stage: 0,
+              mastered: false,
+            });
+          });
+
+          if (errors.length > 0) { alert("エラーがあります:\n" + errors.join("\n")); return; }
+          if (records.length === 0) { alert("有効なデータがありません。"); return; }
+
+          btn.textContent = `アップロード中… (0/${records.length})`; btn.disabled = true;
+
+          const chunkSize = 50;
+          let inserted = 0;
+          for (let i = 0; i < records.length; i += chunkSize) {
+            const chunk = records.slice(i, i + chunkSize);
+            const { error } = await supabase.from("vocab").insert(chunk);
+            if (error) { btn.textContent = "アップロード"; btn.disabled = false; alert("エラー: " + error.message); return; }
+            inserted += chunk.length;
+            btn.textContent = `アップロード中… (${inserted}/${records.length})`;
+          }
+
+          btn.textContent = "アップロード"; btn.disabled = false;
+          this.closeBulkUploadModal();
+          alert(`✅ ${inserted} 件の単語を追加しました！`);
+          await this.loadVocabList();
+        },
+
+        // ── Multi-select ──────────────────────────────────────────────
+        _selectedIds: new Set(),
+
+        toggleRowSelect: function (id, checked) {
+          if (checked) {
+            this._selectedIds.add(id);
+          } else {
+            this._selectedIds.delete(id);
+          }
+          this._updateBulkBar();
+        },
+
+        toggleSelectAll: function (checked) {
+          document.querySelectorAll(".row-select-cb").forEach(cb => {
+            cb.checked = checked;
+            const id = parseInt(cb.dataset.id);
+            if (checked) this._selectedIds.add(id);
+            else this._selectedIds.delete(id);
+          });
+          this._updateBulkBar();
+        },
+
+        _updateBulkBar: function () {
+          const bar = document.getElementById("bulk-action-bar");
+          const countEl = document.getElementById("bulk-selected-count");
+          const n = this._selectedIds.size;
+          if (n > 0) {
+            bar.style.display = "flex";
+            countEl.textContent = `${n} 件選択中`;
+          } else {
+            bar.style.display = "none";
+          }
+        },
+
+        bulkDeleteSelected: async function () {
+          const ids = [...this._selectedIds];
+          if (ids.length === 0) return;
+          if (!confirm(`選択した ${ids.length} 件の単語を削除しますか？`)) return;
+          const { error } = await this.dbClient.from("vocab").delete().in("id", ids);
+          if (error) { alert("削除失敗: " + error.message); return; }
+          this._selectedIds.clear();
+          await this.renderList();
+        },
+
+        bulkResetStageSelected: async function () {
+          const ids = [...this._selectedIds];
+          if (ids.length === 0) return;
+          if (!confirm(`選択した ${ids.length} 件のステージをリセットしますか？`)) return;
+          const { error } = await this.dbClient.from("vocab").update({ stage: 0, mastered: false }).in("id", ids);
+          if (error) { alert("リセット失敗: " + error.message); return; }
+          this._selectedIds.clear();
+          await this.renderList();
+        },
+
+        bulkExportSelected: function () {
+          const ids = [...this._selectedIds];
+          if (ids.length === 0) return;
+          const lines = ids.map(id => {
+            const item = this._listItemMap[id];
+            if (!item) return "";
+            return [item.kanji || "", item["Hiragana/Katakana"] || "", item.definition || "", item.JLPT || "", item.pos || ""].join(",");
+          }).filter(Boolean);
+          navigator.clipboard.writeText(lines.join("\n")).then(() => {
+            alert(`✅ ${lines.length} 件をクリップボードにコピーしました！`);
+          });
+        },
+        // ─────────────────────────────────────────────────────────────
 
         bulkEdit: async function () {
           const inputEl = document.getElementById("bulk-edit-input");
@@ -3171,7 +3805,7 @@
         init: async function () {
           try {
             // Load Gemini API key from localStorage
-            const storedKey = localStorage.getItem("kaizen_gemini_key");
+            const storedKey = (localStorage.getItem("kaizen_gemini_key") || "").trim();
             if (storedKey && storedKey.startsWith("AIza")) {
               this.geminiApiKey = storedKey;
             } else {
@@ -3449,6 +4083,31 @@
           throw lastError;
         },
 
+        testGeminiKey: async function () {
+          const key = (document.getElementById("gemini-key-input").value || "").trim();
+          const resultEl = document.getElementById("key-test-result");
+          if (!key) { resultEl.textContent = "❗ 請先輸入 API Key"; resultEl.style.color = "var(--warning)"; return; }
+          resultEl.textContent = "🔄 測試中..."; resultEl.style.color = "var(--text-sub)";
+          try {
+            const res = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+              { method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "hi" }] }], generationConfig: { maxOutputTokens: 10 } }) }
+            );
+            const data = await res.json();
+            if (res.ok) {
+              resultEl.textContent = "✅ API Key 有效！點擊「儲存」繼續。";
+              resultEl.style.color = "var(--success)";
+            } else {
+              resultEl.textContent = `❌ 無效：${data.error?.message || "未知錯誤"} (HTTP ${res.status})`;
+              resultEl.style.color = "var(--danger)";
+            }
+          } catch (e) {
+            resultEl.textContent = `❌ 連線失敗：${e.message}`;
+            resultEl.style.color = "var(--danger)";
+          }
+        },
+
         saveGeminiKey: function () {
           const key = document.getElementById("gemini-key-input").value.trim();
           if (!key) { alert("請輸入 API Key！"); return; }
@@ -3598,19 +4257,61 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
 3 vocabulary items only. pos from: 名詞,動詞(Group 1),動詞(Group 2),動詞(Group 3),I形容詞,Na形容詞,代名詞,副詞,助詞,感嘆詞,慣用語,接尾詞,疑問詞. jlpt 1-5. Verbs: ます form.`;
           }
 
-          try {
-            const rawFull = await this._geminiChat([
-              { role: "system", content: "CRITICAL: ALL verbs in vocabulary must use ます form, never dictionary form. Return ONLY valid JSON, no markdown, no extra text." },
-              { role: "user", content: prompt }
-            ], maxTokens);
-            console.log("Claude raw response:", rawFull);
-            // Strip any markdown fences (with or without leading spaces/newlines)
-            const raw = rawFull.replace(/[\s\S]*?(\{[\s\S]*\})[\s\S]*/m, "$1").trim();
+          // Attempt to repair a truncated JSON string by closing all open structures
+          const repairTruncatedJson = (str) => {
+            let s = str;
+            // Remove trailing incomplete key-value (e.g. `,"key": ` or `,"key":"val`)
+            s = s.replace(/,\s*"[^"]*"\s*:\s*(?:"[^"]*)?$/, '');
+            // Count and close open arrays/objects
+            const stack = [];
+            let inStr = false, esc = false;
+            for (const ch of s) {
+              if (esc) { esc = false; continue; }
+              if (ch === '\\' && inStr) { esc = true; continue; }
+              if (ch === '"') { inStr = !inStr; continue; }
+              if (inStr) continue;
+              if (ch === '{') stack.push('}');
+              else if (ch === '[') stack.push(']');
+              else if (ch === '}' || ch === ']') stack.pop();
+            }
+            // Close any open string
+            if (inStr) s += '"';
+            // Close open structures in reverse
+            return s + stack.reverse().join('');
+          };
 
-            // Extract JSON object robustly in case of extra text
+          const parseNewsJson = (rawFull) => {
+            const raw = rawFull.replace(/[\s\S]*?(\{[\s\S]*\})[\s\S]*/m, "$1").trim();
             const jsonMatch = raw.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error("No JSON found in response: " + raw.substring(0, 200));
-            const aiResult = JSON.parse(jsonMatch[0]);
+            try {
+              return JSON.parse(jsonMatch[0]);
+            } catch (e) {
+              // Attempt repair on truncated JSON
+              console.warn("JSON parse failed, attempting repair:", e.message);
+              const repaired = repairTruncatedJson(jsonMatch[0]);
+              return JSON.parse(repaired);
+            }
+          };
+
+          try {
+            let rawFull, aiResult, lastErr;
+            for (let attempt = 0; attempt < 2; attempt++) {
+              try {
+                rawFull = await this._geminiChat([
+                  { role: "system", content: "CRITICAL: ALL verbs in vocabulary must use ます form, never dictionary form. Return ONLY valid JSON, no markdown, no extra text." },
+                  { role: "user", content: prompt }
+                ], maxTokens);
+                console.log("Gemini raw response (attempt " + (attempt+1) + "):", rawFull);
+                aiResult = parseNewsJson(rawFull);
+                break; // success
+              } catch (e) {
+                lastErr = e;
+                console.warn("新聞解析失敗 (attempt " + (attempt+1) + "):", e.message);
+                if (attempt === 0) await new Promise(r => setTimeout(r, 1500));
+              }
+            }
+            if (!aiResult) throw lastErr;
             if (Array.isArray(aiResult.vocabulary)) aiResult.vocabulary = this.normalizeMasuForm(aiResult.vocabulary);
 
             // Track used topics to avoid repetition
@@ -4169,7 +4870,7 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
           ];
 
           try {
-            const aiText = (await this._geminiChat(messages, 4096)) || "（無回應）";
+            const aiText = (await this._geminiChat(messages, 8096)) || "（無回應）";
             aiBubble.innerHTML = aiText.replace(/\n/g, "<br>");
 
             this.chatHistory.push(
@@ -4817,5 +5518,80 @@ Format:
         app.init();
       };
     </script>
+
+  <!-- Edit Modal -->
+  <div id="edit-modal-overlay" class="edit-modal-overlay" onclick="if(event.target===this)app.closeEditModal()">
+    <div class="edit-modal">
+      <div class="edit-modal-title">
+        ✏️ 単語を編集
+        <button class="edit-modal-close" onclick="app.closeEditModal()">✕</button>
+      </div>
+      <input type="hidden" id="edit-modal-id" />
+      <div class="edit-modal-field">
+        <label>漢字</label>
+        <input type="text" id="edit-modal-kanji" placeholder="漢字（任意）" />
+      </div>
+      <div class="edit-modal-field">
+        <label>読み</label>
+        <input type="text" id="edit-modal-kana" placeholder="ひらがな / カタカナ" />
+      </div>
+      <div class="edit-modal-field">
+        <label>意味</label>
+        <input type="text" id="edit-modal-def" placeholder="意味・定義" />
+      </div>
+      <div class="edit-modal-row">
+        <div class="edit-modal-field">
+          <label>JLPT</label>
+          <select id="edit-modal-jlpt">
+            <option value="">-</option>
+            <option value="5">N5</option>
+            <option value="4">N4</option>
+            <option value="3">N3</option>
+            <option value="2">N2</option>
+            <option value="1">N1</option>
+          </select>
+        </div>
+        <div class="edit-modal-field">
+          <label>品詞</label>
+          <input type="text" id="edit-modal-pos" placeholder="名詞・動詞など" />
+        </div>
+      </div>
+      <div class="edit-modal-actions">
+        <button class="btn-cancel" onclick="app.closeEditModal()">キャンセル</button>
+        <button class="btn-save" id="edit-modal-save-btn" onclick="app.saveEditModal()">保存する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Upload Modal -->
+  <div id="bulk-upload-modal-overlay" class="edit-modal-overlay" onclick="if(event.target===this)app.closeBulkUploadModal()">
+    <div class="edit-modal" style="width:560px;">
+      <div class="edit-modal-title">
+        📥 一括アップロード
+        <button class="edit-modal-close" onclick="app.closeBulkUploadModal()">✕</button>
+      </div>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin:0 0 14px;">CSV形式で複数の単語を一度に追加します。<br>形式：<code style="background:var(--bg-elevated);padding:2px 6px;border-radius:4px;">漢字,読み,意味,JLPT番号,品詞</code></p>
+      <div class="edit-modal-field">
+        <label>CSVテキスト</label>
+        <textarea id="bulk-upload-textarea" placeholder="例：
+日本語,にほんご,Japanese language,4,名詞
+学校,がっこう,school,5,名詞
+食べる,たべる,to eat,5,動詞" style="height:180px;resize:vertical;font-family:monospace;font-size:0.85rem;"></textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <label style="font-size:0.85rem;color:var(--text-muted);flex:none;">またはCSVファイルを選択：</label>
+        <input type="file" id="bulk-upload-file" accept=".csv,.txt" style="font-size:0.82rem;color:var(--text-muted);" onchange="app.loadBulkUploadFile(event)" />
+      </div>
+      <div id="bulk-upload-preview" style="display:none;margin-bottom:14px;">
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:6px;">プレビュー（最初の5行）：</div>
+        <div id="bulk-upload-preview-content" style="background:var(--bg-elevated);border-radius:8px;padding:10px;font-size:0.8rem;font-family:monospace;color:var(--text-primary);max-height:120px;overflow-y:auto;"></div>
+      </div>
+      <div class="edit-modal-actions">
+        <button class="btn-cancel" onclick="app.closeBulkUploadModal()">キャンセル</button>
+        <button class="btn-save" id="bulk-upload-save-btn" onclick="app.executeBulkUpload()">アップロード</button>
+      </div>
+    </div>
+  </div>
+
   </body>
 </html>
