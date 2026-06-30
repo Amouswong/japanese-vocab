@@ -2180,6 +2180,10 @@
         </div>
 
         <div class="quiz-container">
+          <div id="q-context" style="display:none;background:var(--bg-elevated);border-left:3px solid var(--primary);padding:10px 14px;margin-bottom:14px;border-radius:6px;font-size:0.85rem;color:var(--text-main);line-height:1.5;">
+            <div style="font-size:0.7rem;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">💬 Context / 情境</div>
+            <div id="q-context-text"></div>
+          </div>
           <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:8px;">
             <h1 id="q-text">単語</h1>
             <button id="q-audio-btn" class="audio-btn" title="發音">🔊</button>
@@ -2733,10 +2737,35 @@
         playAudio: function (text) {
           if (!text) return;
           window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = "ja-JP";
-          utterance.rate = 0.9;
-          window.speechSynthesis.speak(utterance);
+
+          const speakText = () => {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "ja-JP";
+            utterance.rate = 0.85;
+
+            // Try to use a better Japanese voice if available
+            const voices = window.speechSynthesis.getVoices();
+            const jpVoice = voices.find(v =>
+              v.lang.startsWith('ja') &&
+              (v.name.includes('Google') || v.name.includes('Kyoko') ||
+               v.name.includes('Otoya') || v.name.includes('日本'))
+            );
+            if (jpVoice) utterance.voice = jpVoice;
+
+            utterance.onerror = (e) => {
+              console.error('Speech synthesis error:', e);
+            };
+
+            window.speechSynthesis.speak(utterance);
+          };
+
+          // Voices may not be loaded yet on first call
+          const voices = window.speechSynthesis.getVoices();
+          if (voices.length === 0) {
+            window.speechSynthesis.addEventListener('voiceschanged', speakText, { once: true });
+          } else {
+            speakText();
+          }
         },
 
         updateDashboardStats: function () {
@@ -3483,7 +3512,7 @@
             );
             questionSub = "正しい意味を選択してください (請選擇正確的意思)";
           } else if (questionType === 1) {
-            questionHtml = currentWord.definition || "未知意思";
+            questionHtml = (currentWord.definition || "未知意思");
             questionSub = "正しい単語を選択してください (請選擇正確的日文)";
           } else if (questionType === 2) {
             questionHtml = "🎧 音声問題";
@@ -3501,6 +3530,16 @@
           document.getElementById("q-text").innerHTML = questionHtml;
           document.getElementById("q-sub").innerText = questionSub;
 
+          // Display context hint if available
+          const contextEl = document.getElementById("q-context");
+          const contextTextEl = document.getElementById("q-context-text");
+          if (currentWord.context) {
+            contextTextEl.textContent = currentWord.context;
+            contextEl.style.display = "block";
+          } else {
+            contextEl.style.display = "none";
+          }
+
           const qMetaEl = document.getElementById("q-meta");
           const jlptClass = currentWord.JLPT ? `jlpt-n${currentWord.JLPT}` : "";
           const qJlpt = currentWord.JLPT ? `<span class="jlpt-badge ${jlptClass}">N${currentWord.JLPT}</span>` : "";
@@ -3515,14 +3554,59 @@
           }
 
           let options = [currentWord];
-          // Prefer distractors from the same JLPT level; fall back to adjacent levels
+
+          // Helper: strip negation suffixes to get root form for antonym detection
+          const getRoot = (word) => {
+            if (!word) return "";
+            return word.replace(/くない$|ではない$|じゃない$|ない$|ません$|くありません$/, "").toLowerCase();
+          };
+          const correctRoot = getRoot(currentWord.kanji || currentWord["Hiragana/Katakana"]);
+          const correctDefRoot = getRoot(currentWord.definition || "");
+
+          // For questionType===1 (definition→word), filter out antonyms/near-forms of correct answer
+          // to avoid confusing positive/negative form pairs
+          const isAntonymDistractor = (item) => {
+            if (questionType !== 1) return false;
+            const itemRoot = getRoot(item.kanji || item["Hiragana/Katakana"]);
+            // Same root = likely a positive/negative pair → exclude
+            if (correctRoot && itemRoot && correctRoot === itemRoot) return true;
+            return false;
+          };
+
+          // For questionType===0 (word→definition), filter out definitions that are
+          // just negations of the correct definition
+          const isAntonymDefDistractor = (item) => {
+            if (questionType !== 0) return false;
+            const itemDefRoot = getRoot(item.definition || "");
+            if (correctDefRoot && itemDefRoot && correctDefRoot === itemDefRoot) return true;
+            return false;
+          };
+
+          // Prefer distractors from the same JLPT level AND same POS; fall back to same JLPT, then other levels
+          const sameLevelSamePos = this.vocabData.filter(
+            (item) => item.id !== currentWord.id
+              && item.JLPT === currentWord.JLPT
+              && item.pos === currentWord.pos
+              && !isAntonymDistractor(item)
+              && !isAntonymDefDistractor(item),
+          ).sort(() => 0.5 - Math.random());
+
           const sameLevel = this.vocabData.filter(
-            (item) => item.id !== currentWord.id && item.JLPT === currentWord.JLPT,
+            (item) => item.id !== currentWord.id
+              && item.JLPT === currentWord.JLPT
+              && item.pos !== currentWord.pos
+              && !isAntonymDistractor(item)
+              && !isAntonymDefDistractor(item),
           ).sort(() => 0.5 - Math.random());
+
           const otherLevel = this.vocabData.filter(
-            (item) => item.id !== currentWord.id && item.JLPT !== currentWord.JLPT,
+            (item) => item.id !== currentWord.id
+              && item.JLPT !== currentWord.JLPT
+              && !isAntonymDistractor(item)
+              && !isAntonymDefDistractor(item),
           ).sort(() => 0.5 - Math.random());
-          const distractorPool = [...sameLevel, ...otherLevel];
+
+          const distractorPool = [...sameLevelSamePos, ...sameLevel, ...otherLevel];
 
           options = options.concat(distractorPool.slice(0, 3));
           options = options.sort(() => 0.5 - Math.random());
@@ -3878,7 +3962,17 @@
               }
               if (e.key === "Enter") {
                 const nextBtn = document.getElementById("next-btn");
-                if (!nextBtn.classList.contains("hidden")) nextBtn.click();
+                // If already answered, go to next question
+                if (!nextBtn.classList.contains("hidden")) {
+                  nextBtn.click();
+                } else {
+                  // If not answered yet, replay audio
+                  const currentWord = app.quizQueue[app.currentQuizIndex];
+                  if (currentWord) {
+                    const kanaForAudio = currentWord["Hiragana/Katakana"] || currentWord.kanji || "";
+                    app.playAudio(kanaForAudio);
+                  }
+                }
               }
             });
           } catch (err) {
@@ -5060,24 +5154,34 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
             ? "JLPT N4 level — elementary. Use N4-N5 vocabulary and grammar. Sentences can be slightly longer. Include て形, ない形, たい, ている, and common particles. Do NOT use N3 or above patterns."
             : "Mixed difficulty N5~N4. Include a range from simple N5 questions to slightly harder N4 patterns.";
 
-          const prompt = `You are a Japanese language quiz generator for みんなの日本語 textbook.
+          const prompt = `You are a Japanese language quiz generator for みんなの日本語 (Minna no Nihongo) textbook.
 Generate exactly ${qCount} multiple-choice questions about: ${topicDesc}
+
+CRITICAL: Questions must be based on ACTUAL grammar patterns and vocabulary from みんなの日本語 textbook.
+For lesson-based quizzes, use ONLY the grammar patterns introduced in that specific lesson.
+For topic-based quizzes, focus on the grammar patterns typically taught for that topic in the textbook series.
 
 DIFFICULTY REQUIREMENT (MUST FOLLOW STRICTLY):
 ${difficultyDesc}
 
-Rules:
-- Each question tests one specific grammar point or vocabulary from the topic
+Question guidelines:
+- Each question tests ONE specific grammar point from みんなの日本語
+- Use vocabulary and sentence patterns that actually appear in the textbook
+- For fill-in-the-blank: use realistic sentence contexts from daily conversation or textbook dialogues
+- For conjugation: focus on the verb/adjective forms taught in that lesson
+- For particle questions: test particles in contexts similar to textbook examples
+- Wrong answer choices should be plausible alternatives that test understanding of the grammar point
+
+Format requirements:
 - 4 answer choices per question (A/B/C/D), only one is correct
-- Vary question types: fill-in-the-blank, verb conjugation, choose correct particle, sentence meaning, translation
-- ALL vocabulary in questions AND answer choices must match the difficulty level above
-- Include a brief explanation in Traditional Chinese (繁體中文) for why the correct answer is right
+- Vary question types: fill-in-the-blank, verb conjugation, particle selection, sentence meaning
+- Brief explanation in Traditional Chinese (繁體中文) explaining the grammar rule
+- In explanations, use single quotes instead of double quotes to avoid JSON errors
 
 CRITICAL: Return ONLY a valid JSON array. No markdown fences. No extra text before or after.
-In the explanation field, do NOT use double quotes (") inside the text. Use single quotes or rephrase.
 Format:
-[{"q":"question","choices":["A. opt","B. opt","C. opt","D. opt"],"answer":0,"type":"fill-in","explanation":"解釋文字不含雙引號"}]
-"answer" is the 0-based index of the correct choice. Ensure all 4 choices look plausible.`;
+[{"q":"question text","choices":["A. option","B. option","C. option","D. option"],"answer":0,"type":"fill-in","explanation":"用單引號或改寫以避免雙引號"}]
+"answer" is the 0-based index (0-3) of the correct choice.`;
 
           try {
             const raw = await this._geminiChat([
