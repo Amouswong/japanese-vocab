@@ -2739,9 +2739,20 @@
           window.speechSynthesis.cancel();
 
           const speakText = () => {
-            const utterance = new SpeechSynthesisUtterance(text);
+            // 清理文字：移除 "~" 和其他不必要的符號
+            let cleanText = text.replace(/[~〜]/g, '').trim();
+
+            // 正規化：修正「しゃ」被唸成 shi ya 的問題
+            // 1) NFKC 會把半形小假名（ｬｭｮ）轉為全形拗音（ゃゅょ）
+            cleanText = cleanText.normalize('NFKC');
+            // 2) 移除假名之間的空白，避免 TTS 把「し ゃ」拆開唸
+            cleanText = cleanText.replace(/([぀-ヿ])[\s　]+(?=[ゃゅょャュョ])/g, '$1');
+            // 3) 移除零寬字元
+            cleanText = cleanText.replace(/[​-‍﻿]/g, '');
+
+            const utterance = new SpeechSynthesisUtterance(cleanText);
             utterance.lang = "ja-JP";
-            utterance.rate = 0.85;
+            utterance.rate = 0.7; // 降低語速從 0.85 到 0.7
 
             // Try to use a better Japanese voice if available
             const voices = window.speechSynthesis.getVoices();
@@ -3098,7 +3109,7 @@
           const btn = document.getElementById("edit-modal-save-btn");
           btn.textContent = "保存中…"; btn.disabled = true;
 
-          const { error } = await supabase.from("vocab").update({
+          const { error } = await this.dbClient.from("vocab").update({
             kanji: kanji || null,
             "Hiragana/Katakana": kana,
             definition: def,
@@ -3111,7 +3122,7 @@
           if (error) { alert("保存失敗: " + error.message); return; }
 
           this.closeEditModal();
-          await this.loadVocabList();
+          await this.renderList();
         },
 
         openBulkUploadModal: function () {
@@ -3176,7 +3187,7 @@
           let inserted = 0;
           for (let i = 0; i < records.length; i += chunkSize) {
             const chunk = records.slice(i, i + chunkSize);
-            const { error } = await supabase.from("vocab").insert(chunk);
+            const { error } = await this.dbClient.from("vocab").insert(chunk);
             if (error) { btn.textContent = "アップロード"; btn.disabled = false; alert("エラー: " + error.message); return; }
             inserted += chunk.length;
             btn.textContent = `アップロード中… (${inserted}/${records.length})`;
@@ -3185,7 +3196,7 @@
           btn.textContent = "アップロード"; btn.disabled = false;
           this.closeBulkUploadModal();
           alert(`✅ ${inserted} 件の単語を追加しました！`);
-          await this.loadVocabList();
+          await this.renderList();
         },
 
         // ── Multi-select ──────────────────────────────────────────────
