@@ -2842,7 +2842,50 @@
       /* ═══ EDITORIAL FIXES (news/minna width + charts) ═══ */
 
       /* Constrain news & grammar pages to the reading column (like home/quiz) */
-      #page-news, #page-minna { max-width: 640px; margin: 0 auto; }
+      #page-minna { max-width: 640px; margin: 0 auto; }
+      /* News page: widen so the two cards sit side by side */
+      #page-news { max-width: 1040px; margin: 0 auto; }
+
+      /* Quiz furigana: ensure <ruby> readings show cleanly above kanji in questions & choices */
+      #minna-q-text ruby, .minna-choice-btn ruby { ruby-position: over; }
+      #minna-q-text rt, .minna-choice-btn rt {
+        font-size: 0.6em;
+        color: var(--text-sub);
+        font-weight: normal;
+        line-height: 1;
+      }
+      #minna-q-text { line-height: 2.1 !important; }
+      .minna-choice-btn { line-height: 1.9; align-items: flex-end !important; }
+
+      /* ── News: horizontal two-column layout ───────────────── */
+      .news-cols {
+        display: flex;
+        gap: 16px;
+        align-items: stretch;        /* both columns match the taller one */
+      }
+      .news-cols > .dashboard-card {
+        flex: 1 1 50%;               /* true 50 / 50 split */
+        width: 50%;
+        min-width: 0;
+        margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+      }
+      /* AI 日語老師 column: chat area grows with content (no cap) */
+      .news-cols > .dashboard-card:last-child .chat-messages {
+        flex: 1 1 auto;            /* grow to fill / extend with content */
+        height: auto;
+        min-height: 420px;
+        max-height: none;          /* keep extending vertically */
+        overflow-y: visible;
+      }
+      /* Stack back to vertical on narrow screens */
+      @media (max-width: 860px) {
+        #page-news { max-width: 640px; }
+        .news-cols { flex-direction: column; }
+        .news-cols > .dashboard-card { width: 100%; }
+        .news-cols > .dashboard-card:last-child .chat-messages { min-height: 280px; }
+      }
 
       /* Gemini key card — smaller, calmer (was oversized full-width) */
       #news-key-setup {
@@ -3361,6 +3404,7 @@
         <!-- Main news content (hidden until key is set) -->
         <div id="news-main" class="hidden">
 
+          <div class="news-cols">
           <!-- Daily news card -->
           <div class="dashboard-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -3409,13 +3453,15 @@
           <div class="dashboard-card">
             <h4 style="margin:0 0 12px 0;font-size:1rem;display:flex;align-items:center;"><svg class="icon icon-head" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>AI 日語老師</h4>
             <div id="chat-messages" class="chat-messages">
-              <div class="chat-bubble chat-bubble-ai">こんにちは！今日の記事について質問があれば、何でも聞いてください。<br><small style="opacity:0.7;">(哈囉！關於今天的文章有任何問題，請隨時問我。)</small></div>
+              <div class="chat-bubble chat-bubble-ai">こんにちは！気になる単語をタップしてください。その単語を分析して説明します。<br><small style="opacity:0.7;">(哈囉！點選你想了解的單字，我會專門為你分析和講解那個字。)</small></div>
             </div>
             <div class="chat-input-row">
               <input type="text" id="chat-input" placeholder="有什麼問題嗎？Ask anything..." onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();app.sendChat();}">
               <button onclick="app.sendChat()" class="btn-main" style="width:auto;padding:11px 16px;margin:0;white-space:nowrap;">送出</button>
             </div>
           </div>
+
+          </div><!-- /.news-cols -->
 
           <div style="text-align:right;margin-top:-8px;margin-bottom:16px;">
             <button onclick="app.clearGeminiKey()" class="btn-sm" style="font-size:0.72rem;color:var(--text-sub);"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>更改 Gemini API Key</button>
@@ -3501,7 +3547,7 @@
         </div>
 
         <div id="minna-loading" class="hidden" style="text-align:center;padding:48px 0;color:var(--text-sub);">
-          <div style="margin-bottom:12px;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:6px;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"></path></svg>AI が問題を生成中... (請稍候)</div>
+          <div style="margin-bottom:12px;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:6px;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"></path></svg>AI が問題と<ruby>注<rt>ちゅう</rt></ruby><ruby>音<rt>おん</rt></ruby>を生成中... (生成題目與注音中，請稍候)</div>
           <div style="width:100%;max-width:340px;margin:0 auto;height:6px;background:var(--line);border-radius:99px;overflow:hidden;">
             <div class="progress-indeterminate" style="height:100%;border-radius:99px;background:var(--primary);"></div>
           </div>
@@ -3536,7 +3582,8 @@
     <!-- Word lookup popup (appears on article text selection) -->
     <div id="word-lookup-popup" style="display:none;position:fixed;z-index:9999;background:var(--bg-surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 8px 32px rgba(0,0,0,0.5);min-width:160px;max-width:240px;">
       <div id="word-popup-word" style="font-size:1.1rem;font-weight:bold;margin-bottom:8px;color:var(--text-main);font-family:'Noto Sans JP',sans-serif;"></div>
-      <button id="word-popup-btn" onclick="app.lookupAndAdd()" style="width:100%;padding:8px;border-radius:8px;border:none;background:var(--primary);color:white;font-size:0.82rem;cursor:pointer;font-weight:600;font-family:inherit;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>查詢並加入清單</button>
+      <button id="word-popup-ask-btn" onclick="app.analyzeWord()" style="width:100%;padding:8px;border-radius:8px;border:none;background:var(--primary);color:white;font-size:0.82rem;cursor:pointer;font-weight:600;font-family:inherit;margin-bottom:6px;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>問老師（即時分析）</button>
+      <button id="word-popup-btn" onclick="app.lookupAndAdd()" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg-hover);color:var(--text-main);font-size:0.82rem;cursor:pointer;font-weight:600;font-family:inherit;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>加入單字清單</button>
       <div id="word-popup-status" style="display:none;font-size:0.76rem;color:var(--text-sub);margin-top:6px;text-align:center;line-height:1.5;"></div>
     </div>
 
@@ -3788,6 +3835,23 @@
           });
         },
 
+        // 讀音修正表：修正 AI 產生的常見錯誤 furigana / 單字讀音，於朗讀前套用。
+        // key = 錯誤讀音或帶錯誤讀音的詞；value = 正確讀音。可持續擴充。
+        READING_CORRECTIONS: {
+          "ねっしゃ": "れっしゃ",   // 列車 ressha（常被誤成 nessha）
+        },
+
+        correctReading: function (text) {
+          if (!text) return text;
+          let out = text;
+          const map = this.READING_CORRECTIONS || {};
+          for (const wrong in map) {
+            if (!wrong) continue;
+            out = out.split(wrong).join(map[wrong]);
+          }
+          return out;
+        },
+
         playAudio: function (text) {
           if (!text) return;
           window.speechSynthesis.cancel();
@@ -3803,6 +3867,8 @@
             cleanText = cleanText.replace(/([぀-ヿ])[\s　]+(?=[ゃゅょャュョ])/g, '$1');
             // 3) 移除零寬字元
             cleanText = cleanText.replace(/[​-‍﻿]/g, '');
+            // 4) 修正常見錯誤讀音（AI 偶爾會產生錯誤 furigana，TTS 會照唸）：列車 應為 れっしゃ 而非 ねっしゃ
+            cleanText = app.correctReading(cleanText);
 
             const utterance = new SpeechSynthesisUtterance(cleanText);
             utterance.lang = "ja-JP";
@@ -3971,7 +4037,7 @@
         activeFilters: { jlpt: new Set(), stage: new Set(), daterange: new Set(), pos: new Set() },
 
         // Canonical parts-of-speech recognised by the app (for import validation)
-        validPosTypes: ["名詞","動詞","い形容詞","な形容詞","副詞","慣用語","代名詞","助詞","接続詞","感動詞","連体詞","接頭辞","接尾辞","数詞"],
+        validPosTypes: ["名詞","動詞","い形容詞","な形容詞","副詞","慣用語","代名詞","助詞","接続詞","感動詞","連体詞","接頭辞","接尾辞","数詞","疑問詞"],
 
         posDescriptions: {
           "名詞": "人事物的名稱（例：水、本、先生）",
@@ -3988,6 +4054,7 @@
           "接頭辞": "接在詞語前方（例：お～、ご～）",
           "接尾辞": "接在詞語後方（例：～さん、～たち）",
           "数詞": "表示數量或順序（例：一、二、第一）",
+          "疑問詞": "用來發問的詞（例：なに、どこ、いつ、だれ、いくつ）",
         },
 
         // Normalize a raw POS string to a canonical bucket (display-only grouping).
@@ -5921,6 +5988,7 @@ Write a short Japanese news article about that topic.
 Level: ${levelGuide[this.newsLevel]}
 Keep the article to 3-4 sentences. Keep translation to 1-2 sentences.
 Add <ruby> furigana for EVERY kanji word. Example: <ruby>東京<rt>とうきょう</rt></ruby>
+CRITICAL — furigana readings must be 100% accurate standard Japanese readings. Double-check each reading; do NOT invent or approximate. e.g. 列車=れっしゃ (NOT ねっしゃ), 一人=ひとり, 今日=きょう. A wrong reading makes the audio pronounce the word incorrectly.
 
 Return ONLY a raw JSON object, no markdown fences, no extra text:
 {
@@ -6025,7 +6093,7 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
 
         refreshNews: function () {
           document.getElementById("chat-messages").innerHTML =
-            `<div class="chat-bubble chat-bubble-ai">こんにちは！今日の記事について質問があれば、何でも聞いてください。<br><small style="opacity:0.7;">(哈囉！關於今天的文章有任何問題，請隨時問我。)</small></div>`;
+            `<div class="chat-bubble chat-bubble-ai">こんにちは！気になる単語をタップしてください。その単語を分析して説明します。<br><small style="opacity:0.7;">(哈囉！點選你想了解的單字，我會專門為你分析和講解那個字。)</small></div>`;
           this.chatHistory = [];
           this.loadNews(true);
         },
@@ -6346,6 +6414,23 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
           this.pendingWord = null;
         },
 
+        // Instant analysis: send the tapped word straight to the AI teacher chat (no need to add to list)
+        analyzeWord: async function () {
+          const word = this.pendingWord;
+          if (!word) return;
+          this.hideWordPopup();
+
+          // Make sure the chat input exists / news page is active, then send the word as a question
+          const input = document.getElementById("chat-input");
+          if (input) {
+            input.value = `請分析這個單字：「${word}」`;
+            await this.sendChat();
+            // scroll the chat into view so the user sees the answer
+            const messagesEl = document.getElementById("chat-messages");
+            if (messagesEl) messagesEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }
+        },
+
         lookupAndAdd: async function () {
           const word = this.pendingWord;
           if (!word) return;
@@ -6394,7 +6479,7 @@ Return ONLY valid JSON, no markdown:
 }
 pos must be exactly one of: 名詞, 動詞(Group 1), 動詞(Group 2), 動詞(Group 3), い形容詞, な形容詞, 代名詞, 副詞, 助詞, 感嘆詞, 慣用語, 接尾詞, 疑問詞
 jlpt must be a number 1-5.
-For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べます/たべます not 食べる/たべる).`;
+For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べます/たべます not 食べる/たべる).\nCRITICAL: the "reading" must be the exact, correct standard Japanese reading — double-check it (e.g. 列車=れっしゃ, NOT ねっしゃ). A wrong reading breaks the audio pronunciation.`;
 
           const raw = (await this._geminiChat([{ role: "user", content: prompt }], 1024))
             .replace(/[\s\S]*?(\{[\s\S]*\})[\s\S]*/m, "$1").trim();
@@ -6563,6 +6648,15 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
             ? `${this.newsArticle.title}\n${(this.newsArticle.article || "").replace(/<[^>]+>/g, "")}`
             : "";
 
+          // Collect the vocab/words the user tapped (chips selected from the article + words added via lookup)
+          const _chipTapped = this.newsArticle?.vocabulary
+            ? [...this.selectedVocabIndices].sort((a, b) => a - b).map(i => this.newsArticle.vocabulary[i]).filter(Boolean)
+            : [];
+          const _tappedWords = [..._chipTapped, ...this.customVocab];
+          const tappedList = _tappedWords.length
+            ? _tappedWords.map(v => `・${v.word || v.reading}${v.reading && v.word ? "（" + v.reading + "）" : ""}${v.meaning ? " = " + v.meaning : ""}${v.pos ? " [" + v.pos + "]" : ""}`).join("\n")
+            : "";
+
           const isMobile = window.innerWidth < 768;
           const POS_LIST = "名詞, 動詞(Group 1/Group 2/Group 3), I形容詞, Na形容詞, 代名詞, 副詞, 助詞, 感嘆詞, 慣用語, 接尾詞, 疑問詞";
           const vocabFmt = isMobile
@@ -6570,34 +6664,36 @@ For verbs (動詞), use ます form in both "word" and "reading" (e.g., 食べ�
             : `【單字表（電腦）】使用 Markdown 表格，欄位為「漢字 | 平假名/片假名 | 中文意思 | JLPT | 詞性 | 例句」。漢字欄無漢字則留白。JLPT僅顯示數字1~5。動詞一律用ます形。詞性嚴格限定：${POS_LIST}。例句用簡單句子說明。`;
 
           const sysPrompt = `# 角色
-你是一位精通《大家的日本語》(みんなの日本語) 的專業日語老師（Sensei），性格親切、極具耐心，致力於營造中日雙語（Bilingual）的浸潤式學習環境。
+你是一位精通《大家的日本語》(みんなの日本語) 的專業日語老師（Sensei），性格親切、極具耐心，使用中日雙語（Bilingual）教學。
 
-# 任務（三項核心功能）
-1. 單字表製作：整理使用者指定章節的單字。
-2. 文型解析：詳解文法句型。
-3. 每日新聞：推薦適合初學者的簡單日語新聞。
+# 核心任務（唯一焦點）
+你只專注於「使用者點選（tap）的日語單字 / 詞彙」，針對這些字做分析與講解。不要主動製作整份單字表、不要主動推薦新聞、不要岔開到其他主題。使用者點選了哪些字，你就只講解那些字。
+
+# 使用者目前點選的單字
+${tappedList ? tappedList : "（使用者尚未點選任何單字。請提示：請在上方文章或單字區點選想了解的單字，我會為你分析。）"}
 
 # 背景
-使用者正用《大家的日本語》學習，目前 JLPT 程度約為 ${this.newsLevel}。所有回覆（問候、解說、鼓勵）皆須中日雙語對照。
-${articleText ? ("今日のニュース記事：「" + articleText + "」") : ""}
+使用者正用《大家的日本語》學習，目前 JLPT 程度約為 ${this.newsLevel}。
+${articleText ? ("（參考用）今日のニュース記事：「" + articleText + "」。只有在解釋點選單字於文章中的用法時才引用，不要重述整篇文章。") : ""}
 
-# 格式
-- 全對話雙語化：先輸出日文，下方緊接中文。
-- 單字表：${vocabFmt}
-- 文型解析：以雙語說明接續方式（例：V1ます形 + 〜ながら）。
+# 每個點選單字的講解格式（中日雙語）
+針對每一個使用者點選的單字，依序說明：
+1. 読み方（假名讀音）與重音/漢字。
+2. 意味（繁體中文意思）。
+3. 品詞（詞性）；若為動詞，標註 Group 1/2/3 並附ます形。
+4. 文章中的用法：引用該字在上方文章出現的那一句，說明在句中的角色。
+5. 例句：一句簡單日文例句（符合使用者程度）＋繁體中文翻譯。
+6. 補充：常見搭配、同義/易混淆字、或小提醒（簡短）。
 
-# 警告
-- ます形限制：「動詞必須以ます形呈現」僅適用於「單字表」；對話、文型、新聞中請依語境自然使用辭書形/て形等活用。
-- 詞性新增通知：若遇到限定清單以外的詞性，必須主動詢問使用者是否要新增該分類。
-- 程度限制：解說須符合《大家的日本語》當前課數，避免超前語法。
-
-# 執行步驟
-- Step 1 中日雙語引導與裝置確認：若使用者尚未開始，先主動問：「今日は第何課を勉強しますか？また、今はパソコンとスマートフォンのどちらを使っていますか？（今天想學習第幾課？現在使用的是電腦還是手機呢？）」
-- Step 2 功能觸發：[單字]→依裝置格式產出（動詞ます形、無漢字留白）；[文型]→雙語解釋接續。
-- Step 3 新聞推薦：在合適處主動問「簡単なニュースを読みましょうか？」並提供 N4–N5 內容。
+# 回覆規則
+- 全程中日雙語對照：先日文，下方緊接繁體中文。
+- 若使用者問的是某個已點選單字 → 直接深入分析那個字。
+- 若使用者問的字不在點選清單中但出現在文章裡 → 仍可分析，並簡短提醒可點選加入清單。
+- 程度限制：解說符合《大家的日本語》程度，避免超前語法。
+- 保持簡潔聚焦，不要發散到無關主題。
 
 # 風格與語氣
-專業、充滿熱情、始終中日雙語，使用標準敬語（丁寧体）。`;
+專業、親切、充滿熱情，使用標準敬語（丁寧体），始終中日雙語。`;
 
           const messages = [
             { role: "system", content: sysPrompt },
@@ -6631,6 +6727,44 @@ ${articleText ? ("今日のニュース記事：「" + articleText + "」") : ""
           currentIdx: 0,
           score: 0,
           loading: false,
+        },
+
+        // Canonical みんなの日本語 lesson → grammar map (single source of truth).
+        // Used BOTH for the lesson-picker chips AND injected into the quiz prompt so
+        // the AI generates questions for the EXACT grammar of each lesson (not adjacent ones).
+        MINNA_LESSON_GRAMMAR: {
+            1:  { ja:"～は～です / ～の",       zh:"是～／的" },
+            2:  { ja:"これ/それ/あれ",           zh:"這個／那個／那個" },
+            3:  { ja:"動詞ます形",               zh:"動詞禮貌形" },
+            4:  { ja:"～を / ここ/そこ/あそこ",  zh:"助詞を／這裡那裡" },
+            5:  { ja:"助詞 で/に/へ",            zh:"助詞 で・に・へ" },
+            6:  { ja:"時間表現 / 数量",          zh:"時間表達／數量" },
+            7:  { ja:"～ている (動作)",          zh:"正在做～" },
+            8:  { ja:"て形 / ～てください",      zh:"て形／請做～" },
+            9:  { ja:"ない形 / ～てはいけない",  zh:"否定形／禁止" },
+            10: { ja:"助詞 に/で / ～にいる・ある", zh:"存在表達" },
+            11: { ja:"形容詞 い/な",             zh:"い形・な形容詞" },
+            12: { ja:"形容詞比較",               zh:"比較表達" },
+            13: { ja:"～たい / ～ながら",        zh:"想做～／邊做邊" },
+            14: { ja:"～たり～たり / ～し",      zh:"列舉動作／理由" },
+            15: { ja:"て形応用 / ～てみる",      zh:"て形應用／試試看" },
+            16: { ja:"普通形 / 名詞修飾",        zh:"普通形／名詞修飾" },
+            17: { ja:"～と思います / ～でしょう",zh:"我認為～／大概" },
+            18: { ja:"動詞た形 / 過去",          zh:"過去形" },
+            19: { ja:"条件 ～たら",              zh:"條件～的話" },
+            20: { ja:"受け身形",                 zh:"被動形" },
+            21: { ja:"使役形",                   zh:"使役形" },
+            22: { ja:"使役受け身",               zh:"使役被動形" },
+            23: { ja:"～てあげる/もらう/くれる", zh:"授受動詞" },
+            24: { ja:"敬語 尊敬語",              zh:"敬語（尊敬）" },
+            25: { ja:"敬語 謙譲語",              zh:"敬語（謙讓）" },
+            26: { ja:"～んです",                 zh:"説明・強調 ～んです" },
+            27: { ja:"可能形",                   zh:"可能形（會／能）" },
+            28: { ja:"～ながら / ～ています(習慣)", zh:"一邊～／習慣" },
+            29: { ja:"自動詞 ～ている",          zh:"自動詞狀態" },
+            30: { ja:"～てある / ～ておく",       zh:"事先做好／維持狀態" },
+            31: { ja:"意向形 ～(よ)う",           zh:"意向形（打算）" },
+            32: { ja:"～たほうがいい / ～でしょう", zh:"建議／推測" },
         },
 
         initMinnaPage: function () {
@@ -6683,40 +6817,7 @@ ${articleText ? ("今日のニュース記事：「" + articleText + "」") : ""
           if (!lessonContainer || !topicContainer) return;
           if (tab === "lesson") {
             const lessons = [];
-            const lessonTopics = {
-                1:  { ja:"～は～です / ～の",       zh:"是～／的" },
-                2:  { ja:"これ/それ/あれ",           zh:"這個／那個／那個" },
-                3:  { ja:"動詞ます形",               zh:"動詞禮貌形" },
-                4:  { ja:"～を / ここ/そこ/あそこ",  zh:"助詞を／這裡那裡" },
-                5:  { ja:"助詞 で/に/へ",            zh:"助詞 で・に・へ" },
-                6:  { ja:"時間表現 / 数量",          zh:"時間表達／數量" },
-                7:  { ja:"～ている (動作)",          zh:"正在做～" },
-                8:  { ja:"て形 / ～てください",      zh:"て形／請做～" },
-                9:  { ja:"ない形 / ～てはいけない",  zh:"否定形／禁止" },
-                10: { ja:"助詞 に/で / ～にいる・ある", zh:"存在表達" },
-                11: { ja:"形容詞 い/な",             zh:"い形・な形容詞" },
-                12: { ja:"形容詞比較",               zh:"比較表達" },
-                13: { ja:"～たい / ～ながら",        zh:"想做～／邊做邊" },
-                14: { ja:"～たり～たり / ～し",      zh:"列舉動作／理由" },
-                15: { ja:"て形応用 / ～てみる",      zh:"て形應用／試試看" },
-                16: { ja:"普通形 / 名詞修飾",        zh:"普通形／名詞修飾" },
-                17: { ja:"～と思います / ～でしょう",zh:"我認為～／大概" },
-                18: { ja:"動詞た形 / 過去",          zh:"過去形" },
-                19: { ja:"条件 ～たら",              zh:"條件～的話" },
-                20: { ja:"受け身形",                 zh:"被動形" },
-                21: { ja:"使役形",                   zh:"使役形" },
-                22: { ja:"使役受け身",               zh:"使役被動形" },
-                23: { ja:"～てあげる/もらう/くれる", zh:"授受動詞" },
-                24: { ja:"敬語 尊敬語",              zh:"敬語（尊敬）" },
-                25: { ja:"敬語 謙譲語",              zh:"敬語（謙讓）" },
-                26: { ja:"～んです",                 zh:"説明・強調 ～んです" },
-                27: { ja:"可能形",                   zh:"可能形（會／能）" },
-                28: { ja:"～ながら / ～ています(習慣)", zh:"一邊～／習慣" },
-                29: { ja:"自動詞 ～ている",          zh:"自動詞狀態" },
-                30: { ja:"～てある / ～ておく",       zh:"事先做好／維持狀態" },
-                31: { ja:"意向形 ～(よ)う",           zh:"意向形（打算）" },
-                32: { ja:"～たほうがいい / ～でしょう", zh:"建議／推測" },
-              };
+            const lessonTopics = this.MINNA_LESSON_GRAMMAR;
             const lessonNums = Object.keys(lessonTopics).map(Number).sort((a,b)=>a-b);
             const maxLesson = lessonNums[lessonNums.length - 1];
             // Group by textbook volume — each volume is a collapsible accordion panel
@@ -6842,8 +6943,16 @@ ${articleText ? ("今日のニュース記事：「" + articleText + "」") : ""
             keigo:"敬語",adjective:"形容詞活用",comparison:"比較表現",
           };
 
+          // Build an explicit per-lesson grammar spec so the AI targets the EXACT
+          // grammar of each chosen lesson (prevents drifting to adjacent lessons).
+          const lessonGrammarSpec = selArr
+            .map((n) => {
+              const g = this.MINNA_LESSON_GRAMMAR[n];
+              return g ? `第${n}課 = ${g.ja}（${g.zh}）` : `第${n}課`;
+            })
+            .join("; ");
           const topicDesc = mode === "lesson"
-            ? `みんなの日本語 第${selArr.join("、第")}課の文法内容`
+            ? `みんなの日本語の次の課の文法のみ: ${lessonGrammarSpec}`
             : selArr.map((s) => topicLabels[s] || s).join("、");
           this.minnaState.topicLabel = mode === "lesson"
             ? `第 ${selArr.join("・")} 課`
@@ -6860,11 +6969,49 @@ ${articleText ? ("今日のニュース記事：「" + articleText + "」") : ""
 Generate exactly ${qCount} multiple-choice questions about: ${topicDesc}
 
 CRITICAL: Questions must be based on ACTUAL grammar patterns and vocabulary from みんなの日本語 textbook.
-For lesson-based quizzes, use ONLY the grammar patterns introduced in that specific lesson.
+For lesson-based quizzes, the TARGET grammar for each lesson is listed explicitly above (e.g. "第32課 = ～たほうがいい / ～でしょう"). You MUST build every question around EXACTLY those listed grammar points for the chosen lesson(s). Do NOT use grammar from any other lesson — in particular do NOT drift to the previous or next lesson (e.g. for 第32課 do not use 第31課's 意向形～(よ)う). If multiple lessons are chosen, distribute the questions across them as evenly as possible so each selected lesson is represented.
 For topic-based quizzes, focus on the grammar patterns typically taught for that topic in the textbook series.
 
 DIFFICULTY REQUIREMENT (MUST FOLLOW STRICTLY):
 ${difficultyDesc}
+
+GRAMMAR ACCURACY (MUST FOLLOW — the marked correct answer MUST be 100% grammatically correct standard Japanese):
+- Before finalizing EACH question, verify the "answer" you mark is actually correct AND every distractor is actually wrong. Never mark an ungrammatical form as correct. If unsure, replace the question with a simpler one you are certain about.
+- Part-of-speech connection reference (apply the one relevant to the tested grammar):
+
+  だ/です & でしょう/だろう:
+  * な-adj + noun → な (暇な人); な-adj + です → 暇です; な-adj + でしょう → bare stem, NO だ/な (暇でしょう ○ / 暇だでしょう ✗ / 暇なでしょう ✗)
+  * noun + でしょう → NO だ (雨でしょう ○ / 雨だでしょう ✗)
+  * い-adj plain + でしょう (忙しいでしょう ○); verb plain + でしょう (降るでしょう ○)
+  * でしょう/だろう REPLACES だ/です — never comes after だ.
+
+  て形 (L14-15):
+  * G1 sound changes: 書く→書いて, 泳ぐ→泳いで, 話す→話して, 待つ→待って, 読む→読んで, 死ぬ→死んで, 遊ぶ→遊んで, 買う→買って, 帰る→帰って; 行く→行って (irregular)
+  * G2: stem + て (食べて); する→して, 来る→来て
+  * ～てください / ～ています / ～てもいいです / ～てはいけません all take て形.
+
+  ない形 (L17):
+  * G1: u-row → a-row + ない (書く→書かない); 買う→買わない (わ, not あ)
+  * G2: stem + ない (食べない); する→しない, 来る→来ない
+  * ～ないでください / ～なければなりません / ～なくてもいいです take ない形 (なければ = ない stem change).
+
+  辞書形 (L18): ～ことができます / ～まえに / 趣味は～こと take 辞書形 (plain non-past).
+
+  た形 (L19): same sound-change rules as て形 but with た/だ. ～たことがあります / ～たり～たり take た形.
+
+  条件 (L25 ～たら / L35 ～ば・なら): ～たら = た形 + ら (行ったら); for な-adj/noun なら (暇なら, 雨なら).
+
+  可能形 (L27): G1 e-row + る (書く→書ける), G2 stem+られる (食べられる), する→できる, 来る→来られる. Object particle を often → が with potential.
+
+  受け身 passive (L37): G1 a-row+れる (叱る→叱られる), G2 stem+られる (見る→見られる), する→される, 来る→来られる.
+  使役 causative (L48): G1 a-row+せる (行く→行かせる), G2 stem+させる (食べさせる), する→させる, 来る→来させる.
+
+  授受 giving/receiving (L7, L24, L41): あげる (I give out), くれる (someone gives ME/my side), もらう (I receive). Direction is the key tested point — くれる is only for receiving toward the speaker's side.
+
+  比較 comparison (L12): AはBより～ (A is more than B); AとBとどちらが～; (～のなかで)いちばん～.
+
+- Particle correctness: を (direct object), が (subject/with potential & exist/ability), に (time/destination/target), で (place of action/means), へ (direction), と (together/quote), から～まで (from~to). Make sure only ONE choice is correct for the context.
+- If you are not fully certain a question is grammatically correct, replace it with a simpler one you are certain about.
 
 Question guidelines:
 - Each question tests ONE specific grammar point from みんなの日本語
@@ -6880,10 +7027,12 @@ Format requirements:
 - Brief explanation in Traditional Chinese (繁體中文) explaining the grammar rule
 - In explanations, use single quotes instead of double quotes to avoid JSON errors
 
+FURIGANA (REQUIRED): In the "q" (question text) AND in every "choices" entry, wrap EVERY kanji word in a <ruby> tag so the reading shows above the kanji, exactly like: <ruby>週末<rt>しゅうまつ</rt></ruby>, <ruby>彼<rt>かれ</rt></ruby>, <ruby>忙<rt>いそが</rt></ruby>しい. Add furigana to ALL kanji (including in the answer choices). Readings must be the correct standard Japanese reading. Do NOT add furigana to the blank marker ___ or to kana. The explanation field does NOT need ruby. Use double quotes only for the <rt> ... HTML is fine inside the JSON string as long as it uses no double quotes (ruby/rt tags have none).
+
 CRITICAL: Return ONLY a valid JSON array. No markdown fences. No extra text before or after.
 Format:
-[{"q":"question text","choices":["A. option","B. option","C. option","D. option"],"answer":0,"type":"fill-in","explanation":"用單引號或改寫以避免雙引號"}]
-"answer" is the 0-based index (0-3) of the correct choice.`;
+[{"q":"<ruby>彼<rt>かれ</rt></ruby>はいつも<ruby>忙<rt>いそが</rt></ruby>しいですから、<ruby>週末<rt>しゅうまつ</rt></ruby>も___でしょう。","choices":["<ruby>暇<rt>ひま</rt></ruby>","<ruby>暇<rt>ひま</rt></ruby>な","<ruby>暇<rt>ひま</rt></ruby>だ","<ruby>暇<rt>ひま</rt></ruby>で"],"answer":0,"type":"fill-in","explanation":"な形容詞接 でしょう 時用語幹，不加 だ/な，故 '暇でしょう' 正確。"}]
+Do NOT prefix choices with 'A.'/'B.' — labels are added automatically. "answer" is the 0-based index (0-3) of the correct choice.`;
 
           try {
             const raw = await this._geminiChat([
@@ -6943,6 +7092,9 @@ Format:
             }
             if (!Array.isArray(questions) || questions.length === 0) throw new Error("題目解析失敗");
 
+            // Furigana fallback: if the generator forgot <ruby> on kanji, add it in one pass.
+            try { questions = await this.ensureQuizFurigana(questions); } catch (e) { console.warn("furigana fallback skipped:", e); }
+
             this.minnaState.questions = questions;
             this.minnaState.currentIdx = 0;
             this.minnaState.score = 0;
@@ -6955,6 +7107,44 @@ Format:
               `<div style="color:var(--danger-text)">❌ 出題失敗：${err.message}<br><small>請稍後再試</small></div>
                <button onclick="app.initMinnaPage()" class="btn-main" style="margin-top:12px;">← 返回</button>`;
           }
+        },
+
+        // If any question/choice has kanji but no <ruby> furigana, ask Gemini to add it (one call).
+        ensureQuizFurigana: async function (questions) {
+          const hasKanji = (s) => /[\u4e00-\u9faf]/.test(s || "");
+          const hasRuby  = (s) => /<ruby/i.test(s || "");
+          // Does any field need furigana?
+          const needs = questions.some(q =>
+            (hasKanji(q.q) && !hasRuby(q.q)) ||
+            (Array.isArray(q.choices) && q.choices.some(c => hasKanji(c) && !hasRuby(c)))
+          );
+          if (!needs) return questions;
+
+          // Build a compact payload of just the texts needing ruby.
+          const payload = questions.map(q => ({ q: q.q || "", choices: Array.isArray(q.choices) ? q.choices : [] }));
+          const prompt = `Add Japanese furigana to the following quiz items. For EVERY kanji word, wrap it in a <ruby> tag with the correct reading, e.g. <ruby>\u9031\u672b<rt>\u3057\u3085\u3046\u307e\u3064</rt></ruby>. Do NOT change the wording, order, punctuation, the blank marker ___, or kana. Do NOT add ruby to kana. Return ONLY a JSON array with the SAME length and structure: [{"q":"...with ruby...","choices":["...with ruby...", ...]}, ...]. No markdown, no extra text.\n\nITEMS:\n` + JSON.stringify(payload);
+
+          const raw = await this._geminiChat(
+            [{ role: "system", content: "Return ONLY a valid JSON array, no markdown fences, no extra text." },
+             { role: "user", content: prompt }],
+            4096
+          );
+          let withRuby;
+          try {
+            const match = (raw || "").match(/\[[\s\S]*\]/);
+            withRuby = JSON.parse(match ? match[0] : raw);
+          } catch (e) {
+            return questions; // parse failed → keep originals (plain kanji)
+          }
+          if (!Array.isArray(withRuby) || withRuby.length !== questions.length) return questions;
+
+          // Merge ruby text back, keeping original answer/type/explanation.
+          return questions.map((q, i) => {
+            const r = withRuby[i] || {};
+            const mergedChoices = (Array.isArray(r.choices) && r.choices.length === (q.choices || []).length)
+              ? r.choices : q.choices;
+            return { ...q, q: r.q || q.q, choices: mergedChoices };
+          });
         },
 
         renderMinnaQuestion: function () {
@@ -7452,6 +7642,7 @@ Format:
                   <option value="接頭辞">接頭辞</option>
                   <option value="接尾辞">接尾辞</option>
                   <option value="数詞">数詞</option>
+                  <option value="疑問詞">疑問詞</option>
                 </select>
         </div>
       </div>
@@ -7548,5 +7739,6 @@ Format:
 
 
   
+
 
 </body></html>
