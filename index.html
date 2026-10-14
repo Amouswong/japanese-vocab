@@ -665,6 +665,9 @@
         color: var(--text-main);
         background: var(--bg-hover);
       }
+      /* Desktop: icons hidden, text shown inline (unchanged look) */
+      .nav-ic { display: none; }
+      .nav-links button { display: inline-flex; align-items: center; gap: 6px; }
 
       /* ── Page wrapper ───────────────────────────────────────── */
       .container {
@@ -2672,8 +2675,54 @@
         .news-level-chip { padding: 9px 14px; min-height: 40px; }
         .filter-chip, .db-seg-btn { padding: 9px 14px; min-height: 40px; }
         .minna-tab { padding: 13px; min-height: 46px; }
-        .nav-links button { padding: 10px 12px; min-height: 42px; }
         .modal-close { min-width: 44px; min-height: 44px; }
+      }
+
+      /* ══ MOBILE REDESIGN: bottom tab bar navigation (≤767px) ══ */
+      @media (max-width: 767px) {
+        /* Top bar: compact, logo only (nav moves to the bottom) */
+        .nav-header {
+          height: 52px;
+          padding: 0 max(14px, env(safe-area-inset-left)) 0 max(14px, env(safe-area-inset-right));
+          justify-content: center;
+        }
+        .logo { font-size: 1.05rem; }
+
+        /* Turn the nav links into a fixed bottom tab bar */
+        .nav-links {
+          position: fixed;
+          left: 0; right: 0; bottom: 0;
+          z-index: 200;
+          display: flex;
+          gap: 0;
+          background: var(--bg-surface);
+          border-top: 1px solid var(--line);
+          padding-bottom: env(safe-area-inset-bottom);
+          box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+        }
+        .nav-links button {
+          flex: 1 1 0;
+          flex-direction: column;
+          gap: 2px;
+          padding: 7px 2px;
+          border-radius: 0;
+          min-height: 56px;
+          font-size: 0.66rem;
+          color: var(--text-sub);
+          background: none;
+        }
+        .nav-links button:hover { background: none; }
+        .nav-ic { display: block; }                 /* show icons on mobile */
+        .nav-tx { font-size: 0.66rem; line-height: 1; }
+        .nav-links button.active {
+          background: none;
+          color: var(--primary);
+          border-bottom: none;
+        }
+        .nav-links button.active .nav-ic { color: var(--primary); }
+
+        /* Reserve space so the bottom bar never covers content */
+        .container { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
       }
 
       /* ── Theme toggle button ──────────────────────────────── */
@@ -2857,11 +2906,28 @@
       #minna-q-text { line-height: 2.1 !important; }
       .minna-choice-btn { line-height: 1.9; align-items: flex-end !important; }
 
+      /* News topic selector chips */
+      .news-topic-chip {
+        font-size: 0.7rem;
+        padding: 3px 9px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--bg-hover);
+        color: var(--text-sub);
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.15s;
+      }
+      .news-topic-chip:hover { border-color: var(--primary); color: var(--primary-text); }
+      .news-topic-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+      /* Sentence highlight during read-aloud */
+      .news-article .sentence-reading { background: rgba(192,132,64,0.25); border-radius: 3px; }
+
       /* ── News: horizontal two-column layout ───────────────── */
       .news-cols {
         display: flex;
         gap: 16px;
-        align-items: stretch;        /* both columns match the taller one */
+        align-items: flex-start;     /* top-align: columns size to their own content */
       }
       .news-cols > .dashboard-card {
         flex: 1 1 50%;               /* true 50 / 50 split */
@@ -2871,20 +2937,63 @@
         display: flex;
         flex-direction: column;
       }
-      /* AI 日語老師 column: chat area grows with content (no cap) */
+      /* AI 日語老師 column: fixed-height chat that scrolls instead of growing the page */
       .news-cols > .dashboard-card:last-child .chat-messages {
-        flex: 1 1 auto;            /* grow to fill / extend with content */
+        flex: 1 1 auto;
         height: auto;
-        min-height: 420px;
-        max-height: none;          /* keep extending vertically */
-        overflow-y: visible;
+        min-height: 320px;
+        max-height: 60vh;          /* cap height — scroll inside, don't extend the page */
+        overflow-y: auto;          /* internal scrollbar for long conversations */
       }
+      /* Give the news (left) column a little more breathing room */
+      .news-cols > .dashboard-card:first-child { padding: 22px 24px; }
       /* Stack back to vertical on narrow screens */
       @media (max-width: 860px) {
         #page-news { max-width: 640px; }
         .news-cols { flex-direction: column; }
         .news-cols > .dashboard-card { width: 100%; }
-        .news-cols > .dashboard-card:last-child .chat-messages { min-height: 280px; }
+        .news-cols > .dashboard-card:last-child .chat-messages { min-height: 280px; max-height: 50vh; }
+      }
+
+      /* ── Mobile edge spacing: keep comfortable gutters on small screens ── */
+      @media (max-width: 767px) {
+        /* Page gutter + iOS safe-area so content never touches the edges */
+        .container {
+          padding-left: max(16px, env(safe-area-inset-left));
+          padding-right: max(16px, env(safe-area-inset-right));
+          padding-top: 16px;
+        }
+        .nav-header {
+          padding-left: max(16px, env(safe-area-inset-left));
+          padding-right: max(16px, env(safe-area-inset-right));
+        }
+        /* Cards: restore real horizontal padding (editorial override was 2px) */
+        .dashboard-card { padding: 18px 16px !important; border-radius: 10px; }
+        .news-cols { gap: 12px; }
+        .news-cols > .dashboard-card:first-child { padding: 18px 16px !important; }
+        /* Reading pages: give side gutters instead of the tight 8px */
+        .ed-home { padding-left: 16px; padding-right: 16px; }
+        #page-news, #page-minna, #page-quiz { padding-left: 4px; padding-right: 4px; }
+      }
+
+      /* ══ MOBILE POLISH: overflow, wrapping, readability (≤767px) ══ */
+      @media (max-width: 767px) {
+        html, body { overflow-x: hidden; }        /* no accidental sideways scroll */
+        * { -webkit-tap-highlight-color: transparent; }
+        /* News header controls wrap cleanly instead of squeezing */
+        #page-news .dashboard-card > div:first-child { flex-wrap: wrap; gap: 8px; }
+        .news-level-chip { font-size: 0.75rem; }
+        /* Article a touch larger for comfortable reading on phones */
+        .news-article { font-size: 1.12rem; line-height: 2.2; }
+        /* Vocab chips & topic chips wrap and keep tidy spacing */
+        .vocab-strip, #news-topic-bar { gap: 8px; }
+        /* Home dashboard view toggle: full-width, easy to tap */
+        .home-view-toggle { width: 100%; }
+        .home-view-btn { flex: 1 1 0; justify-content: center; min-height: 44px; }
+        /* Tables / wide content never force horizontal scroll */
+        .dashboard-card, .db-content, #page-news, #page-minna { max-width: 100%; }
+        /* Quiz choices: comfortable height + wrap long options */
+        .minna-choice-btn { min-height: 48px; white-space: normal; }
       }
 
       /* Gemini key card — smaller, calmer (was oversized full-width) */
@@ -3129,10 +3238,22 @@
     <nav class="nav-header" role="navigation" aria-label="主選單">
       <div class="logo">言葉 <span>Kotoba</span></div>
       <div class="nav-links" role="tablist">
-        <button id="nav-study" class="active" onclick="app.showPage('home')">学習</button>
-        <button id="nav-db" onclick="app.showPage('db')">単語帳</button>
-        <button id="nav-news" onclick="app.showPage('news')">ニュース</button>
-        <button id="nav-minna" onclick="app.showPage('minna')">文法練習</button>
+        <button id="nav-study" class="active" onclick="app.showPage('home')">
+          <svg class="nav-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <span class="nav-tx">学習</span>
+        </button>
+        <button id="nav-db" onclick="app.showPage('db')">
+          <svg class="nav-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          <span class="nav-tx">単語帳</span>
+        </button>
+        <button id="nav-news" onclick="app.showPage('news')">
+          <svg class="nav-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6z"></path></svg>
+          <span class="nav-tx">ニュース</span>
+        </button>
+        <button id="nav-minna" onclick="app.showPage('minna')">
+          <svg class="nav-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          <span class="nav-tx">文法練習</span>
+        </button>
       </div>
       
     </nav>
@@ -3324,6 +3445,16 @@
               </div>
             </div>
 
+            <!-- Review schedule (SRS due) filter -->
+            <div class="db-sidebar-section">
+              <div class="db-sidebar-label">復習スケジュール</div>
+              <div class="db-seg-group">
+                <button class="db-seg-btn active filter-chip" data-group="review" data-val="" onclick="app.setFilter('review','')">全部</button>
+                <button class="db-seg-btn filter-chip" data-group="review" data-val="due" onclick="app.setFilter('review','due')" title="今日まで復習期限が来ている単語" style="color:var(--warning);">📅 今日の復習</button>
+                <button class="db-seg-btn filter-chip" data-group="review" data-val="upcoming" onclick="app.setFilter('review','upcoming')" title="これから復習予定の単語">予定</button>
+              </div>
+            </div>
+
             <!-- JLPT filter -->
             <div class="db-sidebar-section">
               <div class="db-sidebar-label">JLPT</div>
@@ -3430,6 +3561,34 @@
             </div>
 
             <div id="news-content">
+              <!-- Topic selector -->
+              <div id="news-topic-bar" style="display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line);line-height:1.9;">
+                <span style="font-size:0.72rem;color:var(--text-sub);">主題：</span>
+                <button class="news-topic-chip active" data-topic="" onclick="app.setNewsTopic('')">おまかせ</button>
+                <button class="news-topic-chip" data-topic="スポーツ" onclick="app.setNewsTopic('スポーツ')">運動</button>
+                <button class="news-topic-chip" data-topic="テクノロジー" onclick="app.setNewsTopic('テクノロジー')">科技</button>
+                <button class="news-topic-chip" data-topic="経済" onclick="app.setNewsTopic('経済')">經濟</button>
+                <button class="news-topic-chip" data-topic="文化・エンタメ" onclick="app.setNewsTopic('文化・エンタメ')">文化娛樂</button>
+                <button class="news-topic-chip" data-topic="科学・環境" onclick="app.setNewsTopic('科学・環境')">科學環境</button>
+                <button class="news-topic-chip" data-topic="健康" onclick="app.setNewsTopic('健康')">健康</button>
+                <button class="news-topic-chip" data-topic="グルメ・旅行" onclick="app.setNewsTopic('グルメ・旅行')">美食旅遊</button>
+                <input type="text" id="news-topic-custom" placeholder="自訂主題…" style="flex:0 0 110px;padding:4px 8px;font-size:0.72rem;margin:0;" onkeydown="if(event.key==='Enter')app.useCustomNewsTopic()" title="輸入任意主題後按 Enter">
+              </div>
+
+              <!-- Audio + history controls -->
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+                <button onclick="app.playArticleFull()" id="news-play-full" class="btn-sm" title="全文を読み上げ" style="display:inline-flex;align-items:center;gap:5px;"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>全文朗讀</button>
+                <button onclick="app.playArticleSentences()" id="news-play-sentences" class="btn-sm" title="一文ずつ読み上げ" style="display:inline-flex;align-items:center;gap:5px;"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line></svg>逐句朗讀</button>
+                <button onclick="app.stopArticleAudio()" id="news-play-stop" class="btn-sm" title="停止" style="display:none;align-items:center;gap:5px;color:var(--danger-text);"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="1"></rect></svg>停止</button>
+                <span style="flex:1;"></span>
+                <!-- History navigation (within today's generated articles) -->
+                <div id="news-history-nav" style="display:none;align-items:center;gap:4px;">
+                  <button onclick="app.newsHistoryPrev()" id="news-hist-prev" class="btn-sm" title="前の記事" style="padding:4px 8px;">◀</button>
+                  <span id="news-hist-label" style="font-size:0.72rem;color:var(--text-sub);min-width:34px;text-align:center;"></span>
+                  <button onclick="app.newsHistoryNext()" id="news-hist-next" class="btn-sm" title="次の記事" style="padding:4px 8px;">▶</button>
+                </div>
+              </div>
+
               <h3 id="news-title" style="font-size:1.1rem;margin:0 0 8px 0;color:var(--text-main);"></h3>
               <div id="news-article" class="news-article"></div>
               <details style="margin-bottom:10px;">
@@ -3689,6 +3848,10 @@
         newsArticle: null,
         chatHistory: [],
         newsLevel: "N5",
+        newsTopic: "",            // selected news topic ("" = おまかせ/random)
+        newsHistory: [],          // today's generated articles (for history nav)
+        newsHistoryIdx: 0,        // which history item is currently shown
+        _articleAudioTimer: null, // sentence read-aloud timer handle
         selectedVocabIndices: new Set(),
         customVocab: [],
         pendingWord: null,
@@ -4034,7 +4197,7 @@
         },
 
         searchDebounceTimer: null,
-        activeFilters: { jlpt: new Set(), stage: new Set(), daterange: new Set(), pos: new Set() },
+        activeFilters: { jlpt: new Set(), stage: new Set(), daterange: new Set(), pos: new Set(), review: new Set() },
 
         // Canonical parts-of-speech recognised by the app (for import validation)
         validPosTypes: ["名詞","動詞","い形容詞","な形容詞","副詞","慣用語","代名詞","助詞","接続詞","感動詞","連体詞","接頭辞","接尾辞","数詞","疑問詞"],
@@ -4108,6 +4271,10 @@
           if (val === "") {
             // "全部" clears the set
             set.clear();
+          } else if (group === "review") {
+            // Review schedule is single-select (due / upcoming are mutually exclusive)
+            if (set.has(val)) { set.clear(); }
+            else { set.clear(); set.add(val); }
           } else {
             if (set.has(val)) {
               set.delete(val);
@@ -4166,10 +4333,10 @@
 
         renderList: async function () {
           const searchQ = document.getElementById("db-search").value.trim();
-          const { jlpt, stage, daterange, pos } = this.activeFilters;
+          const { jlpt, stage, daterange, pos, review } = this.activeFilters;
           const listContainer = document.getElementById("db-list");
 
-          const hasFilter = searchQ || jlpt.size || stage.size || daterange.size || pos.size;
+          const hasFilter = searchQ || jlpt.size || stage.size || daterange.size || pos.size || review.size;
           if (!hasFilter) {
             listContainer.innerHTML =
             `<div class="empty-state">
@@ -4217,10 +4384,19 @@
             else if (daterange.has("week")) cutoff.setDate(now.getDate() - 7);
             query = query.gte("created_at", cutoff.toISOString());
           }
+          // Review schedule (SRS): due = nextReview <= now & not mastered & stage < 5; upcoming = nextReview > now
+          const _reviewActive = review.size > 0;
+          const _nowIso = new Date().toISOString();
+          if (review.has("due")) {
+            query = query.lte("nextReview", _nowIso).lt("stage", 5).neq("mastered", true);
+          } else if (review.has("upcoming")) {
+            query = query.gt("nextReview", _nowIso).lt("stage", 5).neq("mastered", true);
+          }
 
-          const { data, error } = await query
-            .order("id", { ascending: false })
-            .limit(200);
+          // When reviewing, order by soonest due; otherwise newest first.
+          const { data, error } = _reviewActive
+            ? await query.order("nextReview", { ascending: true }).limit(200)
+            : await query.order("id", { ascending: false }).limit(200);
 
           if (error) {
             listContainer.innerHTML =
@@ -4283,6 +4459,20 @@
               ? `<span style="font-size:0.65rem;color:var(--text-sub);background:var(--bg-hover);padding:2px 6px;border-radius:3px;">${item.pos.split("(")[0]}</span>`
               : "";
 
+            // Review-schedule badge (shown when the 復習 filter is active)
+            let reviewBadge = "";
+            if (_reviewActive && item.nextReview) {
+              const nr = new Date(item.nextReview);
+              const today0 = new Date(); today0.setHours(0,0,0,0);
+              const diffDays = Math.round((nr.setHours(0,0,0,0) - today0.getTime()) / 86400000);
+              let label, color;
+              if (diffDays < 0) { label = `${Math.abs(diffDays)}日超過`; color = "var(--danger-text)"; }
+              else if (diffDays === 0) { label = "今日"; color = "var(--warning)"; }
+              else if (diffDays === 1) { label = "明日"; color = "var(--text-sub)"; }
+              else { label = `${diffDays}日後`; color = "var(--text-sub)"; }
+              reviewBadge = `<span style="font-size:0.65rem;color:${color};border:1px solid currentColor;padding:1px 6px;border-radius:3px;">📅 ${label}</span>`;
+            }
+
             let srsBlocks = "";
             for (let b = 1; b <= 5; b++) {
               const cls = b <= level ? (isMastered ? "db-srs-block mastered" : "db-srs-block filled") : "db-srs-block";
@@ -4307,10 +4497,14 @@
                   <div class="db-row-tags">
                     ${jlptBadge}
                     ${posBadge}
+                    ${reviewBadge}
                     <div class="db-mini-srs">${srsBlocks}</div>
                   </div>
                 </div>
                 <div class="db-row-actions">
+                  <button class="db-action-btn" onclick="event.stopPropagation();app.playAudio('${(kanaOnly || item.kanji || '').replace(/'/g, "\\'")}')" title="発音を聞く" aria-label="発音を聞く">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                  </button>
                   <button class="db-action-btn" onclick="app.openVocabDetail(${item.id})" title="詳細" aria-label="詳細">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                   </button>
@@ -5912,12 +6106,17 @@
             btn.classList.toggle("active", btn.dataset.level === savedLevel);
           });
 
+          // Load today's generated-article history for the nav
+          this._loadNewsHistory();
+          this.newsHistoryIdx = Math.max(this.newsHistory.length - 1, 0);
+
           const today = this.getTodayLocalDate();
           const cached = localStorage.getItem(`kaizen_news_${today}_${this.newsLevel}`);
           if (cached) {
             try {
               this.newsArticle = JSON.parse(cached);
               this.renderNews();
+              this._renderHistoryNav();
               return;
             } catch (e) {}
           }
@@ -5939,10 +6138,14 @@
           document.getElementById("news-refresh-btn").disabled = true;
 
           let nhk = null;
-          try {
-            nhk = await this.fetchNHKHeadline();
-          } catch (e) {
-            console.warn("NHK fetch failed:", e.message);
+          // When the user picked a specific topic, skip NHK (its headline is random and
+          // would ignore the chosen topic) and let the AI write on that topic instead.
+          if (!this.newsTopic) {
+            try {
+              nhk = await this.fetchNHKHeadline();
+            } catch (e) {
+              console.warn("NHK fetch failed:", e.message);
+            }
           }
 
           let prompt, maxTokens;
@@ -5980,8 +6183,11 @@ Rules: word = kanji form, empty string if no kanji. pos must be one of: 名詞,�
               N2: "JLPT N2: N2 kanji with furigana on first use; formal patterns ～によると、～に対して; 5-6 sentences",
               N1: "JLPT N1: any kanji with furigana; advanced grammar ～に際して、～をもって; 5-7 sentences",
             };
+            const topicClause = this.newsTopic
+              ? `The article MUST be about this topic/category: 「${this.newsTopic}」. Pick a specific, realistic headline within that topic.`
+              : `Pick ONE specific, realistic news topic that could plausibly appear in Japanese news around this date. Choose from a wide variety of categories: politics, economy, technology, environment, sports, culture, health, science, local events, international affairs, etc. Make the topic feel like a real headline, not a generic theme.`;
             prompt = `Today is ${today}. You are writing a Japanese-learner news digest.
-Pick ONE specific, realistic news topic that could plausibly appear in Japanese news around this date. Choose from a wide variety of categories: politics, economy, technology, environment, sports, culture, health, science, local events, international affairs, etc. Make the topic feel like a real headline, not a generic theme.
+${topicClause}
 ${avoidClause}
 
 Write a short Japanese news article about that topic.
@@ -6075,6 +6281,7 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
             localStorage.setItem(cacheKey, JSON.stringify(article));
             this.newsArticle = article;
             this.chatHistory = [];
+            this._saveNewsToHistory(article);   // keep today's generated articles for history nav
             this.renderNews();
             this.cleanOldNewsCache();
           } catch (err) {
@@ -6088,6 +6295,141 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
             document.getElementById("news-loading").classList.add("hidden");
             document.getElementById("news-content").style.opacity = "1";
             document.getElementById("news-refresh-btn").disabled = false;
+          }
+        },
+
+        // ── News topic selection ──────────────────────────
+        setNewsTopic: function (topic) {
+          this.newsTopic = topic;
+          const custom = document.getElementById("news-topic-custom");
+          if (custom) custom.value = "";
+          document.querySelectorAll(".news-topic-chip").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.topic === topic);
+          });
+        },
+
+        useCustomNewsTopic: function () {
+          const custom = document.getElementById("news-topic-custom");
+          const t = (custom?.value || "").trim();
+          if (!t) return;
+          this.newsTopic = t;
+          document.querySelectorAll(".news-topic-chip").forEach(btn => btn.classList.remove("active"));
+          this.refreshNews();
+        },
+
+        // ── Article read-aloud (full + sentence-by-sentence) ──
+        _articlePlainSentences: function () {
+          const art = this.newsArticle?.article || "";
+          // Strip HTML (incl. ruby rt) to plain Japanese, keep sentence punctuation
+          const div = document.createElement("div");
+          div.innerHTML = art;
+          div.querySelectorAll("rt, rp").forEach(el => el.remove());
+          const text = (div.textContent || "").replace(/\s+/g, "");
+          // Split into sentences on 。！？ (keep the delimiter)
+          return text.split(/(?<=[。！？])/).map(s => s.trim()).filter(Boolean);
+        },
+
+        playArticleFull: function () {
+          const sentences = this._articlePlainSentences();
+          if (!sentences.length) { this.toast("朗讀內容為空", "warning"); return; }
+          this.stopArticleAudio();
+          this._showStopBtn(true);
+          // Read the whole thing in one utterance; when it ends, hide stop.
+          this.playAudio(sentences.join(""));
+          // speechSynthesis has no single callback here (playAudio builds its own utterance),
+          // so poll until speaking finishes to reset the button.
+          this._articleAudioTimer = setInterval(() => {
+            if (!window.speechSynthesis.speaking) { this._showStopBtn(false); clearInterval(this._articleAudioTimer); }
+          }, 400);
+        },
+
+        playArticleSentences: function () {
+          const sentences = this._articlePlainSentences();
+          if (!sentences.length) { this.toast("朗讀內容為空", "warning"); return; }
+          this.stopArticleAudio();
+          this._showStopBtn(true);
+          let i = 0;
+          const speakNext = () => {
+            if (i >= sentences.length) { this._showStopBtn(false); return; }
+            const utter = new SpeechSynthesisUtterance(this.correctReading(sentences[i].normalize("NFKC")));
+            utter.lang = "ja-JP";
+            utter.rate = 0.7;
+            const voices = window.speechSynthesis.getVoices();
+            const jp = voices.find(v => v.lang.startsWith("ja") && (v.name.includes("Google") || v.name.includes("Kyoko") || v.name.includes("Otoya") || v.name.includes("日本")));
+            if (jp) utter.voice = jp;
+            utter.onend = () => { i++; speakNext(); };
+            utter.onerror = () => { i++; speakNext(); };
+            window.speechSynthesis.speak(utter);
+          };
+          speakNext();
+        },
+
+        stopArticleAudio: function () {
+          try { window.speechSynthesis.cancel(); } catch (e) {}
+          if (this._articleAudioTimer) { clearInterval(this._articleAudioTimer); this._articleAudioTimer = null; }
+          this._showStopBtn(false);
+        },
+
+        _showStopBtn: function (on) {
+          const stop = document.getElementById("news-play-stop");
+          const full = document.getElementById("news-play-full");
+          const sent = document.getElementById("news-play-sentences");
+          if (stop) stop.style.display = on ? "inline-flex" : "none";
+          if (full) full.style.opacity = on ? "0.5" : "1";
+          if (sent) sent.style.opacity = on ? "0.5" : "1";
+        },
+
+        // ── News history navigation (today's generated articles) ──
+        _newsHistKey: function () { return `kaizen_news_hist_${this.getTodayLocalDate()}_${this.newsLevel}`; },
+
+        _loadNewsHistory: function () {
+          try { this.newsHistory = JSON.parse(localStorage.getItem(this._newsHistKey()) || "[]"); }
+          catch (e) { this.newsHistory = []; }
+          return this.newsHistory;
+        },
+
+        _saveNewsToHistory: function (article) {
+          this._loadNewsHistory();
+          this.newsHistory.push(article);
+          if (this.newsHistory.length > 20) this.newsHistory = this.newsHistory.slice(-20);
+          try { localStorage.setItem(this._newsHistKey(), JSON.stringify(this.newsHistory)); } catch (e) {}
+          this.newsHistoryIdx = this.newsHistory.length - 1;
+          this._renderHistoryNav();
+        },
+
+        _renderHistoryNav: function () {
+          const nav = document.getElementById("news-history-nav");
+          const label = document.getElementById("news-hist-label");
+          const prev = document.getElementById("news-hist-prev");
+          const next = document.getElementById("news-hist-next");
+          if (!nav) return;
+          const n = this.newsHistory.length;
+          if (n <= 1) { nav.style.display = "none"; return; }
+          nav.style.display = "flex";
+          label.textContent = `${this.newsHistoryIdx + 1} / ${n}`;
+          prev.disabled = this.newsHistoryIdx <= 0;
+          next.disabled = this.newsHistoryIdx >= n - 1;
+          prev.style.opacity = prev.disabled ? "0.4" : "1";
+          next.style.opacity = next.disabled ? "0.4" : "1";
+        },
+
+        newsHistoryPrev: function () {
+          if (this.newsHistoryIdx > 0) {
+            this.stopArticleAudio();
+            this.newsHistoryIdx--;
+            this.newsArticle = this.newsHistory[this.newsHistoryIdx];
+            this.renderNews();
+            this._renderHistoryNav();
+          }
+        },
+
+        newsHistoryNext: function () {
+          if (this.newsHistoryIdx < this.newsHistory.length - 1) {
+            this.stopArticleAudio();
+            this.newsHistoryIdx++;
+            this.newsArticle = this.newsHistory[this.newsHistoryIdx];
+            this.renderNews();
+            this._renderHistoryNav();
           }
         },
 
