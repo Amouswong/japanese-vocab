@@ -15,7 +15,7 @@
   --input-hover-border-color: black !important;
   --link-outline: none !important;
   --flow-size-overview-canvas-min-height: 480px !important;
-  --chat-column-max: 720px !important;
+  --chat-column-max: clamp(888px, 50vw, 1200px) !important;
   --color-navbar-bg: #f9f9fb !important;
   --color-navbar-fg: #131920 !important;
   --color-navbar-fg-muted: color-mix(in srgb, #131920 65%, #f9f9fb) !important;
@@ -2878,7 +2878,7 @@
       .news-cols {
         display: flex;
         gap: 16px;
-        align-items: stretch;        /* both columns match the taller one */
+        align-items: flex-start;     /* top-align: columns size to their own content */
       }
       .news-cols > .dashboard-card {
         flex: 1 1 50%;               /* true 50 / 50 split */
@@ -2888,20 +2888,22 @@
         display: flex;
         flex-direction: column;
       }
-      /* AI 日語老師 column: chat area grows with content (no cap) */
+      /* AI 日語老師 column: fixed-height chat that scrolls instead of growing the page */
       .news-cols > .dashboard-card:last-child .chat-messages {
-        flex: 1 1 auto;            /* grow to fill / extend with content */
+        flex: 1 1 auto;
         height: auto;
-        min-height: 420px;
-        max-height: none;          /* keep extending vertically */
-        overflow-y: visible;
+        min-height: 320px;
+        max-height: 60vh;          /* cap height — scroll inside, don't extend the page */
+        overflow-y: auto;          /* internal scrollbar for long conversations */
       }
+      /* Give the news (left) column a little more breathing room */
+      .news-cols > .dashboard-card:first-child { padding: 22px 24px; }
       /* Stack back to vertical on narrow screens */
       @media (max-width: 860px) {
         #page-news { max-width: 640px; }
         .news-cols { flex-direction: column; }
         .news-cols > .dashboard-card { width: 100%; }
-        .news-cols > .dashboard-card:last-child .chat-messages { min-height: 280px; }
+        .news-cols > .dashboard-card:last-child .chat-messages { min-height: 280px; max-height: 50vh; }
       }
 
       /* Gemini key card — smaller, calmer (was oversized full-width) */
@@ -3458,7 +3460,7 @@
 
             <div id="news-content">
               <!-- Topic selector -->
-              <div id="news-topic-bar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+              <div id="news-topic-bar" style="display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line);line-height:1.9;">
                 <span style="font-size:0.72rem;color:var(--text-sub);">主題：</span>
                 <button class="news-topic-chip active" data-topic="" onclick="app.setNewsTopic('')">おまかせ</button>
                 <button class="news-topic-chip" data-topic="スポーツ" onclick="app.setNewsTopic('スポーツ')">運動</button>
