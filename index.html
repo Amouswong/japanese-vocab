@@ -3296,13 +3296,13 @@
             </div>
 
             <!-- Duplicate-vocab alert (hidden until duplicates are found) -->
-            <div id="dup-alert" style="display:none;margin:14px 0;padding:12px 14px;border-radius:12px;background:var(--color-warning-bg, #3d3520);border:1px solid var(--color-warning-border, #5e4a1a);">
-              <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="app.toggleDupList()">
-                <span style="font-size:1.1rem;">⚠️</span>
-                <span id="dup-alert-summary" style="font-weight:600;color:var(--color-warning, #fbbf24);flex:1;">重複單字</span>
-                <button class="btn-sm" id="dup-toggle-btn" style="width:auto;padding:4px 10px;margin:0;white-space:nowrap;">展開清單</button>
+            <div id="dup-alert" style="display:none;margin:14px 0;padding:14px 16px;border-radius:12px;background:#1e293b;border:1px solid #f59e0b;box-shadow:0 2px 8px rgba(0,0,0,0.25);">
+              <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="app.toggleDupList()">
+                <span style="font-size:1.25rem;">⚠️</span>
+                <span id="dup-alert-summary" style="font-weight:700;color:#fbbf24;flex:1;font-size:0.95rem;">重複單字</span>
+                <button id="dup-toggle-btn" style="width:auto;padding:6px 14px;margin:0;white-space:nowrap;background:#f59e0b;color:#1e293b;border:none;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;">展開清單</button>
               </div>
-              <div id="dup-list" style="display:none;margin-top:10px;max-height:320px;overflow:auto;font-size:0.85rem;line-height:1.6;"></div>
+              <div id="dup-list" style="display:none;margin-top:12px;padding:12px;background:#0f172a;border-radius:10px;max-height:380px;overflow:auto;font-size:0.85rem;line-height:1.5;"></div>
             </div>
 
             <!-- Stats as narrative figures (IDs preserved) -->
@@ -4029,6 +4029,22 @@
         playAudio: function (text) {
           if (!text) return;
           window.speechSynthesis.cancel();
+          // Prefer Google Cloud TTS (Neural2) when a key is configured; fall back to the
+          // browser voice on any failure (bad key, offline, quota, etc).
+          if (this.GOOGLE_TTS_KEY) {
+            this._playAudioGoogle(text).catch((e) => {
+              console.warn("Google TTS failed, falling back to browser voice:", e && e.message);
+              this._playAudioBrowser(text);
+            });
+            return;
+          }
+          this._playAudioBrowser(text);
+        },
+
+        // Original browser SpeechSynthesis path — used when Google TTS is not set or fails.
+        _playAudioBrowser: function (text) {
+          if (!text) return;
+          window.speechSynthesis.cancel();
 
           const speakText = () => {
             // 清理文字：移除 "~" 和其他不必要的符號
@@ -4071,6 +4087,99 @@
           } else {
             speakText();
           }
+        },
+
+        // ── Google Cloud TTS (Neural2) ──────────────────────
+        // Key is hard-coded per user request (local, private use only).
+        // If it is ever emptied, playAudio() automatically falls back to the browser voice.
+        GOOGLE_TTS_KEY: "AIzaSyAdqi3Go_Jdj5gxy77nyvnQbUKTmDQ9Y4I",
+        GOOGLE_TTS_VOICE: "ja-JP-Neural2-B",
+        _ttsAudio: null,
+
+        // Core: synthesize via Google Cloud Text-to-Speech REST, return an audio Blob.
+        // Applies the same reading cleanups as the browser path so corrected furigana is respected.
+        _googleSynthesize: async function (text) {
+          const key = this.GOOGLE_TTS_KEY;
+          if (!key) throw new Error("Google TTS key 未設定");
+          let clean = String(text).replace(/[~〜]/g, "").trim().normalize("NFKC");
+          clean = clean.replace(/([぀-ヿ])[\s ]+(?=[ゃゅょャュョ])/g, "$1").replace(/[\u200b-\u200d\ufeff]/g, "");
+          clean = this.correctReading(clean);
+          const body = {
+            input: { text: clean },
+            voice: { languageCode: "ja-JP", name: this.GOOGLE_TTS_VOICE || "ja-JP-Neural2-B" },
+            audioConfig: { audioEncoding: "MP3", speakingRate: 0.9 }
+          };
+          const url = "https://texttospeech.googleapis.com/v1/text:synthesize?key=" + encodeURIComponent(key);
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+          if (!res.ok) {
+            let detail = "HTTP " + res.status;
+            try { const ej = await res.json(); if (ej && ej.error && ej.error.message) detail = ej.error.message; } catch (e) {}
+            throw new Error(detail);
+          }
+          const data = await res.json();
+          if (!data || !data.audioContent) throw new Error("回應沒有音訊內容");
+          // Decode base64 MP3 into a Blob.
+          const bin = atob(data.audioContent);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          return new Blob([bytes], { type: "audio/mpeg" });
+        },
+
+        // Play with Google TTS, using an IndexedDB cache so each string is synthesized once.
+        _playAudioGoogle: async function (text) {
+          const voice = this.GOOGLE_TTS_VOICE || "ja-JP-Neural2-B";
+          const cacheKey = "g|" + voice + "|" + String(text);
+          let blob = await this._ttsCacheGet(cacheKey).catch(() => null);
+          if (!blob) {
+            blob = await this._googleSynthesize(text);
+            this._ttsCacheSet(cacheKey, blob).catch(() => {}); // best-effort cache
+          }
+          await this._playBlob(blob);
+        },
+
+        _playBlob: function (blob) {
+          return new Promise((resolve, reject) => {
+            try {
+              if (this._ttsAudio) { try { this._ttsAudio.pause(); } catch (e) {} }
+              const urlObj = URL.createObjectURL(blob);
+              const audio = new Audio(urlObj);
+              this._ttsAudio = audio;
+              audio.onended = () => { URL.revokeObjectURL(urlObj); resolve(); };
+              audio.onerror = () => { URL.revokeObjectURL(urlObj); reject(new Error("audio playback failed")); };
+              audio.play().catch(reject);
+            } catch (e) { reject(e); }
+          });
+        },
+        // ── Tiny IndexedDB blob cache for TTS audio ──────────
+        _ttsDb: null,
+        _ttsOpenDb: function () {
+          if (this._ttsDb) return Promise.resolve(this._ttsDb);
+          return new Promise((resolve, reject) => {
+            const req = indexedDB.open("kotoba_tts", 1);
+            req.onupgradeneeded = () => { req.result.createObjectStore("audio"); };
+            req.onsuccess = () => { this._ttsDb = req.result; resolve(req.result); };
+            req.onerror = () => reject(req.error);
+          });
+        },
+        _ttsCacheGet: async function (key) {
+          const db = await this._ttsOpenDb();
+          return new Promise((resolve, reject) => {
+            const tx = db.transaction("audio", "readonly").objectStore("audio").get(key);
+            tx.onsuccess = () => resolve(tx.result || null);
+            tx.onerror = () => reject(tx.error);
+          });
+        },
+        _ttsCacheSet: async function (key, blob) {
+          const db = await this._ttsOpenDb();
+          return new Promise((resolve, reject) => {
+            const tx = db.transaction("audio", "readwrite").objectStore("audio").put(blob, key);
+            tx.onsuccess = () => resolve();
+            tx.onerror = () => reject(tx.error);
+          });
         },
 
         // Toggle skeleton shimmer on dashboard stat values during load
@@ -4247,16 +4356,54 @@
           // Build the expandable list. Escape user text to avoid breaking markup.
           const esc = (s) => String(s == null ? "" : s)
             .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-          listEl.innerHTML = dupGroups.map((g) => {
+          listEl.innerHTML = dupGroups.map((g, gi) => {
             const label = [g.kanji, g.kana].filter(Boolean).map(esc).join("（") + (g.kanji && g.kana ? "）" : "");
-            const ids = g.items.map((it) => {
-              const idTxt = it.id != null ? ("id " + esc(it.id)) : "(無 id)";
-              const meaning = it.meaning ? " — " + esc(it.meaning) : "";
-              return `<span style="display:inline-block;background:var(--color-bg-tertiary,#1e1e2a);border-radius:6px;padding:2px 8px;margin:2px 4px 2px 0;">${idTxt}${meaning}</span>`;
+            // Compare definitions within the group: if they differ, this is likely a
+            // same-form-different-meaning case (not a true duplicate) → warn, don't flag for deletion.
+            const defs = g.items.map((it) => norm(it.definition));
+            const uniqueDefs = [...new Set(defs.map((d) => d.replace(/\s+/g, "")))].filter(Boolean);
+            const sameMeaning = uniqueDefs.length <= 1;
+            const badge = sameMeaning
+              ? `<span style="background:#dc2626;color:#fff;font-size:0.72rem;font-weight:700;border-radius:999px;padding:2px 9px;">真重複 ${g.items.length}</span>`
+              : `<span style="background:#0369a1;color:#fff;font-size:0.72rem;font-weight:700;border-radius:999px;padding:2px 9px;">意思不同 · 請確認</span>`;
+            const hint = sameMeaning
+              ? `<div style="font-size:0.78rem;color:#b91c1c;margin-top:2px;">意思相同，建議保留一筆、刪除其餘。</div>`
+              : `<div style="font-size:0.78rem;color:#0369a1;margin-top:2px;">⚠️ 這些項目意思不同（同形異義），通常<strong>不應</strong>刪除——可保留，或自行決定是否合併。</div>`;
+
+            // One detailed row per item: definition + POS + JLPT + per-item delete button.
+            const rows = g.items.map((it) => {
+              const idTxt = it.id != null ? ("ID " + esc(it.id)) : "(無 id)";
+              const def = it.definition ? esc(it.definition) : '<span style="color:#94a3b8;">（無定義）</span>';
+              const pos = it.pos ? esc(it.pos) : "";
+              const jlpt = it.JLPT ? ("N" + esc(it.JLPT)) : "";
+              const tags = [jlpt, pos].filter(Boolean).map((t) =>
+                `<span style="background:#e2e8f0;color:#334155;font-size:0.72rem;border-radius:6px;padding:1px 7px;margin-left:6px;">${t}</span>`).join("");
+              const delBtn = it.id != null
+                ? `<button onclick="app.deleteDuplicateItem(${Number(it.id)})" style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;border-radius:7px;padding:4px 10px;font-size:0.76rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;">刪除</button>`
+                : "";
+              return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #f1f5f9;">
+                <div style="flex:1;min-width:0;">
+                  <div style="font-family:'SF Mono',Monaco,monospace;font-size:0.76rem;color:#475569;font-weight:600;">${idTxt}${tags}</div>
+                  <div style="color:#0f172a;font-size:0.9rem;margin-top:2px;">${def}</div>
+                </div>
+                ${delBtn}
+              </div>`;
             }).join("");
-            return `<div style="padding:8px 0;border-bottom:1px solid var(--color-border-light,#ffffff0f);">
-              <div style="font-weight:600;margin-bottom:4px;">${label} <span style="color:var(--color-text-secondary,#a0a0b4);font-weight:400;">×${g.items.length}</span></div>
-              <div>${ids}</div>
+
+            // Record per-group info for the merge handler.
+            g._sameMeaning = sameMeaning;
+            const mergeBtn = g.items.length >= 2
+              ? `<button onclick="app.mergeDuplicateGroup(${gi})" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;border-radius:7px;padding:4px 12px;font-size:0.76rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">合併…</button>`
+              : "";
+            return `<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-weight:700;font-size:1rem;color:#0f172a;">${label}</span>
+                ${badge}
+                <span style="flex:1;"></span>
+                ${mergeBtn}
+              </div>
+              ${hint}
+              <div style="margin-top:6px;">${rows}</div>
             </div>`;
           }).join("");
           alertEl.style.display = "block";
@@ -4272,6 +4419,128 @@
           if (btn) btn.textContent = open ? "展開清單" : "收起清單";
         },
 
+        // Delete one vocab entry from the duplicate list, then re-scan so the alert
+        // refreshes immediately (keeps the list open if there are still duplicates).
+        deleteDuplicateItem: async function (id) {
+          if (!window.confirm("確定要刪除 ID " + id + " 這一筆嗎？刪除後無法復原！")) return;
+          try {
+            const { error } = await this.dbClient.from("vocab").delete().eq("id", id);
+            if (error) throw error;
+            this.vocabData = this.vocabData.filter((item) => item.id !== id);
+            const wasOpen = (() => {
+              const l = document.getElementById("dup-list");
+              return l && l.style.display !== "none" && l.style.display !== "";
+            })();
+            this.updateDashboardStats(); // re-runs detectDuplicateVocab → refreshes the alert + list
+            // Preserve the expanded state after the refresh.
+            if (wasOpen) {
+              const l = document.getElementById("dup-list");
+              const btn = document.getElementById("dup-toggle-btn");
+              if (l) l.style.display = "block";
+              if (btn) btn.textContent = "收起清單";
+            }
+          } catch (err) {
+            console.error("刪除失敗:", err);
+            alert("刪除失敗，請檢查資料庫權限或網路連線。\n" + err.message);
+          }
+        },
+
+        // Merge a duplicate group: user picks the primary ID to keep; other rows are
+        // folded into it (fill missing fields, take best SRS progress, concat differing
+        // definitions when meanings differ) and then deleted. Updates Supabase + re-scans.
+        mergeDuplicateGroup: async function (gi) {
+          const g = (this._dupGroups || [])[gi];
+          if (!g || !Array.isArray(g.items) || g.items.length < 2) { alert("找不到這組重複資料，請重新整理。"); return; }
+          const items = g.items.filter((it) => it.id != null);
+          if (items.length < 2) { alert("這組缺少有效 id，無法合併。"); return; }
+
+          // 1) Let the user choose which ID to keep (primary).
+          const idList = items.map((it) => it.id).join(", ");
+          const ans = window.prompt(
+            "合併「" + (g.kanji || g.kana) + "」\n\n請輸入要【保留】的主筆 ID（其餘將被合併後刪除）：\n可選 ID：" + idList,
+            String(items[0].id)
+          );
+          if (ans == null) return; // cancelled
+          const keepId = ans.trim();
+          const primary = items.find((it) => String(it.id) === keepId);
+          if (!primary) { alert("輸入的 ID 不在這組內，已取消。"); return; }
+          const others = items.filter((it) => String(it.id) !== keepId);
+
+          // 2) Compute the distinct definitions (for same-form-different-meaning handling).
+          const norm = (s) => (s == null ? "" : String(s).trim());
+          const allDefs = [];
+          [primary, ...others].forEach((it) => { const d = norm(it.definition); if (d && !allDefs.includes(d)) allDefs.push(d); });
+          const meaningsDiffer = allDefs.length > 1;
+
+          // 3) Build the merged record from the primary, filling gaps + best progress.
+          const merged = {};
+          const fillFields = ["kanji", "Hiragana/Katakana", "definition", "meaning", "pos", "JLPT", "reading", "examples", "examples_backup", "context"];
+          fillFields.forEach((f) => {
+            let v = primary[f];
+            if (v == null || String(v).trim() === "") {
+              const donor = [primary, ...others].find((it) => it[f] != null && String(it[f]).trim() !== "");
+              if (donor) v = donor[f];
+            }
+            if (v !== undefined) merged[f] = v;
+          });
+          // Definition: concat distinct meanings when they differ.
+          if (meaningsDiffer) merged.definition = allDefs.join(" / ");
+          // SRS progress: best of the group.
+          const stages = [primary, ...others].map((it) => Number(it.stage) || 0);
+          merged.stage = Math.max.apply(null, stages);
+          merged.mastered = [primary, ...others].some((it) => it.mastered === true);
+          const reviews = [primary, ...others].map((it) => it.nextReview).filter(Boolean).map((d) => new Date(d).getTime()).filter((n) => !isNaN(n));
+          if (reviews.length) merged.nextReview = new Date(Math.min.apply(null, reviews)).toISOString();
+
+          // 3b) PREVIEW: show exactly what the merged record will look like before writing.
+          const otherIdsPreview = others.map((it) => it.id).join(", ");
+          const fmtReview = merged.nextReview ? new Date(merged.nextReview).toLocaleDateString() : "（無）";
+          const previewLines = [
+            "【合併預覽】" + (g.kanji || g.kana),
+            "",
+            "保留主筆：ID " + keepId,
+            "刪除其餘：ID " + (otherIdsPreview || "（無）"),
+            "",
+            "合併後內容：",
+            "・意思：" + (merged.definition || "（無）"),
+            "・詞性：" + (merged.pos || "（無）"),
+            "・JLPT：" + (merged.JLPT != null && merged.JLPT !== "" ? ("N" + merged.JLPT) : "（無）"),
+            "・學習階段 stage：" + merged.stage + "（取組內最高）",
+            "・已習得 mastered：" + (merged.mastered ? "是" : "否"),
+            "・下次複習：" + fmtReview + "（取最早）"
+          ];
+          if (meaningsDiffer) {
+            previewLines.splice(1, 0,
+              "",
+              "⚠️ 注意：這組意思不同（同形異義），以下意思將串接保留：",
+              allDefs.map((d, i) => "  " + (i + 1) + ". " + d).join("\n")
+            );
+          }
+          previewLines.push("", "確定要執行合併嗎？此動作無法復原。");
+          if (!window.confirm(previewLines.join("\n"))) return;
+
+          // 4) Apply: update the primary row, delete the others.
+          try {
+            const { error: upErr } = await this.dbClient.from("vocab").update(merged).eq("id", primary.id);
+            if (upErr) throw upErr;
+            const otherIds = others.map((it) => it.id);
+            const { error: delErr } = await this.dbClient.from("vocab").delete().in("id", otherIds);
+            if (delErr) throw delErr;
+            // Reflect in local cache: update primary, remove others.
+            this.vocabData = this.vocabData
+              .map((it) => (it.id === primary.id ? { ...it, ...merged } : it))
+              .filter((it) => !otherIds.includes(it.id));
+            this.updateDashboardStats(); // re-runs detectDuplicateVocab → refreshes the alert + list
+            const l = document.getElementById("dup-list");
+            const btn = document.getElementById("dup-toggle-btn");
+            if (l) l.style.display = "block";
+            if (btn) btn.textContent = "收起清單";
+            this.toast && this.toast("✅ 已合併，保留 ID " + keepId + "，刪除 " + otherIds.length + " 筆。", "success", { duration: 3500 });
+          } catch (err) {
+            console.error("合併失敗:", err);
+            alert("合併失敗，請檢查資料庫權限或網路連線。\n" + (err && err.message ? err.message : err));
+          }
+        },
         searchDebounceTimer: null,
         activeFilters: { jlpt: new Set(), stage: new Set(), daterange: new Set(), pos: new Set(), review: new Set() },
 
@@ -7239,6 +7508,12 @@ ${articleText ? ("（參考用）今日のニュース記事：「" + articleTex
             30: { ja:"～てある / ～ておく",       zh:"事先做好／維持狀態" },
             31: { ja:"意向形 ～(よ)う",           zh:"意向形（打算）" },
             32: { ja:"～たほうがいい / ～でしょう", zh:"建議／推測" },
+            33: { ja:"命令形・禁止形 / ～という意味", zh:"命令形・禁止形／意思是～" },
+            34: { ja:"～とおりに / ～あとで / ～ないで", zh:"按照～／做完～後／不做～而" },
+            35: { ja:"条件形 ～ば / ～なら",       zh:"條件形（如果～）" },
+            36: { ja:"～ように / ～ようになる / ～ようにする", zh:"為了～／變得會～／設法做到～" },
+            37: { ja:"受け身形（受身）",           zh:"被動形" },
+            38: { ja:"～のは / ～のが（名詞化 の）", zh:"名詞化 の（～這件事）" },
         },
 
         initMinnaPage: function () {
