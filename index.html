@@ -3398,6 +3398,13 @@
         </div>
 
         <div id="ans-mc-area"></div>
+        <div id="ans-type-area" style="display:none;flex-direction:column;gap:10px;align-items:center;">
+          <input type="text" id="type-answer-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+            placeholder="ひらがなで入力…" lang="ja"
+            style="width:100%;max-width:360px;padding:12px 14px;font-size:1.3rem;text-align:center;font-family:'Noto Sans JP',sans-serif;border:2px solid var(--line,#ccc);border-radius:10px;background:var(--card,#fff);color:var(--text-main,#111);"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();app.submitTypingAnswer();}">
+          <button id="type-submit-btn" class="btn-main" style="width:auto;padding:10px 28px;margin:0;" onclick="app.submitTypingAnswer()">答える</button>
+        </div>
         <div id="quiz-feedback" class="feedback-box hidden"></div>
         <button id="next-btn" class="btn-main hidden" style="margin-top:16px;" onclick="app.nextQuizQuestion()">
           次へ →
@@ -5651,7 +5658,7 @@
           let questionType = 0;
 
           if (this.isRandomQuizMode) {
-            questionType = Math.floor(Math.random() * 3);
+            questionType = Math.floor(Math.random() * 6);
           } else {
             if (
               currentStage === 0 ||
@@ -5663,6 +5670,13 @@
               questionType = 1;
             }
           }
+          // Typing types (4,5) need a kana answer to check against; if this word has no
+          // kana, fall back to a safe choice type so the question is still answerable.
+          const kanaAns = (currentWord["Hiragana/Katakana"] || "").trim();
+          if ((questionType === 4 || questionType === 5) && !kanaAns) questionType = 0;
+          // Type 3 (kana→kanji) only makes sense when the word actually has kanji.
+          if (questionType === 3 && !(currentWord.kanji || "").trim()) questionType = 0;
+          this._currentQuestionType = questionType;
 
           let questionHtml = "";
           let questionSub = "";
@@ -5679,6 +5693,18 @@
           } else if (questionType === 2) {
             questionHtml = "🎧 音声問題";
             questionSub = "音声を聞いて、正しい単語を選択してください";
+          } else if (questionType === 3) {
+            // kana shown, pick the matching kanji
+            questionHtml = `<span style="font-size:1.6rem;font-family:'Noto Sans JP',sans-serif;">${(currentWord["Hiragana/Katakana"] || "")}</span>`;
+            questionSub = "正しい漢字を選択してください (請選擇正確的漢字)";
+          } else if (questionType === 4) {
+            // meaning shown, type the kana
+            questionHtml = (currentWord.definition || "未知意思");
+            questionSub = "ひらがなで入力してください (請用假名輸入讀音)";
+          } else if (questionType === 5) {
+            // audio played, type the kana (dictation)
+            questionHtml = "🎧 聞き取り";
+            questionSub = "音声を聞いて、ひらがなで入力してください (聽寫：輸入假名)";
           }
 
           document.getElementById("quiz-progress").innerText =
@@ -5711,9 +5737,26 @@
           const audioBtn = document.getElementById("q-audio-btn");
           audioBtn.onclick = () => this.playAudio(kanaForAudio);
 
-          if (questionType === 0 || questionType === 2) {
+          if (questionType === 0 || questionType === 2 || questionType === 5) {
             this.playAudio(kanaForAudio);
           }
+
+          // Typing types (4,5): show the text input, hide the choice area, then stop here.
+          const mcAreaEl = document.getElementById("ans-mc-area");
+          const typeAreaEl = document.getElementById("ans-type-area");
+          if (questionType === 4 || questionType === 5) {
+            if (mcAreaEl) { mcAreaEl.style.display = "none"; mcAreaEl.innerHTML = ""; }
+            if (typeAreaEl) typeAreaEl.style.display = "flex";
+            const inp = document.getElementById("type-answer-input");
+            const sub = document.getElementById("type-submit-btn");
+            if (inp) { inp.value = ""; inp.disabled = false; setTimeout(() => inp.focus(), 50); }
+            if (sub) sub.disabled = false;
+            this.startQuizTimer();
+            return;
+          }
+          // Choice types: ensure the choice area is visible and the typing area hidden.
+          if (mcAreaEl) mcAreaEl.style.display = "";
+          if (typeAreaEl) typeAreaEl.style.display = "none";
 
           let options = [currentWord];
 
@@ -5784,6 +5827,11 @@
             if (questionType === 0) {
               // 意思選項：純文字
               btn.innerHTML = keyHint + (opt.definition || "未知意思");
+            } else if (questionType === 3) {
+              // 看假名拼漢字：選項只顯示純漢字（不加注音，否則洩漏答案）
+              btn.innerHTML =
+                keyHint +
+                `<span style="font-size:1.6rem;line-height:1.9;font-family:'Noto Sans JP',sans-serif;">${(opt.kanji || opt["Hiragana/Katakana"] || "")}</span>`;
             } else {
               // 單字選項：使用 generateRubyHtml 渲染帶注音的日文
               btn.innerHTML =
@@ -5800,11 +5848,125 @@
           this.startQuizTimer();
         },
 
+        // Normalize kana for lenient comparison: NFKC, trim, strip spaces/long-vowel
+        // marks and middle dots, and fold katakana → hiragana so either script is accepted.
+        _normalizeKana: function (s) {
+          let t = String(s == null ? "" : s).normalize("NFKC").trim();
+          // Katakana (゠-ヿ) → Hiragana by shifting code points down by 0x60.
+          t = t.replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+          // Expand the long-vowel mark ー into the previous kana's vowel so that
+          // コーヒー (→こおひい) matches romaji koohii, and ヨーロッパ matches yooroppa.
+          const vowelOf = (ch) => {
+            if (!ch) return "";
+            const A = "ぁあかがさざただなはばぱまやゃらわ";
+            const I = "ぃいきぎしじちぢにひびぴみり";
+            const U = "ぅうくぐすずつづぬふぶぷむゆゅる";
+            const E = "ぇえけげせぜてでねへべぺめれ";
+            const O = "ぉおこごそぞとどのほぼぽもよょろを";
+            if (A.indexOf(ch) >= 0) return "あ";
+            if (I.indexOf(ch) >= 0) return "い";
+            if (U.indexOf(ch) >= 0) return "う";
+            if (E.indexOf(ch) >= 0) return "え";
+            if (O.indexOf(ch) >= 0) return "お";
+            return "";
+          };
+          let out = "";
+          for (const c of t) {
+            if (c === "ー" && out) out += vowelOf(out[out.length - 1]);
+            else out += c;
+          }
+          // Strip spaces, separators and zero-width chars (but NOT long-vowel info, already expanded).
+          out = out.replace(/[\s\u3000\u30fb・~〜\u200b-\u200d\ufeff]/g, "");
+          return out;
+        },
+
+        // Convert standard Hepburn/Kunrei romaji to hiragana. Standard mode: long vowels
+        // must be typed out (toukyou, not tokyo). Returns "" for input that isn't romaji.
+        _romajiToKana: function (input) {
+          let s = String(input == null ? "" : input).toLowerCase().trim();
+          if (!s) return "";
+          // Only attempt conversion when the input is purely latin letters/macrons/apostrophes.
+          if (!/^[a-zāīūēō'\-]+$/.test(s)) return "";
+          // Expand macrons (ā→aa etc.) so long vowels map to doubled kana.
+          s = s.replace(/ā/g, "aa").replace(/ī/g, "ii").replace(/ū/g, "uu").replace(/ē/g, "ee").replace(/ō/g, "ou");
+          s = s.replace(/[''\-]/g, ""); // drop apostrophes/hyphens (e.g. n'yo, shin-you)
+          const map = {
+            kya:"きゃ",kyu:"きゅ",kyo:"きょ",sha:"しゃ",shu:"しゅ",sho:"しょ",shi:"し",
+            cha:"ちゃ",chu:"ちゅ",cho:"ちょ",chi:"ち",tsu:"つ",
+            nya:"にゃ",nyu:"にゅ",nyo:"にょ",hya:"ひゃ",hyu:"ひゅ",hyo:"ひょ",
+            mya:"みゃ",myu:"みゅ",myo:"みょ",rya:"りゃ",ryu:"りゅ",ryo:"りょ",
+            gya:"ぎゃ",gyu:"ぎゅ",gyo:"ぎょ",ja:"じゃ",ju:"じゅ",jo:"じょ",ji:"じ",
+            bya:"びゃ",byu:"びゅ",byo:"びょ",pya:"ぴゃ",pyu:"ぴゅ",pyo:"ぴょ",
+            ka:"か",ki:"き",ku:"く",ke:"け",ko:"こ",
+            sa:"さ",si:"し",su:"す",se:"せ",so:"そ",
+            ta:"た",ti:"ち",tu:"つ",te:"て",to:"と",
+            na:"な",ni:"に",nu:"ぬ",ne:"ね",no:"の",
+            ha:"は",hi:"ひ",fu:"ふ",hu:"ふ",he:"へ",ho:"ほ",
+            ma:"ま",mi:"み",mu:"む",me:"め",mo:"も",
+            ya:"や",yu:"ゆ",yo:"よ",
+            ra:"ら",ri:"り",ru:"る",re:"れ",ro:"ろ",
+            wa:"わ",wo:"を",
+            ga:"が",gi:"ぎ",gu:"ぐ",ge:"げ",go:"ご",
+            za:"ざ",zi:"じ",zu:"ず",ze:"ぜ",zo:"ぞ",
+            da:"だ",di:"ぢ",du:"づ",de:"で",do:"ど",
+            ba:"ば",bi:"び",bu:"ぶ",be:"べ",bo:"ぼ",
+            pa:"ぱ",pi:"ぴ",pu:"ぷ",pe:"ぺ",po:"ぽ",
+            fa:"ふぁ",fi:"ふぃ",fe:"ふぇ",fo:"ふぉ",
+            a:"あ",i:"い",u:"う",e:"え",o:"お",
+            "-":""
+          };
+          let out = "";
+          let i = 0;
+          while (i < s.length) {
+            const ch = s[i], nx = s[i + 1];
+            // Sokuon: a doubled consonant (except n) → っ + the rest.
+            if (ch !== "n" && nx === ch && /[a-z]/.test(ch)) { out += "っ"; i++; continue; }
+            // Syllabic n: 'n' not forming a na-row/ny- syllable → ん.
+            if (ch === "n" && (nx === undefined || !/[aiueoy]/.test(nx))) { out += "ん"; i++; continue; }
+            // Try 3-, then 2-, then 1-char romaji units.
+            let matched = false;
+            for (let len = 3; len >= 1; len--) {
+              const seg = s.substr(i, len);
+              if (map[seg]) { out += map[seg]; i += len; matched = true; break; }
+            }
+            if (!matched) return ""; // unconvertible → treat as "not valid romaji"
+          }
+          return out;
+        },
+
+        // Check a typed kana answer for question types 4 (meaning→kana) and 5 (dictation).
+        submitTypingAnswer: function () {
+          const inp = document.getElementById("type-answer-input");
+          if (!inp || inp.disabled) return;
+          const currentWord = this.quizQueue[this.currentQuizIndex];
+          if (!currentWord) return;
+          const expected = currentWord["Hiragana/Katakana"] || "";
+          const typed = inp.value || "";
+          if (!typed.trim()) { inp.focus(); return; }
+          const expNorm = this._normalizeKana(expected);
+          // Accept EITHER kana input OR standard romaji (converted to kana first).
+          let isCorrect = this._normalizeKana(typed) === expNorm;
+          if (!isCorrect) {
+            const asKana = this._romajiToKana(typed);
+            if (asKana) isCorrect = this._normalizeKana(asKana) === expNorm;
+          }
+          this._lastExpectedKana = expected; // used by feedback to show the correct reading
+          this.handleAnswer(isCorrect, false, null);
+        },
+
         handleAnswer: function (
           isCorrect,
           isTimeout = false,
           clickedBtn = null,
         ) {
+          // Typing questions route through here with a decided isCorrect; disable the input.
+          const _ta = document.getElementById("ans-type-area");
+          if (_ta && _ta.style.display !== "none") {
+            const inp = document.getElementById("type-answer-input");
+            const sub = document.getElementById("type-submit-btn");
+            if (inp) inp.disabled = true;
+            if (sub) sub.disabled = true;
+          }
           this.clearQuizTimer();
           const currentWord = this.quizQueue[this.currentQuizIndex];
 
