@@ -3291,8 +3291,18 @@
               <button class="ed-start" onclick="app.startSession(false)">
                 <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                 復習を始める
-              </button>
+            </button>
               <button class="ed-start-2" onclick="app.startSession(true)">習得済みから練習 →</button>
+            </div>
+
+            <!-- Duplicate-vocab alert (hidden until duplicates are found) -->
+            <div id="dup-alert" style="display:none;margin:14px 0;padding:12px 14px;border-radius:12px;background:var(--color-warning-bg, #3d3520);border:1px solid var(--color-warning-border, #5e4a1a);">
+              <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="app.toggleDupList()">
+                <span style="font-size:1.1rem;">⚠️</span>
+                <span id="dup-alert-summary" style="font-weight:600;color:var(--color-warning, #fbbf24);flex:1;">重複單字</span>
+                <button class="btn-sm" id="dup-toggle-btn" style="width:auto;padding:4px 10px;margin:0;white-space:nowrap;">展開清單</button>
+              </div>
+              <div id="dup-list" style="display:none;margin-top:10px;max-height:320px;overflow:auto;font-size:0.85rem;line-height:1.6;"></div>
             </div>
 
             <!-- Stats as narrative figures (IDs preserved) -->
@@ -3716,6 +3726,7 @@
           <div class="dashboard-card" style="margin-bottom:12px;">
             <div id="minna-q-type" style="font-size:0.72rem;color:var(--primary-text);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;"></div>
             <div id="minna-q-text" style="font-size:1.1rem;font-family:'Noto Sans JP',sans-serif;line-height:1.7;color:var(--text-main);"></div>
+            <div id="minna-q-hint" style="display:none;margin-top:8px;font-size:0.85rem;color:var(--primary-text);background:rgba(99,102,241,0.12);border-radius:8px;padding:6px 10px;width:fit-content;"></div>
           </div>
           <div id="minna-choices" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
           <div id="minna-explanation" class="hidden" style="margin-top:4px;padding:14px 16px;background:rgba(192,132,64,0.08);border-radius:12px;font-size:0.85rem;color:var(--text-sub);line-height:1.6;border-left:3px solid var(--primary);"></div>
@@ -4194,6 +4205,71 @@
 
           // Keep the 品詞 filter in sync with whatever POS values exist in the data
           this.renderPosFilter();
+
+          // Scan for duplicate vocab (same kanji AND same kana) and refresh the alert.
+          this.detectDuplicateVocab();
+        },
+
+        // Find vocab entries that share BOTH the same kanji AND the same kana
+        // (Hiragana/Katakana). Groups of 2+ are reported in the dashboard alert.
+        detectDuplicateVocab: function () {
+          const alertEl = document.getElementById("dup-alert");
+          const summaryEl = document.getElementById("dup-alert-summary");
+          const listEl = document.getElementById("dup-list");
+          if (!alertEl || !summaryEl || !listEl) return;
+          if (!Array.isArray(this.vocabData) || this.vocabData.length === 0) {
+            alertEl.style.display = "none";
+            this._dupGroups = [];
+            return;
+          }
+          const norm = (s) => (s == null ? "" : String(s).trim());
+          // Group by composite key of kanji + kana; skip rows where BOTH are empty.
+          const groups = new Map();
+          this.vocabData.forEach((item) => {
+            const kanji = norm(item.kanji);
+            const kana = norm(item["Hiragana/Katakana"]);
+            if (!kanji && !kana) return;
+            const key = kanji + "\u0000" + kana;
+            if (!groups.has(key)) groups.set(key, { kanji, kana, items: [] });
+            groups.get(key).items.push(item);
+          });
+          // Keep only groups with 2+ members = duplicates.
+          const dupGroups = [...groups.values()].filter((g) => g.items.length >= 2);
+          this._dupGroups = dupGroups;
+
+          if (dupGroups.length === 0) {
+            alertEl.style.display = "none";
+            return;
+          }
+          const totalDup = dupGroups.reduce((n, g) => n + g.items.length, 0);
+          summaryEl.textContent = `發現 ${dupGroups.length} 組重複單字（共 ${totalDup} 筆，kanji 與假名皆相同）`;
+
+          // Build the expandable list. Escape user text to avoid breaking markup.
+          const esc = (s) => String(s == null ? "" : s)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          listEl.innerHTML = dupGroups.map((g) => {
+            const label = [g.kanji, g.kana].filter(Boolean).map(esc).join("（") + (g.kanji && g.kana ? "）" : "");
+            const ids = g.items.map((it) => {
+              const idTxt = it.id != null ? ("id " + esc(it.id)) : "(無 id)";
+              const meaning = it.meaning ? " — " + esc(it.meaning) : "";
+              return `<span style="display:inline-block;background:var(--color-bg-tertiary,#1e1e2a);border-radius:6px;padding:2px 8px;margin:2px 4px 2px 0;">${idTxt}${meaning}</span>`;
+            }).join("");
+            return `<div style="padding:8px 0;border-bottom:1px solid var(--color-border-light,#ffffff0f);">
+              <div style="font-weight:600;margin-bottom:4px;">${label} <span style="color:var(--color-text-secondary,#a0a0b4);font-weight:400;">×${g.items.length}</span></div>
+              <div>${ids}</div>
+            </div>`;
+          }).join("");
+          alertEl.style.display = "block";
+        },
+
+        // Expand/collapse the duplicate list.
+        toggleDupList: function () {
+          const listEl = document.getElementById("dup-list");
+          const btn = document.getElementById("dup-toggle-btn");
+          if (!listEl) return;
+          const open = listEl.style.display !== "none" && listEl.style.display !== "";
+          listEl.style.display = open ? "none" : "block";
+          if (btn) btn.textContent = open ? "展開清單" : "收起清單";
         },
 
         searchDebounceTimer: null,
@@ -7411,6 +7487,20 @@ GRAMMAR ACCURACY (MUST FOLLOW — the marked correct answer MUST be 100% grammat
 - Particle correctness: を (direct object), が (subject/with potential & exist/ability), に (time/destination/target), で (place of action/means), へ (direction), と (together/quote), から～まで (from~to). Make sure only ONE choice is correct for the context.
 - If you are not fully certain a question is grammatically correct, replace it with a simpler one you are certain about.
 
+ANSWER-INDEX SELF-CHECK (MOST COMMON ERROR — FOLLOW EXACTLY):
+- The "answer" field is the 0-based position of the correct choice inside the "choices" array: 0 = first choice (A), 1 = second (B), 2 = third (C), 3 = fourth (D).
+- For EACH question, after you write the choices, do this silently before output: (1) read choices[answer]; (2) confirm that exact string is the grammatically correct one for the sentence; (3) confirm your "explanation" names that SAME form. If choices[answer] is NOT the form your explanation says is correct, the index is wrong — fix "answer" to point at the correct string, do NOT reorder the choices.
+- Worked example: question "私は漢字がまだあまり___。", choices ["読める","読む","読まない","読まれる"]. The correct form is the potential 読める (「あまり～ない／能力」語境需可能形), which sits at index 0, so "answer":0. Marking "answer":1 (読む, 辞書形) would be WRONG. The explanation must describe 読める, matching choices[0].
+- The correct form may appear at ANY index — do not assume it is always 0. Place the correct string wherever you like among the four, but then set "answer" to that string's actual index.
+
+SINGLE-CORRECT-ANSWER / NO AMBIGUITY (CRITICAL — a question with two valid answers is a broken question):
+- EXACTLY ONE choice may be acceptable for the sentence. Before output, test EVERY choice in the blank and reject the question if two or more produce a natural, grammatical, context-appropriate sentence.
+- The sentence stem MUST contain enough context (a connective, adverb, or clause such as ので/から/ても/でも/まだ/あまり, a time word, a reason, etc.) that forces ONE reading and rules the other three OUT — not just grammatically, but in meaning.
+- Beware meaning-ambiguous stems, NOT only grammar. Example of a BROKEN question: "この料理は辛いですが、私は___。" with choices 食べます／食べられます／食べません／食べられない — here both 食べられます (I CAN eat it) and 食べません (I don't eat it) fit "辣いですが…", so the learner cannot know which is wanted. FIX it by adding context that forces one: e.g. "この料理は辛いですが、私は辛い物が好きなので___。" (forces 食べられます / can-eat), or "この料理は辛すぎて、私は___。" (forces 食べられない / cannot-eat). Only then is there one correct answer.
+- If you cannot make the context force a single answer, DISCARD that question and write a different one you are certain is unambiguous.
+
+HINT FIELD (REQUIRED): Add a "hint" field to every question — a short Traditional-Chinese cue (≤12 characters, NO answer words, NO furigana) telling the learner WHAT is being tested so the intended answer is unambiguous. Examples: "提示：請選可能形", "提示：注意助詞", "提示：用て形", "提示：授受動詞方向". The hint names the grammar point/direction being tested; it must NOT reveal which choice is correct.
+
 Question guidelines:
 - Each question tests ONE specific grammar point from みんなの日本語
 - Use vocabulary and sentence patterns that actually appear in the textbook
@@ -7429,7 +7519,7 @@ FURIGANA (REQUIRED): In the "q" (question text) AND in every "choices" entry, wr
 
 CRITICAL: Return ONLY a valid JSON array. No markdown fences. No extra text before or after.
 Format:
-[{"q":"<ruby>彼<rt>かれ</rt></ruby>はいつも<ruby>忙<rt>いそが</rt></ruby>しいですから、<ruby>週末<rt>しゅうまつ</rt></ruby>も___でしょう。","choices":["<ruby>暇<rt>ひま</rt></ruby>","<ruby>暇<rt>ひま</rt></ruby>な","<ruby>暇<rt>ひま</rt></ruby>だ","<ruby>暇<rt>ひま</rt></ruby>で"],"answer":0,"type":"fill-in","explanation":"な形容詞接 でしょう 時用語幹，不加 だ/な，故 '暇でしょう' 正確。"}]
+[{"q":"<ruby>彼<rt>かれ</rt></ruby>はいつも<ruby>忙<rt>いそが</rt></ruby>しいですから、<ruby>週末<rt>しゅうまつ</rt></ruby>も___でしょう。","choices":["<ruby>暇<rt>ひま</rt></ruby>","<ruby>暇<rt>ひま</rt></ruby>な","<ruby>暇<rt>ひま</rt></ruby>だ","<ruby>暇<rt>ひま</rt></ruby>で"],"answer":0,"type":"fill-in","hint":"提示：な形容詞接でしょう","explanation":"な形容詞接 でしょう 時用語幹，不加 だ/な，故 '暇でしょう' 正確。"}]
 Do NOT prefix choices with 'A.'/'B.' — labels are added automatically. "answer" is the 0-based index (0-3) of the correct choice.
 
 JSON SAFETY (MUST FOLLOW or parsing fails):
@@ -7519,6 +7609,10 @@ JSON SAFETY (MUST FOLLOW or parsing fails):
             }
             if (!questions) throw new Error("JSON 格式錯誤：" + (genErr ? genErr.message : "unknown"));
 
+            // Answer verification: re-check each question's correct-choice index with a
+            // second, independent Gemini pass and fix any mismatched "answer" values.
+            try { questions = await this.verifyQuizAnswers(questions); } catch (e) { console.warn("answer verify skipped:", e); }
+
             // Furigana fallback: if the generator forgot <ruby> on kanji, add it in one pass.
             try { questions = await this.ensureQuizFurigana(questions); } catch (e) { console.warn("furigana fallback skipped:", e); }
 
@@ -7534,6 +7628,69 @@ JSON SAFETY (MUST FOLLOW or parsing fails):
               `<div style="color:var(--danger-text)">❌ 出題失敗：${err.message}<br><small>請稍後再試</small></div>
                <button onclick="app.initMinnaPage()" class="btn-main" style="margin-top:12px;">← 返回</button>`;
           }
+        },
+
+        // Independently re-verify the correct-choice index of every question with a second
+        // Gemini pass, then fix any "answer" that disagrees. Strips <ruby> tags before asking
+        // so the model judges plain text; never reorders choices, only corrects the index.
+        verifyQuizAnswers: async function (questions) {
+          if (!Array.isArray(questions) || questions.length === 0) return questions;
+          const stripRuby = (s) => (s || "")
+            .replace(/<rt>.*?<\/rt>/gi, "")
+            .replace(/<\/?ruby>/gi, "")
+            .replace(/<\/?[^>]+>/g, "");
+          // Compact payload: plain-text question + choices, no readings, no answer leaked.
+          const payload = questions.map((q, i) => ({
+            i,
+            q: stripRuby(q.q),
+            choices: (Array.isArray(q.choices) ? q.choices : []).map(stripRuby)
+          }));
+          const prompt = `You are a strict Japanese grammar checker for みんなの日本語 questions.
+For EACH item below do TWO checks:
+1) ANSWER: decide which ONE choice is the correct answer and return its 0-based index (0=first,1=second,2=third,3=fourth). Judge standard-Japanese grammar AND sentence meaning. Do NOT be influenced by choice position.
+2) AMBIGUITY: test every choice in the blank. List in "acceptable" the 0-based indexes of ALL choices that make a natural, grammatical, context-appropriate sentence. If more than one is acceptable the item is ambiguous (the stem lacks context to force a single answer) — set "ambiguous":true and provide "hint": a short Traditional-Chinese cue (≤12 chars, NO answer words) that tells the learner which grammar point is being tested so the intended answer becomes clear (e.g. "提示：請選可能形"). If exactly one is acceptable, set "ambiguous":false and "hint":"".
+Return ONLY a JSON array, SAME length and order as input: [{"i":0,"answer":0,"acceptable":[0],"ambiguous":false,"hint":""},{"i":1,"answer":1,"acceptable":[1,2],"ambiguous":true,"hint":"提示：請選可能形"}]. No markdown, no extra text.
+
+ITEMS:
+` + JSON.stringify(payload);
+          const raw = await this._geminiChat(
+            [{ role: "system", content: "Return ONLY a valid JSON array of {i, answer, acceptable, ambiguous, hint} objects. No markdown, no extra text." },
+             { role: "user", content: prompt }],
+            2048
+          );
+          let verdicts;
+          try {
+            const match = (raw || "").match(/\[[\s\S]*\]/);
+            verdicts = JSON.parse(match ? match[0] : raw);
+          } catch (e) {
+            return questions; // verifier parse failed → keep originals untouched
+          }
+          if (!Array.isArray(verdicts)) return questions;
+          // Index verdicts by item position for safe lookup.
+          const byIndex = new Map();
+          verdicts.forEach(v => { if (v && Number.isInteger(v.i)) byIndex.set(v.i, v); });
+          let fixed = 0, hinted = 0;
+          const out = questions.map((q, i) => {
+            const v = byIndex.get(i);
+            if (!v) return q;
+            const nChoices = Array.isArray(q.choices) ? q.choices.length : 0;
+            let nq = q;
+            // (a) correct the answer index if the verifier disagrees and its value is valid
+            if (Number.isInteger(v.answer) && v.answer >= 0 && v.answer < nChoices && v.answer !== q.answer) {
+              nq = { ...nq, answer: v.answer };
+              fixed++;
+            }
+            // (b) if ambiguous (two+ acceptable) and the question has no hint yet, add the verifier's hint
+            const acceptableCount = Array.isArray(v.acceptable) ? v.acceptable.length : 0;
+            const isAmbiguous = v.ambiguous === true || acceptableCount > 1;
+            if (isAmbiguous && !(nq.hint && String(nq.hint).trim()) && v.hint && String(v.hint).trim()) {
+              nq = { ...nq, hint: String(v.hint).trim() };
+              hinted++;
+            }
+            return nq;
+          });
+          if (fixed || hinted) console.info("verifyQuizAnswers: fixed " + fixed + " answer index(es), added " + hinted + " ambiguity hint(s)");
+          return out;
         },
 
         // If any question/choice has kanji but no <ruby> furigana, ask Gemini to add it (one call).
@@ -7586,6 +7743,17 @@ JSON SAFETY (MUST FOLLOW or parsing fails):
           document.getElementById("minna-q-progress-fill").style.width = `${(currentIdx / questions.length) * 100}%`;
           document.getElementById("minna-q-type").textContent = q.type || "";
           document.getElementById("minna-q-text").innerHTML = (q.q || "").replace(/___/g, '<span class="minna-blank">___</span>');
+          // Per-question hint (what grammar point is being tested) — resolves ambiguity.
+          const hintEl = document.getElementById("minna-q-hint");
+          if (hintEl) {
+            if (q.hint && String(q.hint).trim()) {
+              hintEl.textContent = q.hint;
+              hintEl.style.display = "block";
+            } else {
+              hintEl.textContent = "";
+              hintEl.style.display = "none";
+            }
+          }
           document.getElementById("minna-explanation").classList.add("hidden");
           document.getElementById("minna-next-btn").classList.add("hidden");
 
