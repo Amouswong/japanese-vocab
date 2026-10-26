@@ -3295,6 +3295,18 @@
               <button class="ed-start-2" onclick="app.startSession(true)">習得済みから練習 →</button>
             </div>
 
+            <!-- Grammar SRS reminder (文法複習提醒) -->
+            <div id="grammar-srs-reminder" style="display:none;margin:14px 0;padding:14px 16px;border-radius:12px;background:var(--bg-surface);border:1px solid var(--primary);cursor:pointer;" onclick="app.openGrammarSrsFromHome()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();app.openGrammarSrsFromHome();}">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:1.3rem;">📘</span>
+                <div style="flex:1;">
+                  <div style="font-weight:700;color:var(--text-main);font-size:0.95rem;">文法複習：今日 <b id="grammar-due-count" style="color:var(--primary-text);">0</b> 個到期</div>
+                  <div style="font-size:0.78rem;color:var(--text-sub);">文法 SRS 間隔複習（點擊開始）</div>
+                </div>
+                <span style="color:var(--primary-text);font-weight:600;font-size:0.82rem;white-space:nowrap;">開始 →</span>
+              </div>
+            </div>
+
             <!-- Duplicate-vocab alert (hidden until duplicates are found) -->
             <div id="dup-alert" style="display:none;margin:14px 0;padding:14px 16px;border-radius:12px;background:#1e293b;border:1px solid #f59e0b;box-shadow:0 2px 8px rgba(0,0,0,0.25);">
               <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="app.toggleDupList()">
@@ -3402,7 +3414,7 @@
           <input type="text" id="type-answer-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
             placeholder="ひらがなで入力…" lang="ja"
             style="width:100%;max-width:360px;padding:12px 14px;font-size:1.3rem;text-align:center;font-family:'Noto Sans JP',sans-serif;border:2px solid var(--line,#ccc);border-radius:10px;background:var(--card,#fff);color:var(--text-main,#111);"
-            onkeydown="if(event.key==='Enter'){event.preventDefault();app.submitTypingAnswer();}">
+            onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();if(!this.disabled)app.submitTypingAnswer();}">
           <button id="type-submit-btn" class="btn-main" style="width:auto;padding:10px 28px;margin:0;" onclick="app.submitTypingAnswer()">答える</button>
         </div>
         <div id="quiz-feedback" class="feedback-box hidden"></div>
@@ -3662,9 +3674,12 @@
           <div class="minna-seg" role="tablist">
             <button id="minna-tab-lesson" class="minna-tab active" onclick="app.minnaSetTab('lesson')">課別で選ぶ</button>
             <button id="minna-tab-topic" class="minna-tab" onclick="app.minnaSetTab('topic')">文法主題で選ぶ</button>
+            <button id="minna-tab-srs" class="minna-tab" onclick="app.minnaSetTab('srs')">SRS 複習</button>
+            <button id="minna-tab-cards" class="minna-tab" onclick="app.minnaSetTab('cards')">文法カード一覧</button>
           </div>
 
           <!-- Step 2: picker -->
+          <div id="minna-normal-setup">
           <div class="ed-section-label">② 範囲を選択</div>
           <div id="minna-lesson-panel">
             <div class="minna-hint">課を選択（複数選択可）</div>
@@ -3701,6 +3716,30 @@
             <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
             クイズを開始
           </button>
+          </div><!-- /#minna-normal-setup -->
+
+          <!-- SRS 複習 panel (文法 SRS 間隔複習) -->
+          <div id="minna-srs-panel" class="hidden">
+            <div class="ed-section-label">② SRS 複習（間隔反復）</div>
+            <div class="dashboard-card" style="padding:22px 20px;text-align:center;">
+              <div style="font-size:0.84rem;color:var(--text-sub);line-height:1.6;margin-bottom:12px;">間隔反復システム（SRS）に基づき、今日ちょうど復習すべき文法だけを出題します。<br>（根據間隔反復系統，只複習今天到期的文法點）</div>
+              <div style="font-size:2.6rem;font-weight:800;color:var(--primary-text);line-height:1.1;" id="srs-due-count">—</div>
+              <div style="font-size:0.82rem;color:var(--text-sub);margin-bottom:6px;">今日 復習する文法（今天到期的文法點）</div>
+              <div id="srs-due-detail" style="font-size:0.8rem;color:var(--text-sub);min-height:1.1em;margin-bottom:16px;"></div>
+              <button onclick="app.startGrammarSrs()" class="ed-start" id="srs-start-btn" style="width:100%;justify-content:center;">
+                <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                SRS 複習を開始
+              </button>
+              <button onclick="app.freshGrammarBatch()" class="btn-sm" style="width:100%;margin-top:8px;background:rgba(224,164,88,0.12);color:var(--primary-text);">もう7問・未習優先（換新一批，優先未測過）</button>
+            </div>
+          </div>
+
+          <!-- 文法カード一覧 panel (全文法點瀏覽) -->
+          <div id="minna-cards-panel" class="hidden">
+            <div class="ed-section-label">② 文法カード一覧（<span id="cards-total-count">—</span> 文法點）</div>
+            <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:10px;">分類をタップして展開 → 文法点をタップして詳細カードを表示（點分類展開，點文法點看完整卡）</div>
+            <div id="minna-cards-list"></div>
+          </div>
 
         </div>
       </div>
@@ -3727,6 +3766,7 @@
           <div style="width:100%;max-width:340px;margin:0 auto;height:6px;background:var(--line);border-radius:99px;overflow:hidden;">
             <div class="progress-indeterminate" style="height:100%;border-radius:99px;background:var(--primary);"></div>
           </div>
+          <div id="minna-loading-status" style="margin-top:12px;font-size:0.82rem;color:var(--text-sub);min-height:1.2em;"></div>
         </div>
 
         <div id="minna-question-wrap" class="hidden">
@@ -3750,6 +3790,55 @@
           <div style="display:flex;gap:8px;justify-content:center;">
             <button onclick="app.minnaRetry()" class="btn-main" style="width:auto;padding:10px 20px;">もう一度</button>
             <button onclick="app.minnaBackSetup()" class="btn-sm" style="padding:10px 16px;">設定へ戻る</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Grammar SRS Review screen (文法 SRS 複習) ─────────── -->
+      <div id="minna-srs-area" class="hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div>
+            <div style="font-size:0.7rem;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">文法 SRS 複習</div>
+            <div id="srs-topic-name" style="font-size:0.9rem;font-weight:600;color:var(--text-main);">間隔反復 · 文法</div>
+          </div>
+          <span onclick="app.srsQuit()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();app.srsQuit();}" style="cursor:pointer;color:var(--primary-text);font-weight:600;font-size:0.82rem;padding:4px 10px;border:1px solid var(--primary);border-radius:20px;">終了</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span id="srs-q-num" style="font-size:0.75rem;font-weight:700;color:white;background:var(--primary);padding:2px 10px;border-radius:20px;white-space:nowrap;">Q1 / 1</span>
+          <div class="progress-bg" style="flex:1;margin:0;">
+            <div id="srs-q-progress-fill" class="progress-fill"></div>
+          </div>
+        </div>
+
+        <div id="srs-loading" class="hidden" style="text-align:center;padding:48px 0;color:var(--text-sub);">
+          <div style="margin-bottom:12px;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:6px;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"></path></svg>AI が文法問題を生成中...（生成文法題目中，請稍候）</div>
+          <div style="width:100%;max-width:340px;margin:0 auto;height:6px;background:var(--line);border-radius:99px;overflow:hidden;">
+            <div class="progress-indeterminate" style="height:100%;border-radius:99px;background:var(--primary);"></div>
+          </div>
+          <div id="srs-loading-status" style="margin-top:12px;font-size:0.82rem;color:var(--text-sub);min-height:1.2em;"></div>
+        </div>
+
+        <div id="srs-question-wrap" class="hidden">
+          <div class="dashboard-card" style="margin-bottom:12px;">
+            <div id="srs-q-type" style="font-size:0.72rem;color:var(--primary-text);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;"></div>
+            <div id="srs-q-text" style="font-size:1.1rem;font-family:'Noto Sans JP',sans-serif;line-height:1.7;color:var(--text-main);"></div>
+            <div id="srs-q-hint" style="display:none;margin-top:8px;font-size:0.85rem;color:var(--primary-text);background:rgba(99,102,241,0.12);border-radius:8px;padding:6px 10px;width:fit-content;"></div>
+          </div>
+          <div id="srs-choices" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+          <div id="srs-explanation" class="hidden" style="margin-top:4px;padding:14px 16px;background:rgba(192,132,64,0.08);border-radius:12px;font-size:0.85rem;color:var(--text-sub);line-height:1.6;border-left:3px solid var(--primary);"></div>
+          <div id="srs-card" class="hidden" style="margin-top:12px;"></div>
+          <button id="srs-next-btn" class="btn-main hidden" style="margin-top:14px;" onclick="app.srsNext()">次へ →</button>
+        </div>
+
+        <div id="srs-result" class="hidden">
+          <div class="dashboard-card" style="text-align:center;padding:32px 20px;">
+            <div style="font-size:3rem;font-weight:700;color:var(--primary-text);margin-bottom:4px;" id="srs-score"></div>
+            <div style="font-size:0.9rem;color:var(--text-sub);margin-bottom:6px;" id="srs-score-pct"></div>
+            <div style="font-size:1.1rem;font-weight:600;color:var(--text-main);margin-bottom:20px;" id="srs-grade"></div>
+            <div style="display:flex;gap:8px;justify-content:center;">
+              <button onclick="app.freshGrammarBatch()" class="ed-start" style="width:auto;padding:10px 20px;justify-content:center;">もう7問（再抽7題）</button>
+              <button onclick="app.srsBackSetup()" class="btn-main" style="width:auto;padding:10px 20px;">設定へ戻る</button>
+            </div>
           </div>
         </div>
       </div>
@@ -3841,6 +3930,7 @@
     </div>
 
     <script>
+      const GRAMMAR_CARDS = {"gp_01": {"point_key": "gp_01", "category": "動詞：基本・可能形", "point": "〜ことができます（能力/可能）", "formation": "名詞＋ができます｜動詞辭書形＋ことができます", "meaning": "會…／能夠…（能力、可能）", "examples": [{"jp": "わたしは<ruby>日本語<rt>にほんご</rt></ruby>を<ruby>話<rt>はな</rt></ruby>すことができます。", "zh": "我會說日語。"}, {"jp": "ここで<ruby>写真<rt>しゃしん</rt></ruby>をとることができます。", "zh": "這裡可以拍照。"}], "note": "與可能形意思相近；〜ことができます較正式、書面。"}, "gp_02": {"point_key": "gp_02", "category": "動詞：基本・可能形", "point": "趣味は〜こと（興趣）", "formation": "わたしの趣味は＋名詞｜わたしの趣味は＋動詞辭書形＋こと", "meaning": "我的興趣是…（介紹興趣）", "examples": [{"jp": "わたしの<ruby>趣味<rt>しゅみ</rt></ruby>は<ruby>音楽<rt>おんがく</rt></ruby>です。", "zh": "我的興趣是音樂。"}, {"jp": "わたしの<ruby>趣味<rt>しゅみ</rt></ruby>は<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>むことです。", "zh": "我的興趣是看書。"}], "note": "動詞要用辭書形＋こと，不可直接接動詞ます形。"}, "gp_03": {"point_key": "gp_03", "category": "動詞：基本・可能形", "point": "〜まえに（在…之前）", "formation": "動詞辭書形＋まえに｜名詞＋の＋まえに", "meaning": "在…之前（先做B再做A）", "examples": [{"jp": "<ruby>寝<rt>ね</rt></ruby>るまえに、<ruby>歯<rt>は</rt></ruby>をみがきます。", "zh": "睡覺前刷牙。"}, {"jp": "<ruby>食事<rt>しょくじ</rt></ruby>のまえに、<ruby>手<rt>て</rt></ruby>をあらいます。", "zh": "吃飯前洗手。"}], "note": "動詞一律用辭書形，即使講過去的事也一樣。"}, "gp_04": {"point_key": "gp_04", "category": "句型・推測・意志", "point": "〜と思います（表達意見）", "formation": "普通形＋と思います", "meaning": "我覺得…／我認為…", "examples": [{"jp": "<ruby>明日<rt>あした</rt></ruby>は<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>ると<ruby>思<rt>おも</rt></ruby>います。", "zh": "我覺得明天會下雨。"}, {"jp": "この<ruby>映画<rt>えいが</rt></ruby>は<ruby>面白<rt>おもしろ</rt></ruby>いと<ruby>思<rt>おも</rt></ruby>います。", "zh": "我覺得這部電影很有趣。"}], "note": "前面接普通形（常體），不用です・ます。"}, "gp_05": {"point_key": "gp_05", "category": "句型・推測・意志", "point": "〜と言いました（轉述）", "formation": "普通形＋と言いました", "meaning": "（某人）說了…", "examples": [{"jp": "<ruby>田中<rt>たなか</rt></ruby>さんは<ruby>来<rt>こ</rt></ruby>ないと<ruby>言<rt>い</rt></ruby>いました。", "zh": "田中先生說不來。"}, {"jp": "<ruby>彼<rt>かれ</rt></ruby>は<ruby>学生<rt>がくせい</rt></ruby>だと<ruby>言<rt>い</rt></ruby>いました。", "zh": "他說他是學生。"}], "note": "引用內容用普通形；名詞/な形容詞後加だ。"}, "gp_06": {"point_key": "gp_06", "category": "句型・推測・意志", "point": "〜でしょう（推測/確認）", "formation": "動詞/い形普通形＋でしょう｜な形/名詞去だ＋でしょう", "meaning": "應該…吧（推測70-80%）／…對吧？（確認）", "examples": [{"jp": "<ruby>明日<rt>あした</rt></ruby>は<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>るでしょう。", "zh": "明天應該會下雨吧。（推測）"}, {"jp": "この<ruby>料理<rt>りょうり</rt></ruby>、おいしいでしょう？", "zh": "這道菜很好吃對吧？（確認，句尾上揚）"}], "note": "平/微降調=推測（有把握，約70-80%）；上揚調=尋求確認（對吧？）。比〜かもしれません更有把握。"}, "gp_07": {"point_key": "gp_07", "category": "動詞：て形", "point": "〜があります（事件發生）", "formation": "場所＋で＋名詞（事件）＋があります", "meaning": "在（某處）有（某活動/事件）", "examples": [{"jp": "<ruby>東京<rt>とうきょう</rt></ruby>で<ruby>祭<rt>まつ</rt></ruby>りがあります。", "zh": "東京有祭典。"}, {"jp": "<ruby>大学<rt>だいがく</rt></ruby>で<ruby>試験<rt>しけん</rt></ruby>があります。", "zh": "大學有考試。"}], "note": "表事件/活動用で；表物品存在用に。"}, "gp_08": {"point_key": "gp_08", "category": "句型・推測・意志", "point": "普通形＋名詞（名詞修飾）", "formation": "動詞/い形/な形/名詞的普通形＋名詞", "meaning": "用句子修飾名詞（…的…）", "examples": [{"jp": "<ruby>昨日<rt>きのう</rt></ruby><ruby>買<rt>か</rt></ruby>った<ruby>本<rt>ほん</rt></ruby>はこれです。", "zh": "昨天買的書是這本。"}, {"jp": "<ruby>日本語<rt>にほんご</rt></ruby>がわかる<ruby>人<rt>ひと</rt></ruby>はいますか。", "zh": "有懂日語的人嗎？"}], "note": "修飾名詞時動詞用普通形，な形容詞用「〜な」。"}, "gp_09": {"point_key": "gp_09", "category": "句型・推測・意志", "point": "〜時（とき）（當…的時候）", "formation": "普通形／い形〜い／な形〜な／名詞〜の＋とき", "meaning": "當…的時候", "examples": [{"jp": "<ruby>子<rt>こ</rt></ruby>どものとき、よく<ruby>遊<rt>あそ</rt></ruby>びました。", "zh": "小時候常玩。"}, {"jp": "<ruby>暇<rt>ひま</rt></ruby>なとき、<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>みます。", "zh": "有空的時候看書。"}], "note": "動作前/後用辭書形或た形區分時間點。"}, "gp_10": {"point_key": "gp_10", "category": "動詞：基本・可能形", "point": "〜と（一…就…）", "formation": "動詞辭書形＋と", "meaning": "一…就…（必然結果）", "examples": [{"jp": "<ruby>春<rt>はる</rt></ruby>になると、<ruby>花<rt>はな</rt></ruby>が<ruby>咲<rt>さ</rt></ruby>きます。", "zh": "一到春天，花就開。"}, {"jp": "この<ruby>ボタン<rt></rt></ruby>を<ruby>押<rt>お</rt></ruby>すと、<ruby>水<rt>みず</rt></ruby>が<ruby>出<rt>で</rt></ruby>ます。", "zh": "一按這個按鈕，水就出來。"}], "note": "表必然/自然結果，後句不可接命令、請求、意志。"}, "gp_11": {"point_key": "gp_11", "category": "動詞：基本・可能形", "point": "〜たいです（想做）", "formation": "動詞ます形（去ます）＋たいです", "meaning": "想要做…", "examples": [{"jp": "<ruby>水<rt>みず</rt></ruby>が<ruby>飲<rt>の</rt></ruby>みたいです。", "zh": "想喝水。"}, {"jp": "<ruby>日本<rt>にほん</rt></ruby>へ<ruby>行<rt>い</rt></ruby>きたいです。", "zh": "想去日本。"}], "note": "對象助詞を常可換成が；只用於第一人稱的願望。"}, "gp_12": {"point_key": "gp_12", "category": "動詞：基本・可能形", "point": "〜に行きます（目的）", "formation": "動詞ます形（去ます）／名詞＋に＋行きます", "meaning": "去（某處）做…（移動目的）", "examples": [{"jp": "<ruby>映画<rt>えいが</rt></ruby>を<ruby>見<rt>み</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。", "zh": "去看電影。"}, {"jp": "<ruby>買<rt>か</rt></ruby>い<ruby>物<rt>もの</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。", "zh": "去購物。"}], "note": "動詞用ます形去ます；動作性名詞可直接＋に。"}, "gp_13": {"point_key": "gp_13", "category": "動詞：基本・可能形", "point": "〜ながら（一邊…一邊）", "formation": "動詞ます形（去ます）＋ながら", "meaning": "一邊…一邊…（同時進行）", "examples": [{"jp": "<ruby>音楽<rt>おんがく</rt></ruby>を<ruby>聞<rt>き</rt></ruby>きながら、<ruby>勉強<rt>べんきょう</rt></ruby>します。", "zh": "一邊聽音樂一邊讀書。"}, {"jp": "<ruby>歩<rt>ある</rt></ruby>きながら、<ruby>話<rt>はな</rt></ruby>しましょう。", "zh": "一邊走一邊聊吧。"}], "note": "兩動作同一主語同時進行；主要動作放後句。"}, "gp_14": {"point_key": "gp_14", "category": "動詞：基本・可能形", "point": "〜は〜が〜は（對比）", "formation": "Aは〜が、Bは〜（は表對比）", "meaning": "A是…，但B是…（對比）", "examples": [{"jp": "<ruby>肉<rt>にく</rt></ruby>は<ruby>食<rt>た</rt></ruby>べますが、<ruby>魚<rt>さかな</rt></ruby>は<ruby>食<rt>た</rt></ruby>べません。", "zh": "肉會吃，但魚不吃。"}, {"jp": "ビールは<ruby>飲<rt>の</rt></ruby>みますが、ワインは<ruby>飲<rt>の</rt></ruby>みません。", "zh": "啤酒會喝，但紅酒不喝。"}], "note": "用は強調對比；兩項相反時特別明顯。"}, "gp_15": {"point_key": "gp_15", "category": "動詞：基本・可能形", "point": "〜が見えます/聞こえます（看得見/聽得見）", "formation": "名詞＋が＋見えます／聞こえます", "meaning": "（自然）看得見／聽得見", "examples": [{"jp": "<ruby>山<rt>やま</rt></ruby>が<ruby>見<rt>み</rt></ruby>えます。", "zh": "看得見山。"}, {"jp": "<ruby>音楽<rt>おんがく</rt></ruby>が<ruby>聞<rt>き</rt></ruby>こえます。", "zh": "聽得見音樂。"}], "note": "見えます/聞こえます是自然能力（非努力）；見られます/聞けます是可能形（條件允許）。"}, "gp_16": {"point_key": "gp_16", "category": "助詞・疑問詞", "point": "〜しか〜ない（只有）", "formation": "名詞＋しか＋否定", "meaning": "只有…（後接否定）", "examples": [{"jp": "<ruby>百円<rt>ひゃくえん</rt></ruby>しかありません。", "zh": "只有一百日圓。"}, {"jp": "ひらがなしか<ruby>読<rt>よ</rt></ruby>めません。", "zh": "只看得懂平假名。"}], "note": "しか後面一定接否定，但意思是肯定的「只有」。"}, "gp_17": {"point_key": "gp_17", "category": "動詞：て形", "point": "〜てください（請做…）", "formation": "動詞て形＋ください", "meaning": "請（做）…", "examples": [{"jp": "ちょっと<ruby>待<rt>ま</rt></ruby>ってください。", "zh": "請稍等。"}, {"jp": "ここに<ruby>名前<rt>なまえ</rt></ruby>を<ruby>書<rt>か</rt></ruby>いてください。", "zh": "請在這裡寫名字。"}], "note": "禮貌的請求/指示；否定請求用〜ないでください。"}, "gp_18": {"point_key": "gp_18", "category": "動詞：て形", "point": "〜ています（進行/習慣）", "formation": "動詞て形＋います", "meaning": "正在…／（習慣性地）…", "examples": [{"jp": "<ruby>今<rt>いま</rt></ruby><ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>んでいます。", "zh": "現在正在看書。"}, {"jp": "<ruby>毎朝<rt>まいあさ</rt></ruby>ジョギングをしています。", "zh": "每天早上慢跑（習慣）。"}], "note": "表進行或反覆習慣，依語境判斷。"}, "gp_19": {"point_key": "gp_19", "category": "動詞：て形", "point": "〜ましょうか（主動提議）", "formation": "動詞ます形（去ます）＋ましょうか", "meaning": "要不要我來…？（主動提議幫忙）", "examples": [{"jp": "<ruby>荷物<rt>にもつ</rt></ruby>を<ruby>持<rt>も</rt></ruby>ちましょうか。", "zh": "我來幫你拿行李吧？"}, {"jp": "<ruby>窓<rt>まど</rt></ruby>を<ruby>開<rt>あ</rt></ruby>けましょうか。", "zh": "要我開窗嗎？"}], "note": "ましょうか是提議；ましょう是邀約（一起做吧）。"}, "gp_20": {"point_key": "gp_20", "category": "動詞：て形", "point": "〜ています（長期狀態）", "formation": "動詞て形＋います", "meaning": "（長期）處於某狀態", "examples": [{"jp": "<ruby>東京<rt>とうきょう</rt></ruby>に<ruby>住<rt>す</rt></ruby>んでいます。", "zh": "住在東京。"}, {"jp": "<ruby>結婚<rt>けっこん</rt></ruby>しています。", "zh": "已婚（結婚的狀態）。"}], "note": "住む・結婚する・知る等表狀態持續，常用ています。"}, "gp_21": {"point_key": "gp_21", "category": "動詞：て形", "point": "〜てもいいですか（請求許可）", "formation": "動詞て形＋もいいですか", "meaning": "可以…嗎？（請求許可）", "examples": [{"jp": "ここに<ruby>座<rt>すわ</rt></ruby>ってもいいですか。", "zh": "可以坐這裡嗎？"}, {"jp": "<ruby>写真<rt>しゃしん</rt></ruby>をとってもいいですか。", "zh": "可以拍照嗎？"}], "note": "允許回「はい、いいです」；禁止用〜てはいけません。"}, "gp_22": {"point_key": "gp_22", "category": "動詞：て形", "point": "〜てはいけません（禁止）", "formation": "動詞て形＋はいけません", "meaning": "不可以…／禁止…", "examples": [{"jp": "ここでタバコを<ruby>吸<rt>す</rt></ruby>ってはいけません。", "zh": "這裡不可以抽菸。"}, {"jp": "<ruby>写真<rt>しゃしん</rt></ruby>をとってはいけません。", "zh": "不可以拍照。"}], "note": "口語常縮成〜ちゃいけません。"}, "gp_23": {"point_key": "gp_23", "category": "動詞：て形", "point": "〜ています（職業）", "formation": "（場所）で＋職業動詞て形＋います", "meaning": "從事…工作", "examples": [{"jp": "<ruby>銀行<rt>ぎんこう</rt></ruby>で<ruby>働<rt>はたら</rt></ruby>いています。", "zh": "在銀行工作。"}, {"jp": "<ruby>日本語<rt>にほんご</rt></ruby>を<ruby>教<rt>おし</rt></ruby>えています。", "zh": "教日語（職業）。"}], "note": "表職業/長期從事，屬ています的狀態用法。"}, "gp_24": {"point_key": "gp_24", "category": "動詞：て形", "point": "〜て、〜て（連續動作）", "formation": "動詞て形、動詞て形、…最後動詞（決定時態）", "meaning": "做了…然後…（動作順序）", "examples": [{"jp": "<ruby>朝<rt>あさ</rt></ruby><ruby>起<rt>お</rt></ruby>きて、<ruby>顔<rt>かお</rt></ruby>をあらって、<ruby>朝<rt>あさ</rt></ruby>ごはんを<ruby>食<rt>た</rt></ruby>べます。", "zh": "早上起床、洗臉、吃早餐。"}, {"jp": "<ruby>電車<rt>でんしゃ</rt></ruby>に<ruby>乗<rt>の</rt></ruby>って、<ruby>会社<rt>かいしゃ</rt></ruby>へ<ruby>行<rt>い</rt></ruby>きます。", "zh": "搭電車去公司。"}], "note": "時態由最後動詞決定；前面一律て形。"}, "gp_25": {"point_key": "gp_25", "category": "動詞：て形", "point": "〜てから（做完…再…）", "formation": "動詞て形＋から", "meaning": "做完…之後再…", "examples": [{"jp": "<ruby>宿題<rt>しゅくだい</rt></ruby>をしてから、<ruby>遊<rt>あそ</rt></ruby>びます。", "zh": "做完作業再玩。"}, {"jp": "<ruby>手<rt>て</rt></ruby>をあらってから、<ruby>食<rt>た</rt></ruby>べます。", "zh": "洗手後再吃。"}], "note": "強調先後順序；比單純て形更強調「之後」。"}, "gp_26": {"point_key": "gp_26", "category": "動詞：て形", "point": "〜てあげます（為別人做）", "formation": "動詞て形＋あげます", "meaning": "（我）為別人做…", "examples": [{"jp": "<ruby>友<rt>とも</rt></ruby>だちに<ruby>本<rt>ほん</rt></ruby>を<ruby>貸<rt>か</rt></ruby>してあげます。", "zh": "借書給朋友。"}, {"jp": "<ruby>母<rt>はは</rt></ruby>に<ruby>料理<rt>りょうり</rt></ruby>を<ruby>作<rt>つく</rt></ruby>ってあげます。", "zh": "為媽媽做菜。"}], "note": "對長輩用易顯失禮；方向是「我方→他人」。"}, "gp_27": {"point_key": "gp_27", "category": "動詞：て形", "point": "〜てもらいます（請別人做）", "formation": "（我）は（人）に＋動詞て形＋もらいます", "meaning": "請別人為我做…／得到（某人）做…", "examples": [{"jp": "<ruby>友<rt>とも</rt></ruby>だちに<ruby>手伝<rt>てつだ</rt></ruby>ってもらいます。", "zh": "請朋友幫忙。"}, {"jp": "<ruby>先生<rt>せんせい</rt></ruby>に<ruby>教<rt>おし</rt></ruby>えてもらいました。", "zh": "請老師教（我）。"}], "note": "做動作的人用に；接受者是我方。"}, "gp_28": {"point_key": "gp_28", "category": "動詞：て形", "point": "〜てくれます（別人為我做）", "formation": "（人）が＋動詞て形＋くれます", "meaning": "（別人）為我做…", "examples": [{"jp": "<ruby>友<rt>とも</rt></ruby>だちが<ruby>手伝<rt>てつだ</rt></ruby>ってくれました。", "zh": "朋友幫了我。"}, {"jp": "<ruby>父<rt>ちち</rt></ruby>が<ruby>車<rt>くるま</rt></ruby>を<ruby>買<rt>か</rt></ruby>ってくれました。", "zh": "爸爸買車給我。"}], "note": "做動作的人用が；方向是「他人→我方」，帶感謝語氣。"}, "gp_29": {"point_key": "gp_29", "category": "動詞：て形", "point": "〜ていただけませんか（禮貌請求）", "formation": "動詞て形＋いただけませんか", "meaning": "能否請您…？（最禮貌的請求）", "examples": [{"jp": "<ruby>写真<rt>しゃしん</rt></ruby>をとっていただけませんか。", "zh": "能否請您幫忙拍照？"}, {"jp": "もう<ruby>一度<rt>いちど</rt></ruby><ruby>言<rt>い</rt></ruby>っていただけませんか。", "zh": "能否請您再說一次？"}], "note": "比〜てください、〜てもらえませんか更客氣。"}, "gp_30": {"point_key": "gp_30", "category": "動詞：て形", "point": "〜てあげる/くれる/もらう（授受）", "formation": "て形＋あげる（我為人）／くれる（人為我）／もらう（我請人）", "meaning": "恩惠的授受（方向是重點）", "examples": [{"jp": "わたしは<ruby>妹<rt>いもうと</rt></ruby>に<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>んであげる。", "zh": "我唸書給妹妹聽。"}, {"jp": "<ruby>姉<rt>あね</rt></ruby>がケーキを<ruby>作<rt>つく</rt></ruby>ってくれる。", "zh": "姐姐做蛋糕給我。"}, {"jp": "わたしは<ruby>姉<rt>あね</rt></ruby>にケーキを<ruby>作<rt>つく</rt></ruby>ってもらう。", "zh": "我請姐姐做蛋糕。"}], "note": "くれる只能用於「他人→我方」；三者方向不可混用。"}, "gp_31": {"point_key": "gp_31", "category": "動詞：て形", "point": "〜ても（即使…也）", "formation": "動詞て形＋も｜い形〜くても｜な形・名詞〜でも", "meaning": "即使…也…（逆接、讓步）", "examples": [{"jp": "<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>っても、<ruby>行<rt>い</rt></ruby>きます。", "zh": "即使下雨也要去。"}, {"jp": "<ruby>高<rt>たか</rt></ruby>くても、<ruby>買<rt>か</rt></ruby>います。", "zh": "即使貴也要買。"}, {"jp": "<ruby>日曜日<rt>にちようび</rt></ruby>でも、<ruby>働<rt>はたら</rt></ruby>きます。", "zh": "即使是星期日也工作。"}], "note": "vs 〜たら（條件）：〜ても 表「即使…也不受影響」。"}, "gp_32": {"point_key": "gp_32", "category": "動詞：て形", "point": "〜ています（自然現象）", "formation": "名詞（主詞）が＋自動詞て形＋います", "meaning": "（自然現象）正…著", "examples": [{"jp": "<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>っています。", "zh": "正在下雨。"}, {"jp": "<ruby>風<rt>かぜ</rt></ruby>が<ruby>吹<rt>ふ</rt></ruby>いています。", "zh": "正在刮風。"}], "note": "自然現象主詞用が；描述眼前狀態。"}, "gp_33": {"point_key": "gp_33", "category": "動詞：て形", "point": "自動詞＋が＋ています（狀態持續）", "formation": "名詞が＋自動詞て形＋います", "meaning": "（自動詞）維持某狀態", "examples": [{"jp": "<ruby>電気<rt>でんき</rt></ruby>がついています。", "zh": "燈開著。"}, {"jp": "<ruby>窓<rt>まど</rt></ruby>が<ruby>開<rt>あ</rt></ruby>いています。", "zh": "窗開著。"}], "note": "自動詞＋ています＝狀態；他動詞＋てあります＝有人為目的。"}, "gp_34": {"point_key": "gp_34", "category": "動詞：て形", "point": "〜てしまいました（完了/遺憾）", "formation": "動詞て形＋しまいました／しまいます", "meaning": "（不小心）…了／完成了（含遺憾或完了）", "examples": [{"jp": "<ruby>財布<rt>さいふ</rt></ruby>をなくしてしまいました。", "zh": "錢包弄丟了（遺憾）。"}, {"jp": "<ruby>宿題<rt>しゅくだい</rt></ruby>を<ruby>全部<rt>ぜんぶ</rt></ruby>やってしまいました。", "zh": "作業全部做完了。"}], "note": "口語常縮成〜ちゃいました。"}, "gp_35": {"point_key": "gp_35", "category": "動詞：た形・過去", "point": "〜たことがあります（經驗）", "formation": "動詞た形＋ことがあります", "meaning": "曾經…過（經驗）", "examples": [{"jp": "<ruby>日本<rt>にほん</rt></ruby>へ<ruby>行<rt>い</rt></ruby>ったことがあります。", "zh": "曾經去過日本。"}, {"jp": "すしを<ruby>食<rt>た</rt></ruby>べたことがあります。", "zh": "吃過壽司。"}], "note": "表人生經驗；近期一次性的事不用此句型。"}, "gp_36": {"point_key": "gp_36", "category": "動詞：た形・過去", "point": "〜たり〜たりします（列舉）", "formation": "動詞た形＋り、動詞た形＋り＋します", "meaning": "又…又…／做這做那（列舉動作）", "examples": [{"jp": "<ruby>週末<rt>しゅうまつ</rt></ruby>は<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>んだり、<ruby>映画<rt>えいが</rt></ruby>を<ruby>見<rt>み</rt></ruby>たりします。", "zh": "週末看看書、看看電影。"}, {"jp": "<ruby>休<rt>やす</rt></ruby>みに<ruby>掃除<rt>そうじ</rt></ruby>をしたり、<ruby>洗濯<rt>せんたく</rt></ruby>をしたりしました。", "zh": "假日打掃、洗衣等。"}], "note": "列舉代表性動作（非全部）；句尾用します/しました定時態。"}, "gp_37": {"point_key": "gp_37", "category": "動詞：た形・過去", "point": "〜く/に なります（狀態轉變）", "formation": "い形〜く＋なります｜な形・名詞〜に＋なります", "meaning": "變得…／變成…", "examples": [{"jp": "<ruby>寒<rt>さむ</rt></ruby>くなりました。", "zh": "變冷了。"}, {"jp": "<ruby>元気<rt>げんき</rt></ruby>になりました。", "zh": "變有精神了。"}], "note": "い形去い＋く；な形/名詞＋に。"}, "gp_38": {"point_key": "gp_38", "category": "動詞：た形・過去", "point": "〜たら（如果/之後）", "formation": "動詞た形＋ら｜い形〜かったら｜な形・名詞〜だったら", "meaning": "如果…的話／…之後", "examples": [{"jp": "<ruby>駅<rt>えき</rt></ruby>に<ruby>着<rt>つ</rt></ruby>いたら、<ruby>電話<rt>でんわ</rt></ruby>してください。", "zh": "到車站的話請打電話。"}, {"jp": "<ruby>安<rt>やす</rt></ruby>かったら、<ruby>買<rt>か</rt></ruby>います。", "zh": "便宜的話就買。"}, {"jp": "<ruby>暇<rt>ひま</rt></ruby>だったら、<ruby>手伝<rt>てつだ</rt></ruby>ってください。", "zh": "有空的話請幫忙。"}], "note": "可接請求/命令；〜と 則不行。"}, "gp_39": {"point_key": "gp_39", "category": "動詞：た形・過去", "point": "〜たらいいですか（該怎麼…）", "formation": "動詞た形＋らいいですか", "meaning": "該…才好呢？（徵詢建議）", "examples": [{"jp": "<ruby>何<rt>なに</rt></ruby>を<ruby>買<rt>か</rt></ruby>ったらいいですか。", "zh": "該買什麼好呢？"}, {"jp": "どこで<ruby>乗<rt>の</rt></ruby>り<ruby>換<rt>か</rt></ruby>えたらいいですか。", "zh": "該在哪裡換車好呢？"}], "note": "常與疑問詞（何/どこ/いつ）連用徵詢建議。"}, "gp_40": {"point_key": "gp_40", "category": "動詞：ない形", "point": "〜ないでください（請別…）", "formation": "動詞ない形＋でください", "meaning": "請不要…", "examples": [{"jp": "ここで<ruby>写真<rt>しゃしん</rt></ruby>をとらないでください。", "zh": "請不要在這裡拍照。"}, {"jp": "<ruby>心配<rt>しんぱい</rt></ruby>しないでください。", "zh": "請不要擔心。"}], "note": "肯定請求用〜てください，否定用〜ないでください。"}, "gp_41": {"point_key": "gp_41", "category": "動詞：ない形", "point": "〜なければなりません（義務）", "formation": "動詞ない形去「い」＋ければなりません", "meaning": "必須…／一定要…", "examples": [{"jp": "<ruby>明日<rt>あした</rt></ruby>までに<ruby>宿題<rt>しゅくだい</rt></ruby>を<ruby>出<rt>だ</rt></ruby>さなければなりません。", "zh": "明天前必須交作業。"}, {"jp": "<ruby>薬<rt>くすり</rt></ruby>を<ruby>飲<rt>の</rt></ruby>まなければなりません。", "zh": "必須吃藥。"}], "note": "口語常縮成〜なきゃ／〜なくちゃ。"}, "gp_42": {"point_key": "gp_42", "category": "動詞：ない形", "point": "〜なくてもいいです（免除）", "formation": "動詞ない形去「い」＋くてもいいです", "meaning": "不…也可以／不用…", "examples": [{"jp": "<ruby>明日<rt>あした</rt></ruby>は<ruby>来<rt>こ</rt></ruby>なくてもいいです。", "zh": "明天不來也可以。"}, {"jp": "<ruby>急<rt>いそ</rt></ruby>がなくてもいいです。", "zh": "不用急。"}], "note": "是〜なければなりません（義務）的相反（免除）。"}, "gp_43": {"point_key": "gp_43", "category": "動詞：て形", "point": "〜てあります（狀態持續）", "formation": "名詞が＋他動詞て形＋あります", "meaning": "（有人做好而）…著（人為狀態）", "examples": [{"jp": "<ruby>窓<rt>まど</rt></ruby>が<ruby>開<rt>あ</rt></ruby>けてあります。", "zh": "窗戶（有人）開著。"}, {"jp": "<ruby>机<rt>つくえ</rt></ruby>に<ruby>名前<rt>なまえ</rt></ruby>が<ruby>書<rt>か</rt></ruby>いてあります。", "zh": "桌上寫著名字。"}], "note": "他動詞＋てあります＝有人為目的；對比自動詞＋ています。"}, "gp_44": {"point_key": "gp_44", "category": "動詞：て形", "point": "〜ておきます（預先準備）", "formation": "動詞て形＋おきます", "meaning": "預先做好…／保持…", "examples": [{"jp": "<ruby>旅行<rt>りょこう</rt></ruby>のまえに、ホテルを<ruby>予約<rt>よやく</rt></ruby>しておきます。", "zh": "旅行前先訂好飯店。"}, {"jp": "<ruby>使<rt>つか</rt></ruby>ったら、<ruby>元<rt>もと</rt></ruby>に<ruby>戻<rt>もど</rt></ruby>しておいてください。", "zh": "用完請放回原位。"}], "note": "口語常縮成〜ときます。"}, "gp_45": {"point_key": "gp_45", "category": "句型・推測・意志", "point": "〜(よ)うと思っています（打算）", "formation": "動詞意向形＋と思っています", "meaning": "打算…／想要…", "examples": [{"jp": "<ruby>来年<rt>らいねん</rt></ruby><ruby>日本<rt>にほん</rt></ruby>へ<ruby>行<rt>い</rt></ruby>こうと<ruby>思<rt>おも</rt></ruby>っています。", "zh": "打算明年去日本。"}, {"jp": "<ruby>車<rt>くるま</rt></ruby>を<ruby>買<rt>か</rt></ruby>おうと<ruby>思<rt>おも</rt></ruby>っています。", "zh": "打算買車。"}], "note": "と思っています表持續的打算；と思います是當下決定。"}, "gp_46": {"point_key": "gp_46", "category": "句型・推測・意志", "point": "〜つもりです（打算/決定）", "formation": "動詞辭書形／ない形＋つもりです", "meaning": "打算…／不打算…", "examples": [{"jp": "<ruby>夏休<rt>なつやす</rt></ruby>みに<ruby>国<rt>くに</rt></ruby>へ<ruby>帰<rt>かえ</rt></ruby>るつもりです。", "zh": "暑假打算回國。"}, {"jp": "タバコは<ruby>吸<rt>す</rt></ruby>わないつもりです。", "zh": "不打算抽菸。"}], "note": "比〜(よ)うと思う的意志更堅定、計劃更明確。"}, "gp_47": {"point_key": "gp_47", "category": "動詞：基本・可能形", "point": "〜予定です（預定/計劃）", "formation": "動詞辭書形／名詞の＋予定です", "meaning": "預定…／計劃…", "examples": [{"jp": "<ruby>来週<rt>らいしゅう</rt></ruby><ruby>出張<rt>しゅっちょう</rt></ruby>する<ruby>予定<rt>よてい</rt></ruby>です。", "zh": "預定下週出差。"}, {"jp": "<ruby>会議<rt>かいぎ</rt></ruby>は３<ruby>時<rt>じ</rt></ruby>の<ruby>予定<rt>よてい</rt></ruby>です。", "zh": "會議預定三點。"}], "note": "客觀既定的安排，比つもり更正式、確定。"}, "gp_48": {"point_key": "gp_48", "category": "動詞：て形", "point": "まだ〜ていません（還沒…）", "formation": "まだ＋動詞て形＋いません", "meaning": "還沒…（尚未完成）", "examples": [{"jp": "<ruby>昼<rt>ひる</rt></ruby>ごはんをまだ<ruby>食<rt>た</rt></ruby>べていません。", "zh": "還沒吃午餐。"}, {"jp": "しゅくだいはまだ<ruby>終<rt>お</rt></ruby>わっていません。", "zh": "作業還沒做完。"}], "note": "回答「もう〜ましたか」的否定；不用まだ〜ませんでした。"}, "gp_49": {"point_key": "gp_49", "category": "句型・推測・意志", "point": "〜ほうがいいです（建議）", "formation": "動詞た形＋ほうがいいです｜動詞ない形＋ほうがいいです", "meaning": "最好…／建議…", "examples": [{"jp": "<ruby>早<rt>はや</rt></ruby>く<ruby>寝<rt>ね</rt></ruby>たほうがいいです。", "zh": "最好早點睡。"}, {"jp": "むりをしないほうがいいです。", "zh": "最好別勉強。"}], "note": "肯定建議用た形，否定建議用ない形。"}, "gp_50": {"point_key": "gp_50", "category": "名詞・指示詞", "point": "〜は〜です（肯定句）", "formation": "N1＋は＋N2＋です", "meaning": "是…（名詞肯定句）", "examples": [{"jp": "<ruby>私<rt>わたし</rt></ruby>は<ruby>学生<rt>がくせい</rt></ruby>です。", "zh": "我是學生。"}, {"jp": "ミラーさんは<ruby>会社員<rt>かいしゃいん</rt></ruby>です。", "zh": "米勒先生是公司職員。"}], "note": "は讀作 wa，是主題標記；です 是禮貌的斷定。"}, "gp_51": {"point_key": "gp_51", "category": "名詞・指示詞", "point": "〜じゃありません（否定句）", "formation": "N1＋は＋N2＋じゃありません（正式：ではありません）", "meaning": "不是…（名詞否定句）", "examples": [{"jp": "サントスさんは<ruby>学生<rt>がくせい</rt></ruby>じゃありません。", "zh": "桑托斯先生不是學生。"}, {"jp": "これは<ruby>私<rt>わたし</rt></ruby>のじゃありません。", "zh": "這不是我的。"}], "note": "じゃありません 是口語；では ありません 較正式。"}, "gp_52": {"point_key": "gp_52", "category": "名詞・指示詞", "point": "〜も〜です（也是）", "formation": "N＋も＋Nです", "meaning": "也是…（屬性相同）", "examples": [{"jp": "グプタさんも<ruby>会社員<rt>かいしゃいん</rt></ruby>です。", "zh": "古普塔先生也是公司職員。"}, {"jp": "<ruby>私<rt>わたし</rt></ruby>も<ruby>学生<rt>がくせい</rt></ruby>です。", "zh": "我也是學生。"}], "note": "身分與前句相同時用 も 取代 は；不同屬性不能用 も。"}, "gp_53": {"point_key": "gp_53", "category": "名詞・指示詞", "point": "〜の〜（名詞修飾/所屬）", "formation": "N1＋の＋N2", "meaning": "…的…（所屬/修飾）", "examples": [{"jp": "<ruby>私<rt>わたし</rt></ruby>の<ruby>本<rt>ほん</rt></ruby>です。", "zh": "是我的書。"}, {"jp": "<ruby>日本語<rt>にほんご</rt></ruby>の<ruby>本<rt>ほん</rt></ruby>です。", "zh": "是日語的書。"}], "note": "修飾語永遠在前；の 可表擁有、所屬或內容屬性。"}, "gp_54": {"point_key": "gp_54", "category": "名詞・指示詞", "point": "これ/それ/あれ（代名詞）", "formation": "これ／それ／あれ＋は〜です", "meaning": "這個／那個／那個（指事物）", "examples": [{"jp": "これは<ruby>辞書<rt>じしょ</rt></ruby>です。", "zh": "這是字典。"}, {"jp": "それは<ruby>何<rt>なん</rt></ruby>ですか。", "zh": "那是什麼？"}], "note": "これ=我這邊、それ=你那邊、あれ=雙方都遠；本身即名詞可當主詞。"}, "gp_55": {"point_key": "gp_55", "category": "名詞・指示詞", "point": "この/その/あの＋N（連體詞）", "formation": "この／その／あの＋名詞", "meaning": "這…／那…（後接名詞）", "examples": [{"jp": "この<ruby>本<rt>ほん</rt></ruby>は<ruby>私<rt>わたし</rt></ruby>のです。", "zh": "這本書是我的。"}, {"jp": "あの<ruby>人<rt>ひと</rt></ruby>は<ruby>先生<rt>せんせい</rt></ruby>です。", "zh": "那個人是老師。"}], "note": "後面一定要接名詞，不能單獨用（×このは本です）。"}, "gp_56": {"point_key": "gp_56", "category": "名詞・指示詞", "point": "〜のです（所有格代名詞化）", "formation": "名詞＋の（省略其後名詞）", "meaning": "…的（我的/你的）", "examples": [{"jp": "それは<ruby>私<rt>わたし</rt></ruby>のです。", "zh": "那是我的。"}, {"jp": "この<ruby>傘<rt>かさ</rt></ruby>は<ruby>田中<rt>たなか</rt></ruby>さんのです。", "zh": "這把傘是田中先生的。"}], "note": "相當於英文 mine/yours；省略後面名詞避免重複。"}, "gp_57": {"point_key": "gp_57", "category": "名詞・指示詞", "point": "ここ/そこ/あそこ（場所）", "formation": "ここ／そこ／あそこ＋は〜です", "meaning": "這裡／那裡／那裡", "examples": [{"jp": "ここは<ruby>教室<rt>きょうしつ</rt></ruby>です。", "zh": "這裡是教室。"}, {"jp": "トイレはあそこです。", "zh": "廁所在那裡。"}], "note": "對應 これ/それ/あれ 的距離感（腳下/你那/遠處）。"}, "gp_58": {"point_key": "gp_58", "category": "名詞・指示詞", "point": "こちら/そちら/あちら（禮貌方位）", "formation": "こちら／そちら／あちら＋です", "meaning": "這邊／那邊（禮貌・介紹人）", "examples": [{"jp": "<ruby>会議室<rt>かいぎしつ</rt></ruby>はあちらです。", "zh": "會議室在那邊。"}, {"jp": "こちらはミラーさんです。", "zh": "這位是米勒先生。"}], "note": "比 ここ/そこ/あそこ 更禮貌；介紹人也用這組。"}, "gp_59": {"point_key": "gp_59", "category": "名詞・指示詞", "point": "どこ/どちら（詢問場所）", "formation": "場所＋は＋どこ／どちら＋ですか", "meaning": "在哪裡？（どちら更禮貌）", "examples": [{"jp": "お<ruby>手洗<rt>てあら</rt></ruby>いはどこですか。", "zh": "洗手間在哪裡？"}, {"jp": "<ruby>会社<rt>かいしゃ</rt></ruby>はどちらですか。", "zh": "您公司在哪裡？"}], "note": "問公司/學校/國家時習慣用 どちら/どこ，不用 何。"}, "gp_60": {"point_key": "gp_60", "category": "名詞・指示詞", "point": "いくらですか（詢問價格）", "formation": "名詞＋は＋いくらですか", "meaning": "多少錢？", "examples": [{"jp": "これはいくらですか。", "zh": "這個多少錢？"}, {"jp": "この<ruby>時計<rt>とけい</rt></ruby>はいくらですか。", "zh": "這個手錶多少錢？"}], "note": "いくら 專問價格/數量。"}, "gp_61": {"point_key": "gp_61", "category": "名詞・指示詞", "point": "今〜時〜分です（時刻）", "formation": "今＋〜時〜分＋です", "meaning": "現在是…點…分", "examples": [{"jp": "<ruby>今<rt>いま</rt></ruby>は４<ruby>時<rt>じ</rt></ruby>５<ruby>分<rt>ふん</rt></ruby>です。", "zh": "現在是4點5分。"}, {"jp": "<ruby>今<rt>いま</rt></ruby><ruby>何時<rt>なんじ</rt></ruby>ですか。", "zh": "現在幾點？"}], "note": "分 讀 ふん(2,5,7,9) / ぷん(1,3,4,6,8,10)；何分=なんぷん。"}, "gp_62": {"point_key": "gp_62", "category": "名詞・指示詞", "point": "〜が欲しいです（想要東西）", "formation": "名詞＋が＋欲しいです", "meaning": "想要…（名詞）", "examples": [{"jp": "<ruby>私<rt>わたし</rt></ruby>はカメラが<ruby>欲<rt>ほ</rt></ruby>しいです。", "zh": "我想要相機。"}, {"jp": "<ruby>水<rt>みず</rt></ruby>が<ruby>欲<rt>ほ</rt></ruby>しくないです。", "zh": "我不想要水。"}], "note": "欲しい 是い形容詞，用 が 標示想要的東西；否定 欲しくない。"}, "gp_63": {"point_key": "gp_63", "category": "名詞・指示詞", "point": "數量詞的位置", "formation": "名詞＋を＋數量詞＋動詞", "meaning": "數量詞放助詞後、緊貼動詞", "examples": [{"jp": "みかんを<ruby>四<rt>よっ</rt></ruby>つ<ruby>買<rt>か</rt></ruby>いました。", "zh": "買了四個橘子。"}, {"jp": "<ruby>学生<rt>がくせい</rt></ruby>が<ruby>二人<rt>ふたり</rt></ruby>います。", "zh": "有兩個學生。"}], "note": "數量詞通常放助詞後、緊貼動詞；不說 4つのみかんを。"}, "gp_64": {"point_key": "gp_64", "category": "形容詞", "point": "い形容詞 現在/過去", "formation": "〜いです／〜くないです／〜かったです／〜くなかったです", "meaning": "い形容詞時態變化", "examples": [{"jp": "この<ruby>本<rt>ほん</rt></ruby>は<ruby>面白<rt>おもしろ</rt></ruby>いです。", "zh": "這本書很有趣。"}, {"jp": "<ruby>映画<rt>えいが</rt></ruby>は<ruby>面白<rt>おもしろ</rt></ruby>かったです。", "zh": "電影很有趣（過去）。"}], "note": "否定 〜くない、過去 〜かった、過去否定 〜くなかった。"}, "gp_65": {"point_key": "gp_65", "category": "形容詞", "point": "な形容詞 現在/過去", "formation": "〜です／〜じゃありません／〜でした／〜じゃありませんでした", "meaning": "な形容詞時態變化", "examples": [{"jp": "ここは<ruby>静<rt>しず</rt></ruby>かです。", "zh": "這裡很安靜。"}, {"jp": "<ruby>昨日<rt>きのう</rt></ruby>は<ruby>暇<rt>ひま</rt></ruby>でした。", "zh": "昨天很閒。"}], "note": "な形容詞像名詞一樣變化（でした／じゃありませんでした）。"}, "gp_66": {"point_key": "gp_66", "category": "形容詞", "point": "形容詞修飾名詞", "formation": "い形＋名詞｜な形＋な＋名詞", "meaning": "形容詞修飾名詞（な形要加な）", "examples": [{"jp": "<ruby>高<rt>たか</rt></ruby>い<ruby>山<rt>やま</rt></ruby>", "zh": "高的山"}, {"jp": "きれいな<ruby>花<rt>はな</rt></ruby>", "zh": "漂亮的花"}], "note": "い形直接接名詞；な形必須加 な 再接名詞。"}, "gp_67": {"point_key": "gp_67", "category": "形容詞", "point": "形容詞て形（連接）", "formation": "い形去い＋くて｜な形＋で", "meaning": "又…又…（形容詞連接）", "examples": [{"jp": "この<ruby>部屋<rt>へや</rt></ruby>は<ruby>安<rt>やす</rt></ruby>くて、きれいです。", "zh": "這房間又便宜又漂亮。"}, {"jp": "ここは<ruby>静<rt>しず</rt></ruby>かで、きれいです。", "zh": "這裡又安靜又乾淨。"}], "note": "い形〜くて、な形〜で；連接兩個形容詞。"}, "gp_68": {"point_key": "gp_68", "category": "形容詞", "point": "いい→よい（特殊變化）", "formation": "否定/過去用よい：よくない／よかった／よくなかった", "meaning": "「いい」變化時改用「よい」", "examples": [{"jp": "<ruby>天気<rt>てんき</rt></ruby>がいいです。", "zh": "天氣很好。"}, {"jp": "<ruby>天気<rt>てんき</rt></ruby>がよかったです。", "zh": "天氣很好（過去）。"}], "note": "只有現在肯定用 いい；否定/過去/連接都改用 よい。"}, "gp_69": {"point_key": "gp_69", "category": "形容詞", "point": "とても/あまり（程度）", "formation": "とても＋肯定｜あまり＋否定", "meaning": "很…／不太…", "examples": [{"jp": "<ruby>今日<rt>きょう</rt></ruby>はとても<ruby>暑<rt>あつ</rt></ruby>いです。", "zh": "今天很熱。"}, {"jp": "この<ruby>料理<rt>りょうり</rt></ruby>はあまり<ruby>辛<rt>から</rt></ruby>くないです。", "zh": "這道菜不太辣。"}], "note": "あまり 後面必接否定。"}, "gp_70": {"point_key": "gp_70", "category": "形容詞", "point": "〜が好き/嫌い（好惡）", "formation": "名詞＋が＋好き／嫌いです", "meaning": "喜歡／討厭…（用が）", "examples": [{"jp": "<ruby>私<rt>わたし</rt></ruby>はイタリア<ruby>料理<rt>りょうり</rt></ruby>が<ruby>好<rt>す</rt></ruby>きです。", "zh": "我喜歡義大利料理。"}, {"jp": "<ruby>私<rt>わたし</rt></ruby>は<ruby>納豆<rt>なっとう</rt></ruby>が<ruby>嫌<rt>きら</rt></ruby>いです。", "zh": "我討厭納豆。"}], "note": "好き/嫌い 是な形容詞，對象用 が。"}, "gp_71": {"point_key": "gp_71", "category": "形容詞", "point": "〜が上手/下手（能力）", "formation": "名詞＋が＋上手／下手です", "meaning": "擅長／不擅長…（用が）", "examples": [{"jp": "マリアさんは<ruby>歌<rt>うた</rt></ruby>が<ruby>上手<rt>じょうず</rt></ruby>です。", "zh": "瑪麗亞很會唱歌。"}, {"jp": "<ruby>私<rt>わたし</rt></ruby>は<ruby>料理<rt>りょうり</rt></ruby>が<ruby>下手<rt>へた</rt></ruby>です。", "zh": "我不擅長做菜。"}], "note": "稱讚別人用 上手；謙虛自己用 下手 或 あまりできません。"}, "gp_72": {"point_key": "gp_72", "category": "形容詞", "point": "〜はどうですか（詢問感想）", "formation": "名詞＋は＋どうですか", "meaning": "…怎麼樣？", "examples": [{"jp": "<ruby>日本<rt>にほん</rt></ruby>の<ruby>生活<rt>せいかつ</rt></ruby>はどうですか。", "zh": "日本的生活怎麼樣？"}, {"jp": "<ruby>仕事<rt>しごと</rt></ruby>はどうですか。", "zh": "工作怎麼樣？"}], "note": "詢問感想/評價的常用句。"}, "gp_73": {"point_key": "gp_73", "category": "副詞・接續", "point": "そして/が（接續詞）", "formation": "そして（而且・同向）｜〜が（但是・反向）", "meaning": "連接評價的接續詞", "examples": [{"jp": "きれいです。そして、<ruby>親切<rt>しんせつ</rt></ruby>です。", "zh": "很漂亮，而且很親切。"}, {"jp": "おいしいですが、<ruby>高<rt>たか</rt></ruby>いです。", "zh": "好吃，但是很貴。"}], "note": "そして 連接同向評價；が 連接相反評價。"}, "gp_74": {"point_key": "gp_74", "category": "形容詞", "point": "N1はN2より〜（比較）", "formation": "N1＋は＋N2＋より＋形容詞です", "meaning": "N1比N2更…", "examples": [{"jp": "<ruby>中国<rt>ちゅうごく</rt></ruby>は<ruby>日本<rt>にほん</rt></ruby>より<ruby>広<rt>ひろ</rt></ruby>いです。", "zh": "中國比日本大。"}, {"jp": "<ruby>今日<rt>きょう</rt></ruby>は<ruby>昨日<rt>きのう</rt></ruby>より<ruby>暑<rt>あつ</rt></ruby>いです。", "zh": "今天比昨天熱。"}], "note": "より＝比起；N1 是比較的主體。"}, "gp_75": {"point_key": "gp_75", "category": "形容詞", "point": "N1とN2とどちらが〜（二選一）", "formation": "N1と N2と、どちらが＋形容詞ですか", "meaning": "N1和N2哪個比較…", "examples": [{"jp": "サッカーと<ruby>野球<rt>やきゅう</rt></ruby>とどちらが<ruby>面白<rt>おもしろ</rt></ruby>いですか。", "zh": "足球和棒球哪個有趣？"}, {"jp": "コーヒーとお<ruby>茶<rt>ちゃ</rt></ruby>とどちらがいいですか。", "zh": "咖啡和茶哪個好？"}], "note": "回答用 〜のほうが〜；兩者都…用 どちらも。"}, "gp_76": {"point_key": "gp_76", "category": "形容詞", "point": "〜で〜がいちばん〜（最高級）", "formation": "範圍＋で＋疑問詞＋が＋いちばん＋形容詞", "meaning": "在…之中…最…", "examples": [{"jp": "<ruby>日本料理<rt>にほんりょうり</rt></ruby>で<ruby>何<rt>なに</rt></ruby>がいちばんおいしいですか。", "zh": "日式料理中什麼最好吃？"}, {"jp": "クラスで<ruby>誰<rt>だれ</rt></ruby>がいちばん<ruby>背<rt>せ</rt></ruby>が<ruby>高<rt>たか</rt></ruby>いですか。", "zh": "班上誰最高？"}], "note": "範圍用 で；疑問詞後用 が；いちばん＝最。"}, "gp_77": {"point_key": "gp_77", "category": "形容詞", "point": "〜は〜が〜（特徵描述）", "formation": "大主題は＋部位/屬性が＋形容詞", "meaning": "（某人/物）的…很…", "examples": [{"jp": "マリアさんは<ruby>髪<rt>かみ</rt></ruby>が<ruby>長<rt>なが</rt></ruby>いです。", "zh": "瑪麗亞頭髮很長。"}, {"jp": "<ruby>大阪<rt>おおさか</rt></ruby>は<ruby>食<rt>た</rt></ruby>べ<ruby>物<rt>もの</rt></ruby>がおいしいです。", "zh": "大阪食物很好吃。"}], "note": "は 標大主題、が 標具體部位/屬性。"}, "gp_78": {"point_key": "gp_78", "category": "形容詞", "point": "程度副詞（よく/だいたい/全然等）", "formation": "よく／だいたい／少し＋肯定｜あまり／全然＋否定", "meaning": "程度副詞搭配肯定/否定", "examples": [{"jp": "<ruby>日本語<rt>にほんご</rt></ruby>がよくわかります。", "zh": "很懂日語。"}, {"jp": "お<ruby>金<rt>かね</rt></ruby>が<ruby>全然<rt>ぜんぜん</rt></ruby>ありません。", "zh": "完全沒錢。"}], "note": "あまり/全然 接否定；よく/だいたい/少し 接肯定。"}, "gp_79": {"point_key": "gp_79", "category": "副詞・接續", "point": "それに（而且/此外）", "formation": "文。それに、〜", "meaning": "而且／再加上（補充資訊）", "examples": [{"jp": "この<ruby>店<rt>みせ</rt></ruby>は<ruby>料理<rt>りょうり</rt></ruby>がおいしいです。それに、<ruby>値段<rt>ねだん</rt></ruby>も<ruby>安<rt>やす</rt></ruby>いです。", "zh": "這家店料理好吃，而且價格也便宜。"}, {"jp": "<ruby>彼<rt>かれ</rt></ruby>は<ruby>親切<rt>しんせつ</rt></ruby>です。それに、まじめです。", "zh": "他很親切，而且認真。"}], "note": "用於補充同方向的資訊；接在前句之後。"}, "gp_80": {"point_key": "gp_80", "category": "副詞・接續", "point": "それで（因此/所以）", "formation": "文。それで、〜", "meaning": "因此／所以（前因後果）", "examples": [{"jp": "この<ruby>店<rt>みせ</rt></ruby>は<ruby>安<rt>やす</rt></ruby>くておいしいです。それで、<ruby>人<rt>ひと</rt></ruby>が<ruby>多<rt>おお</rt></ruby>いです。", "zh": "這家店便宜又好吃，所以人很多。"}, {"jp": "<ruby>道<rt>みち</rt></ruby>が<ruby>込<rt>こ</rt></ruby>んでいました。それで、<ruby>遅<rt>おく</rt></ruby>れました。", "zh": "路上塞車，所以遲到了。"}], "note": "前句是原因、後句是結果。"}, "gp_82": {"point_key": "gp_82", "category": "副詞・接續", "point": "〜し〜し（列舉理由）", "formation": "動詞/い形普通形＋し｜名詞/な形＋だし", "meaning": "又…又…（並列多個理由）", "examples": [{"jp": "<ruby>値段<rt>ねだん</rt></ruby>も<ruby>安<rt>やす</rt></ruby>いし、<ruby>味<rt>あじ</rt></ruby>もおいしいし、この<ruby>店<rt>みせ</rt></ruby>によく<ruby>来<rt>き</rt></ruby>ます。", "zh": "又便宜又好吃，所以常來這家店。"}, {"jp": "<ruby>彼<rt>かれ</rt></ruby>は<ruby>歌<rt>うた</rt></ruby>も<ruby>上手<rt>じょうず</rt></ruby>だし、ダンスも<ruby>上手<rt>じょうず</rt></ruby>だし、<ruby>人気<rt>にんき</rt></ruby>があります。", "zh": "他歌好舞也好，很受歡迎。"}], "note": "動詞/い形直接接し；名詞/な形加だし。加 から 可強調主因。"}, "gp_83": {"point_key": "gp_83", "category": "句型・推測・意志", "point": "〜かもしれません（推測50%以下）", "formation": "普通形＋かもしれません｜な形/名詞去だ＋かもしれません", "meaning": "也許/可能…（不確定的推測）", "examples": [{"jp": "<ruby>約束<rt>やくそく</rt></ruby>の<ruby>時間<rt>じかん</rt></ruby>に<ruby>遅<rt>おく</rt></ruby>れるかもしれません。", "zh": "可能會趕不上約定時間。"}, {"jp": "<ruby>明日<rt>あした</rt></ruby>は<ruby>雨<rt>あめ</rt></ruby>かもしれません。", "zh": "明天說不定會下雨。"}], "note": "確信度50%以下；比〜でしょう更不確定。な形/名詞去だ。"}, "gp_84": {"point_key": "gp_84", "category": "句型・推測・意志", "point": "〜んです（說明原因/強調）", "formation": "動詞/い形普通形＋んです｜な形/名詞＋な＋んです", "meaning": "說明原因、情況（強調体）", "examples": [{"jp": "どうして<ruby>遅刻<rt>ちこく</rt></ruby>しましたか。—— バスが<ruby>来<rt>こ</rt></ruby>なかったんです。", "zh": "為什麼遲到？—— 因為公車沒來。"}, {"jp": "どこが<ruby>痛<rt>いた</rt></ruby>いですか。—— <ruby>頭<rt>あたま</rt></ruby>が<ruby>痛<rt>いた</rt></ruby>いんです。", "zh": "哪裡痛？—— 頭痛。"}], "note": "な形/名詞要用 な＋んです（不是だ）；用於說明原因、柔和請求開場。"}, "gp_85": {"point_key": "gp_85", "category": "助詞・疑問詞", "point": "は vs が（主題/主詞）", "formation": "話題用は｜疑問詞/排他/現象/特定動詞用が", "meaning": "は與が的區別", "examples": [{"jp": "<ruby>私<rt>わたし</rt></ruby>は<ruby>学生<rt>がくせい</rt></ruby>です。", "zh": "我是學生。（話題）"}, {"jp": "<ruby>誰<rt>だれ</rt></ruby>が<ruby>学生<rt>がくせい</rt></ruby>ですか。", "zh": "誰是學生？（疑問詞當主詞用が）"}], "note": "は=話題(重點在後)；が=排他/識別/疑問詞/自然現象/好き・ある・欲しい等。"}, "gp_86": {"point_key": "gp_86", "category": "助詞・疑問詞", "point": "疑問詞＋が（誰が/何が/どれが）", "formation": "疑問詞（誰/何/どれ）＋が＋述語", "meaning": "疑問詞當主詞時用が", "examples": [{"jp": "<ruby>誰<rt>だれ</rt></ruby>がいますか。", "zh": "誰在？"}, {"jp": "どれがいいですか。", "zh": "哪個好？"}], "note": "疑問詞當主詞時一律用が，不用は。"}, "gp_87": {"point_key": "gp_87", "category": "助詞・疑問詞", "point": "だれ/どなた（誰/哪位）", "formation": "だれ（普通）／どなた（禮貌）", "meaning": "問「誰」（どなた更禮貌）", "examples": [{"jp": "あの<ruby>人<rt>ひと</rt></ruby>はだれですか。", "zh": "那個人是誰？"}, {"jp": "<ruby>受付<rt>うけつけ</rt></ruby>の<ruby>方<rt>かた</rt></ruby>はどなたですか。", "zh": "櫃檯的人是哪一位？"}], "note": "どなた 對上司/客人/長輩等更禮貌。"}, "gp_88": {"point_key": "gp_88", "category": "助詞・疑問詞", "point": "だれの/だれと/だれに", "formation": "だれ＋の（誰的）／と（跟誰）／に（給誰/向誰）", "meaning": "だれ＋助詞的組合", "examples": [{"jp": "これはだれの<ruby>傘<rt>かさ</rt></ruby>ですか。", "zh": "這是誰的傘？"}, {"jp": "だれと<ruby>行<rt>い</rt></ruby>きますか。", "zh": "你要跟誰去？"}], "note": "の=所有、と=伴隨、に=給予/對象。"}, "gp_89": {"point_key": "gp_89", "category": "助詞・疑問詞", "point": "なに vs なん（什麼）", "formation": "なに（內容）／なん（接数量・だ/です前）", "meaning": "何的兩種讀音與用法", "examples": [{"jp": "これは<ruby>何<rt>なん</rt></ruby>ですか。", "zh": "這是什麼？（接です讀なん）"}, {"jp": "<ruby>何<rt>なに</rt></ruby>を<ruby>買<rt>か</rt></ruby>いますか。", "zh": "要買什麼？（問內容讀なに）"}], "note": "なん 用在です/数量詞前；なに 問具體內容。"}, "gp_90": {"point_key": "gp_90", "category": "助詞・疑問詞", "point": "どちら/どれ/何（選擇）", "formation": "どちら(2選1)／どれ(3+有選項)／何(開放)", "meaning": "哪個/哪一個/什麼的區別", "examples": [{"jp": "コーヒーとお<ruby>茶<rt>ちゃ</rt></ruby>、どちらがいいですか。", "zh": "咖啡和茶，哪個好？（2選1）"}, {"jp": "<ruby>動物<rt>どうぶつ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>で<ruby>何<rt>なに</rt></ruby>が<ruby>一番<rt>いちばん</rt></ruby><ruby>好<rt>す</rt></ruby>きですか。", "zh": "動物中最喜歡什麼？（開放）"}], "note": "どちら=2選1、どれ=3+且有明確選項、何=開放無選項。"}, "gp_91": {"point_key": "gp_91", "category": "助詞・疑問詞", "point": "どこに/どこで/どこへ/どこから", "formation": "に(存在)／で(動作)／へ・に(方向)／から(起點)", "meaning": "どこ＋各助詞", "examples": [{"jp": "<ruby>猫<rt>ねこ</rt></ruby>はどこにいますか。", "zh": "貓在哪裡？（存在に）"}, {"jp": "どこで<ruby>写真<rt>しゃしん</rt></ruby>を<ruby>撮<rt>と</rt></ruby>りますか。", "zh": "在哪裡拍照？（動作で）"}], "note": "に=存在、で=動作場所、へ/に=方向、から=起點。"}, "gp_92": {"point_key": "gp_92", "category": "助詞・疑問詞", "point": "〜に会います/乗ります等（に動詞）", "formation": "人/物＋に＋会います・乗ります・住みます・座ります等", "meaning": "特定動詞固定用に", "examples": [{"jp": "<ruby>友<rt>とも</rt></ruby>だちに<ruby>会<rt>あ</rt></ruby>います。", "zh": "與朋友見面。"}, {"jp": "<ruby>電車<rt>でんしゃ</rt></ruby>に<ruby>乗<rt>の</rt></ruby>ります。", "zh": "搭電車。"}], "note": "会う/乗る/住む/座る/勤める/入る/登る 等固定配に。"}, "gp_93": {"point_key": "gp_93", "category": "助詞・疑問詞", "point": "〜を降ります/誘います（を動詞）", "formation": "名詞＋を＋降ります・誘います・手伝います", "meaning": "特定動詞用を", "examples": [{"jp": "<ruby>電車<rt>でんしゃ</rt></ruby>を<ruby>降<rt>お</rt></ruby>ります。", "zh": "下電車。"}, {"jp": "<ruby>友<rt>とも</rt></ruby>だちを<ruby>誘<rt>さそ</rt></ruby>います。", "zh": "邀請朋友。"}], "note": "降りる(離開點用を/から)、誘う、手伝う 用を。"}, "gp_94": {"point_key": "gp_94", "category": "助詞・疑問詞", "point": "どうやって（手段）／どうして（原因）", "formation": "どうやって＋動作／どうして＋理由", "meaning": "怎麼做／為什麼", "examples": [{"jp": "<ruby>駅<rt>えき</rt></ruby>までどうやって<ruby>行<rt>い</rt></ruby>きますか。", "zh": "到車站怎麼去？"}, {"jp": "どうして<ruby>遅<rt>おく</rt></ruby>れましたか。", "zh": "為什麼遲到？"}], "note": "どうやって問方法/手段；どうして問原因/理由。"}, "gp_95": {"point_key": "gp_95", "category": "助詞・疑問詞", "point": "どのくらい（時間長度）", "formation": "どのくらい＋かかります等", "meaning": "多久（時間長度/程度）", "examples": [{"jp": "<ruby>駅<rt>えき</rt></ruby>までどのくらいかかりますか。", "zh": "到車站要多久？"}, {"jp": "どのくらい<ruby>日本語<rt>にほんご</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>しましたか。", "zh": "學了日語多久？"}], "note": "問所需時間長度或程度。"}};
       const app = {
         vocabData: [],
         vocabFullyLoaded: false,
@@ -3992,6 +4082,7 @@
           if (pageId === "home") {
             document.getElementById("nav-study").classList.add("active");
             this.updateDashboardStats();
+            this.updateGrammarDueReminder();
           }
           if (pageId === "db") {
             document.getElementById("nav-db").classList.add("active");
@@ -5660,6 +5751,9 @@
           if (this.isRandomQuizMode) {
             questionType = Math.floor(Math.random() * 6);
           } else {
+            // Normal review keeps ONLY the two original choice types (0 and 1);
+            // the newer types (3 kana→kanji, 4 typing, 5 dictation) appear only in
+            // random practice mode (習得済みから練習).
             if (
               currentStage === 0 ||
               currentStage === 2 ||
@@ -6029,8 +6123,11 @@
 
           if (isCorrect && !isTimeout) {
             const currentStage = currentWord.stage ?? 0;
-            const newStage = Math.min(currentStage + 1, 5);
-            const isMastered = newStage >= 5;
+            // A word already marked mastered must never lose that status on a CORRECT answer
+            // (some mastered words have stage < 5, which used to flip mastered back to false).
+            const wasMastered = currentWord.mastered === true || currentStage >= 5;
+            const newStage = wasMastered ? 5 : Math.min(currentStage + 1, 5);
+            const isMastered = wasMastered || newStage >= 5;
 
             // SRS intervals: stage 1→1d, 2→2d, 3→4d, 4→7d, 5→mastered
             const intervalDays = [1, 1, 3, 7, 15, 0][newStage] || 1;
@@ -6102,7 +6199,9 @@
           }
 
           // Show example sentences if any
-          const examples = currentWord.examples;
+          let examples = currentWord.examples;
+          if (typeof examples === "string") { try { examples = JSON.parse(examples); } catch (e) { examples = [examples]; } }
+          examples = Array.isArray(examples) ? examples.filter((s) => s && String(s).trim() && String(s).trim() !== "null") : [];
           if (examples && examples.length > 0) {
             feedbackHtml += `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line);text-align:left;">
               <div style="font-size:0.72rem;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">例文</div>
@@ -6353,6 +6452,7 @@
             this.updateDashboardStats();
             this.updateStreakUI();
             this.renderCharts();
+            this.updateGrammarDueReminder();
 
             document.getElementById("status-text").innerText = "Online";
             document.getElementById("status-dot").style.backgroundColor =
@@ -6377,6 +6477,9 @@
               }
               // Quiz shortcuts (1-4, Enter)
               if (document.getElementById("page-quiz").classList.contains("hidden")) return;
+              // Don't hijack keys while typing an answer (typing / dictation questions)
+              const _tg = e.target && e.target.tagName;
+              if (_tg === "INPUT" || _tg === "TEXTAREA") return;
               if (["1", "2", "3", "4"].includes(e.key)) {
                 const idx = parseInt(e.key) - 1;
                 const btns = [...document.querySelectorAll("#ans-mc-area .btn-random")].filter((b) => !b.disabled);
@@ -6569,7 +6672,8 @@
         // Shared Gemini API helper
         _geminiChat: async function(messages, maxTokens) {
           maxTokens = maxTokens || 1024;
-          const models = ["gemini-2.5-flash-preview-05-20", "gemini-2.5-flash", "gemini-2.5-pro"];
+          // Smart-first: try the strongest model, fall through on 404/unavailable to safe fallbacks.
+          const models = ["gemini-4-argon", "gemini-3.1-pro", "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-preview-05-20"];
 
           // Convert OpenAI-style messages to Gemini format
           const systemMsg = messages.find(m => m.role === "system");
@@ -7702,6 +7806,17 @@ ${articleText ? ("（參考用）今日のニュース記事：「" + articleTex
           loading: false,
         },
 
+        // ── Grammar SRS (文法 SRS 複習) state ─────────────────
+        grammarSrsState: {
+          due: [],           // the grammar_srs rows being reviewed this round
+          questions: [],     // one AI question per due point ({point_key, q, choices, answer, ...})
+          currentIdx: 0,
+          score: 0,
+        },
+        _grammarDue: null,   // cached list of currently-due grammar_srs rows
+        // SRS review intervals (days) by stage, per the 7-level schedule.
+        GRAMMAR_SRS_INTERVALS: { 1: 1, 2: 2, 3: 4, 4: 7, 5: 14, 6: 21, 7: 30 },
+
         // Canonical みんなの日本語 lesson → grammar map (single source of truth).
         // Used BOTH for the lesson-picker chips AND injected into the quiz prompt so
         // the AI generates questions for the EXACT grammar of each lesson (not adjacent ones).
@@ -7750,6 +7865,18 @@ ${articleText ? ("（參考用）今日のニュース記事：「" + articleTex
           document.getElementById("minna-setup").classList.remove("hidden");
           document.getElementById("minna-quiz-area").classList.add("hidden");
           document.getElementById("minna-result").classList.add("hidden");
+          var srsArea = document.getElementById("minna-srs-area");
+          if (srsArea) srsArea.classList.add("hidden");
+          // Reset segmented control back to the default lesson tab
+          document.getElementById("minna-tab-lesson").classList.add("active");
+          document.getElementById("minna-tab-topic").classList.remove("active");
+          var srsTab = document.getElementById("minna-tab-srs");
+          if (srsTab) srsTab.classList.remove("active");
+          document.getElementById("minna-normal-setup").classList.remove("hidden");
+          var srsPanel = document.getElementById("minna-srs-panel");
+          if (srsPanel) srsPanel.classList.add("hidden");
+          document.getElementById("minna-lesson-panel").classList.remove("hidden");
+          document.getElementById("minna-topic-panel").classList.add("hidden");
           this.minnaState.mode = "lesson";
           this.minnaState.selection = [];
           this.minnaState.qCount = 5;
@@ -7784,6 +7911,19 @@ ${articleText ? ("（參考用）今日のニュース記事：「" + articleTex
           this.minnaState.selection = [];
           document.getElementById("minna-tab-lesson").classList.toggle("active", tab === "lesson");
           document.getElementById("minna-tab-topic").classList.toggle("active", tab === "topic");
+          var srsTab = document.getElementById("minna-tab-srs");
+          if (srsTab) srsTab.classList.toggle("active", tab === "srs");
+          var cardsTab = document.getElementById("minna-tab-cards");
+          if (cardsTab) cardsTab.classList.toggle("active", tab === "cards");
+          // Toggle normal (lesson/topic) setup vs the SRS panel vs the cards overview
+          var normal = document.getElementById("minna-normal-setup");
+          var srsPanel = document.getElementById("minna-srs-panel");
+          var cardsPanel = document.getElementById("minna-cards-panel");
+          if (normal) normal.classList.toggle("hidden", tab === "srs" || tab === "cards");
+          if (srsPanel) srsPanel.classList.toggle("hidden", tab !== "srs");
+          if (cardsPanel) cardsPanel.classList.toggle("hidden", tab !== "cards");
+          if (tab === "srs") { this.initGrammarSrs(); return; }
+          if (tab === "cards") { this.renderGrammarCardList(); return; }
           document.getElementById("minna-lesson-panel").classList.toggle("hidden", tab !== "lesson");
           document.getElementById("minna-topic-panel").classList.toggle("hidden", tab !== "topic");
           this.renderMinnaSelector(tab);
@@ -7895,6 +8035,12 @@ ${articleText ? ("（參考用）今日のニュース記事：「" + articleTex
             : `${n} 課 選択中`;
         },
 
+        // Update the status line shown under the quiz-generation spinner.
+        _setMinnaStatus: function (text) {
+          const el = document.getElementById("minna-loading-status");
+          if (el) el.textContent = text || "";
+        },
+
         startMinnaQuiz: async function () {
           const sel = this.minnaState.selection;
           if (!sel || (Array.isArray(sel) && sel.length === 0)) {
@@ -7930,6 +8076,16 @@ ${articleText ? ("（參考用）今日のニュース記事：「" + articleTex
               return g ? `第${n}課 = ${g.ja}（${g.zh}）` : `第${n}課`;
             })
             .join("; ");
+          // Cumulative "already-learned" scope: lessons 1..(highest selected lesson).
+          // The sentence may freely use any grammar in this range, but must NEVER use
+          // grammar from a lesson beyond it (that is what confuses the learner).
+          const maxSelLesson = Math.max.apply(null, selArr.map(Number));
+          const learnedRange = [];
+          for (let n = 1; n <= maxSelLesson; n++) {
+            const g = this.MINNA_LESSON_GRAMMAR[n];
+            if (g) learnedRange.push(`第${n}課=${g.ja}`);
+          }
+          const learnedScopeSpec = learnedRange.join("; ");
           const topicDesc = mode === "lesson"
             ? `みんなの日本語の次の課の文法のみ: ${lessonGrammarSpec}`
             : selArr.map((s) => topicLabels[s] || s).join("、");
@@ -7948,7 +8104,14 @@ ${articleText ? ("（參考用）今日のニュース記事：「" + articleTex
 Generate exactly ${qCount} multiple-choice questions about: ${topicDesc}
 
 CRITICAL: Questions must be based on ACTUAL grammar patterns and vocabulary from みんなの日本語 textbook.
-For lesson-based quizzes, the TARGET grammar for each lesson is listed explicitly above (e.g. "第32課 = ～たほうがいい / ～でしょう"). You MUST build every question around EXACTLY those listed grammar points for the chosen lesson(s). Do NOT use grammar from any other lesson — in particular do NOT drift to the previous or next lesson (e.g. for 第32課 do not use 第31課's 意向形～(よ)う). If multiple lessons are chosen, distribute the questions across them as evenly as possible so each selected lesson is represented.
+For lesson-based quizzes, the TARGET grammar for each lesson is listed explicitly above (e.g. "第32課 = ～たほうがいい / ～でしょう"). You MUST build every question around EXACTLY those listed grammar points for the chosen lesson(s). If multiple lessons are chosen, distribute the questions across them as evenly as possible so each selected lesson is represented.
+
+LESSON-SCOPE RULE (CRITICAL — this is the single most important constraint; violating it confuses the learner):
+- The "learned scope" is みんなの日本語 lessons 1 through ${maxSelLesson} ONLY. Here is the full cumulative list of grammar the learner has studied up to the selected lesson: ${learnedScopeSpec}
+- The grammar point BEING TESTED (what the correct answer hinges on, and what the distractors play with) MUST be exactly the chosen lesson's grammar listed above — not earlier, not later.
+- Every OTHER part of the sentence (verbs, particles, tenses, connectors, politeness) may use ONLY grammar/conjugations from within the learned scope (lessons 1–${maxSelLesson}). 
+- ABSOLUTELY FORBIDDEN: using ANY grammar, verb form, tense, or sentence pattern that is first taught in a lesson AFTER ${maxSelLesson}. For example, if ${maxSelLesson} < 可能形's lesson, do NOT use the potential form anywhere; if ${maxSelLesson} is before て形, do NOT use て-form at all. A question that relies on, or whose correct answer requires, a not-yet-learned form is WRONG even if it is grammatically correct Japanese — discard it and write one using only in-scope grammar.
+- Self-check each question: (1) is the tested point exactly the chosen lesson's grammar? (2) does EVERY token in the sentence and in all four choices stay within lessons 1–${maxSelLesson}? If any part needs a later-lesson form, rewrite the sentence so it does not.
 For topic-based quizzes, focus on the grammar patterns typically taught for that topic in the textbook series.
 
 DIFFICULTY REQUIREMENT (MUST FOLLOW STRICTLY):
@@ -8036,6 +8199,7 @@ JSON SAFETY (MUST FOLLOW or parsing fails):
 
           try {
             // First generation attempt (the retry loop below may request a second one).
+            this._setMinnaStatus("問題を生成中... (生成題目中)");
             const raw = await this._geminiChat([
               { role: "system", content: "Return ONLY valid JSON array, no markdown fences, no extra text." },
               { role: "user", content: prompt }
@@ -8116,9 +8280,41 @@ JSON SAFETY (MUST FOLLOW or parsing fails):
 
             // Answer verification: re-check each question's correct-choice index with a
             // second, independent Gemini pass and fix any mismatched "answer" values.
-            try { questions = await this.verifyQuizAnswers(questions); } catch (e) { console.warn("answer verify skipped:", e); }
+            try {
+              // In lesson mode, also pass the learned scope so the verifier can drop out-of-scope questions.
+              const scopeInfo = (mode === "lesson")
+                ? { maxLesson: maxSelLesson, learnedScopeSpec: learnedScopeSpec }
+                : null;
+              this._setMinnaStatus("答えを検証中... (檢查答案與範圍中)");
+              questions = await this.verifyQuizAnswers(questions, scopeInfo);
+            } catch (e) { console.warn("answer verify skipped:", e); }
+
+            // Top-up: if the scope-check dropped some questions, regenerate the shortfall
+            // (up to 2 extra rounds) so the learner still gets the requested count.
+            try {
+              let topupRounds = 0;
+              while (questions.length < qCount && topupRounds < 2) {
+                topupRounds++;
+                this._setMinnaStatus("不足分を生成中... (補足題目中 " + questions.length + "/" + qCount + ")");
+                const need = qCount - questions.length;
+                const topupPrompt = prompt
+                  .replace(`Generate exactly ${qCount}`, `Generate exactly ${need}`)
+                  + `\n\nIMPORTANT: Generate ${need} NEW question(s) only. They MUST stay within the learned scope (do NOT use grammar beyond the selected lesson).`;
+                const rawMore = await this._geminiChat([
+                  { role: "system", content: "Return ONLY a valid JSON array. No markdown. No double-quote characters inside any string value — use 「」 or single quotes." },
+                  { role: "user", content: topupPrompt }
+                ], 8192);
+                let more;
+                try { more = parseQuizResponse(rawMore); } catch (pe) { break; } // give up topping up on parse failure
+                if (!Array.isArray(more) || more.length === 0) break;
+                // Verify the new batch too (same scope check), then append up to the shortfall.
+                try { more = await this.verifyQuizAnswers(more, scopeInfo); } catch (e) { /* keep as-is */ }
+                questions = questions.concat(more.slice(0, need));
+              }
+            } catch (e) { console.warn("quiz top-up skipped:", e); }
 
             // Furigana fallback: if the generator forgot <ruby> on kanji, add it in one pass.
+            this._setMinnaStatus("ふりがなを付与中... (加注音中)");
             try { questions = await this.ensureQuizFurigana(questions); } catch (e) { console.warn("furigana fallback skipped:", e); }
 
             this.minnaState.questions = questions;
@@ -8138,7 +8334,7 @@ JSON SAFETY (MUST FOLLOW or parsing fails):
         // Independently re-verify the correct-choice index of every question with a second
         // Gemini pass, then fix any "answer" that disagrees. Strips <ruby> tags before asking
         // so the model judges plain text; never reorders choices, only corrects the index.
-        verifyQuizAnswers: async function (questions) {
+        verifyQuizAnswers: async function (questions, scopeInfo) {
           if (!Array.isArray(questions) || questions.length === 0) return questions;
           const stripRuby = (s) => (s || "")
             .replace(/<rt>.*?<\/rt>/gi, "")
@@ -8150,16 +8346,22 @@ JSON SAFETY (MUST FOLLOW or parsing fails):
             q: stripRuby(q.q),
             choices: (Array.isArray(q.choices) ? q.choices : []).map(stripRuby)
           }));
+          // Optional lesson-scope block: only when called from lesson mode.
+          const scopeOn = scopeInfo && scopeInfo.maxLesson;
+          const scopeBlock = scopeOn
+            ? `\n3) SCOPE: the learner has studied みんなの日本語 lessons 1 through ${scopeInfo.maxLesson} ONLY (learned grammar: ${scopeInfo.learnedScopeSpec}). If the item's sentence OR any choice uses ANY grammar/verb-form/tense/pattern first taught in a lesson AFTER ${scopeInfo.maxLesson}, set "outOfScope":true (otherwise false). Judge strictly — a form taught later than lesson ${scopeInfo.maxLesson} makes it out of scope even if the Japanese is correct.`
+            : "";
+          const scopeField = scopeOn ? `,"outOfScope":false` : "";
           const prompt = `You are a strict Japanese grammar checker for みんなの日本語 questions.
-For EACH item below do TWO checks:
+For EACH item below do ${scopeOn ? "THREE" : "TWO"} checks:
 1) ANSWER: decide which ONE choice is the correct answer and return its 0-based index (0=first,1=second,2=third,3=fourth). Judge standard-Japanese grammar AND sentence meaning. Do NOT be influenced by choice position.
-2) AMBIGUITY: test every choice in the blank. List in "acceptable" the 0-based indexes of ALL choices that make a natural, grammatical, context-appropriate sentence. If more than one is acceptable the item is ambiguous (the stem lacks context to force a single answer) — set "ambiguous":true and provide "hint": a short Traditional-Chinese cue (≤12 chars, NO answer words) that tells the learner which grammar point is being tested so the intended answer becomes clear (e.g. "提示：請選可能形"). If exactly one is acceptable, set "ambiguous":false and "hint":"".
-Return ONLY a JSON array, SAME length and order as input: [{"i":0,"answer":0,"acceptable":[0],"ambiguous":false,"hint":""},{"i":1,"answer":1,"acceptable":[1,2],"ambiguous":true,"hint":"提示：請選可能形"}]. No markdown, no extra text.
+2) AMBIGUITY: test every choice in the blank. List in "acceptable" the 0-based indexes of ALL choices that make a natural, grammatical, context-appropriate sentence. If more than one is acceptable the item is ambiguous (the stem lacks context to force a single answer) — set "ambiguous":true and provide "hint": a short Traditional-Chinese cue (<=12 chars, NO answer words) that tells the learner which grammar point is being tested so the intended answer becomes clear (e.g. "提示：請選可能形"). If exactly one is acceptable, set "ambiguous":false and "hint":"".${scopeBlock}
+Return ONLY a JSON array, SAME length and order as input: [{"i":0,"answer":0,"acceptable":[0],"ambiguous":false,"hint":""${scopeField}}]. No markdown, no extra text.
 
 ITEMS:
 ` + JSON.stringify(payload);
           const raw = await this._geminiChat(
-            [{ role: "system", content: "Return ONLY a valid JSON array of {i, answer, acceptable, ambiguous, hint} objects. No markdown, no extra text." },
+            [{ role: "system", content: "Return ONLY a valid JSON array of verdict objects. No markdown, no extra text." },
              { role: "user", content: prompt }],
             2048
           );
@@ -8168,14 +8370,14 @@ ITEMS:
             const match = (raw || "").match(/\[[\s\S]*\]/);
             verdicts = JSON.parse(match ? match[0] : raw);
           } catch (e) {
-            return questions; // verifier parse failed → keep originals untouched
+            return questions; // verifier parse failed -> keep originals untouched
           }
           if (!Array.isArray(verdicts)) return questions;
           // Index verdicts by item position for safe lookup.
           const byIndex = new Map();
           verdicts.forEach(v => { if (v && Number.isInteger(v.i)) byIndex.set(v.i, v); });
-          let fixed = 0, hinted = 0;
-          const out = questions.map((q, i) => {
+          let fixed = 0, hinted = 0, dropped = 0;
+          let out = questions.map((q, i) => {
             const v = byIndex.get(i);
             if (!v) return q;
             const nChoices = Array.isArray(q.choices) ? q.choices.length : 0;
@@ -8192,13 +8394,23 @@ ITEMS:
               nq = { ...nq, hint: String(v.hint).trim() };
               hinted++;
             }
+            // (c) flag out-of-scope items for removal (lesson mode only)
+            if (scopeOn && v.outOfScope === true) { nq = { ...nq, _outOfScope: true }; }
             return nq;
           });
-          if (fixed || hinted) console.info("verifyQuizAnswers: fixed " + fixed + " answer index(es), added " + hinted + " ambiguity hint(s)");
+          // Drop out-of-scope questions, but never return an empty quiz — if ALL were
+          // flagged (verifier likely over-strict), keep the originals rather than nothing.
+          if (scopeOn) {
+            const kept = out.filter((q) => !q._outOfScope);
+            dropped = out.length - kept.length;
+            if (kept.length > 0) out = kept.map((q) => { const { _outOfScope, ...rest } = q; return rest; });
+            else { out = out.map((q) => { const { _outOfScope, ...rest } = q; return rest; }); dropped = 0; }
+          }
+          if (fixed || hinted || dropped) console.info("verifyQuizAnswers: fixed " + fixed + " answer(s), added " + hinted + " hint(s), dropped " + dropped + " out-of-scope");
           return out;
         },
 
-        // If any question/choice has kanji but no <ruby> furigana, ask Gemini to add it (one call).
+                // If any question/choice has kanji but no <ruby> furigana, ask Gemini to add it (one call).
         ensureQuizFurigana: async function (questions) {
           const hasKanji = (s) => /[\u4e00-\u9faf]/.test(s || "");
           const hasRuby  = (s) => /<ruby/i.test(s || "");
@@ -8324,6 +8536,629 @@ ITEMS:
           document.getElementById("minna-loading").classList.add("hidden");
           document.getElementById("minna-question-wrap").classList.remove("hidden");
           this.renderMinnaQuestion();
+        },
+
+        // ══════════════════════════════════════════════════════════════
+        //  文法 SRS 複習 (Grammar Spaced-Repetition Review)
+        // ══════════════════════════════════════════════════════════════
+
+        // Compute the next SRS state after an answer.
+        //  stage: current stage (0-7); correct: boolean.
+        //  Returns { stage, next_review (ISO), mastered, days }.
+        grammarSrsNext: function (stage, correct) {
+          stage = parseInt(stage, 10);
+          if (!Number.isFinite(stage)) stage = 0;
+          let newStage;
+          if (correct) newStage = Math.min(Math.max(stage, 0) + 1, 7);   // step up (cap 7)
+          else newStage = Math.max(stage - 1, 0);                         // drop one, floor 0 (stage 0 stays 0 on wrong)
+          const days = this.GRAMMAR_SRS_INTERVALS[newStage] || 1;
+          const next = new Date(Date.now() + days * 86400000);
+          return { stage: newStage, next_review: next.toISOString(), mastered: newStage >= 7, days: days };
+        },
+
+        // Fetch all grammar_srs rows ordered by next_review, then keep only the DUE ones
+        // (next_review is null OR <= now). Returns an array (possibly empty).
+        loadGrammarDue: async function () {
+          if (!this.dbClient) return [];
+          const { data, error } = await this.dbClient
+            .from("grammar_srs")
+            .select("*")
+            .order("next_review", { ascending: true, nullsFirst: true });
+          if (error) throw error;
+          const now = Date.now();
+          return (data || []).filter(r => !r.next_review || new Date(r.next_review).getTime() <= now);
+        },
+
+        // Pick 7 grammar points for TODAY: deterministic per calendar day (same 7 all day,
+        // new set next day), random but avoiding point_keys drawn in the last few days.
+        // Reads SRS rows from grammar_srs for content/state; falls back to GRAMMAR_CARDS keys.
+        pickDailyGrammar: async function () {
+          const DAILY_N = 7;
+          const POOL = 20; // take the N least-recently-practised, then randomly pick DAILY_N from them
+          // Source of truth is Supabase (no localStorage). The same 7 points are locked
+          // for the whole calendar day via a daily_date column; a new day re-draws.
+          if (!this.dbClient) {
+            // No DB → fall back to a random pick from the embedded cards (no locking possible).
+            if (typeof GRAMMAR_CARDS === "undefined") return [];
+            const all = Object.keys(GRAMMAR_CARDS).map((k) => ({ point_key: k, ...GRAMMAR_CARDS[k] }));
+            for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
+            return all.slice(0, DAILY_N);
+          }
+          const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+          // 1) Already chosen today? Reuse that locked set.
+          const existing = await this.dbClient.from("grammar_srs").select("*").eq("daily_date", today);
+          if (existing.error) throw existing.error;
+          if (existing.data && existing.data.length) return existing.data;
+          // 2) Not chosen yet → pick from the least-recently-practised pool.
+          const { data, error } = await this.dbClient
+            .from("grammar_srs")
+            .select("*")
+            .order("updated_at", { ascending: true, nullsFirst: true });
+          if (error) throw error;
+          const rows = data || [];
+          if (!rows.length) return [];
+          let picked;
+          if (this._freshPriority) {
+            // Fresh batch: never-tested first (correct+wrong == 0), then least-recently-practised.
+            const untested = rows.filter((r) => ((r.correct_count || 0) + (r.wrong_count || 0)) === 0);
+            const tested = rows.filter((r) => ((r.correct_count || 0) + (r.wrong_count || 0)) > 0); // already sorted oldest-first
+            const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+            // Randomise within the untested group; keep tested in oldest-first order as backfill.
+            const ordered = shuffle(untested).concat(tested);
+            picked = ordered.slice(0, Math.min(DAILY_N, ordered.length));
+          } else {
+            // Normal daily: random DAILY_N from the least-recently-practised pool.
+            const pool = rows.slice(0, Math.min(POOL, rows.length));
+            const a = pool.slice();
+            for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+            picked = a.slice(0, Math.min(DAILY_N, a.length));
+          }
+          // 3) Lock today's set: stamp daily_date=today on the chosen rows (best-effort).
+          try {
+            const ids = picked.map((r) => r.point_key);
+            await this.dbClient.from("grammar_srs").update({ daily_date: today }).in("point_key", ids);
+          } catch (e) { console.warn("daily_date stamp failed:", e); }
+          return picked;
+        },
+
+        // Request a FRESH batch: clear today's locked set, then re-pick with
+        // "never-tested first, then least-recently-practised" priority, and start.
+        freshGrammarBatch: async function () {
+          if (!this.dbClient) { alert("資料庫未連線！"); return; }
+          try {
+            const today = new Date().toISOString().slice(0, 10);
+            // Release today's locked group so pickDailyGrammar won't reuse it.
+            await this.dbClient.from("grammar_srs").update({ daily_date: null }).eq("daily_date", today);
+          } catch (e) { console.warn("release daily set failed:", e); }
+          this._freshPriority = true;   // pickDailyGrammar will prioritise never-tested
+          await this.startGrammarSrs();
+          this._freshPriority = false;  // one-shot
+        },
+
+        // True when EVERY point in today's set was already practised today
+        // (updated_at falls on today's date) → the daily 7 are complete.
+        _isGrammarDoneToday: function (rows) {
+          if (!Array.isArray(rows) || rows.length === 0) return false;
+          const today = new Date().toISOString().slice(0, 10);
+          return rows.every((r) => {
+            if (!r || !r.updated_at) return false;
+            // Compare in UTC date terms consistently with daily_date (ISO date).
+            const d = new Date(r.updated_at);
+            if (isNaN(d.getTime())) return false;
+            return d.toISOString().slice(0, 10) === today;
+          });
+        },
+
+        // Populate the SRS setup panel with today's due count.
+        initGrammarSrs: async function () {
+          const cntEl = document.getElementById("srs-due-count");
+          const detailEl = document.getElementById("srs-due-detail");
+          const btn = document.getElementById("srs-start-btn");
+          if (cntEl) cntEl.textContent = "…";
+          if (detailEl) detailEl.textContent = "確認中…（檢查中）";
+          if (btn) btn.disabled = true;
+          if (!this.dbClient) {
+            if (cntEl) cntEl.textContent = "—";
+            if (detailEl) detailEl.textContent = "資料庫未連線（尚未連線 Supabase）";
+            return;
+          }
+          try {
+            const due = await this.pickDailyGrammar();
+            this._grammarDue = due;
+            if (cntEl) cntEl.textContent = due.length;
+            if (detailEl) detailEl.textContent = due.length === 0
+              ? "沒有可練習的文法點 🎉"
+              : "今日隨機抽選的 " + due.length + " 個文法點（每天更新一組）。";
+            if (btn) btn.disabled = due.length === 0;
+          } catch (e) {
+            if (cntEl) cntEl.textContent = "—";
+            if (detailEl) detailEl.textContent = "讀取失敗：" + (e.message || e);
+          }
+        },
+
+        // Home-page reminder → jump to the Minna page and open the SRS tab.
+        openGrammarSrsFromHome: function () {
+          this.showPage("minna");
+          const self = this;
+          setTimeout(function () { self.switchMinnaTab("srs"); }, 60);
+        },
+
+        _setSrsStatus: function (text) {
+          const el = document.getElementById("srs-loading-status");
+          if (el) el.textContent = text || "";
+        },
+
+        // Loose JSON-array parser with the same control-char / rogue-quote repair
+        // strategy used by the Minna quiz generator. Throws on total failure.
+        _parseGrammarQuiz: function (raw) {
+          const repairJson = (str) => {
+            let result = "", inString = false, escape = false;
+            for (let i = 0; i < str.length; i++) {
+              const ch = str[i];
+              if (escape) { result += ch; escape = false; continue; }
+              if (ch === "\\") { result += ch; escape = true; continue; }
+              if (ch === "\"") {
+                if (!inString) { inString = true; result += ch; continue; }
+                let j = i + 1;
+                while (j < str.length && (str[j] === " " || str[j] === "\n" || str[j] === "\r" || str[j] === "\t")) j++;
+                const next = str[j];
+                if (next === ":" || next === "," || next === "}" || next === "]" || j >= str.length) {
+                  inString = false; result += ch;
+                } else { result += "\\\""; }
+                continue;
+              }
+              if (inString) {
+                if (ch === "\n") { result += "\\n"; continue; }
+                if (ch === "\r") { result += "\\r"; continue; }
+                if (ch === "\t") { result += "\\t"; continue; }
+                if (ch.charCodeAt(0) < 0x20) { continue; }
+              }
+              result += ch;
+            }
+            if (inString) result += "\"";
+            return result.replace(/,\s*([}\]])/g, "$1");
+          };
+          let cleaned = (raw || "").replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+          const s = cleaned.indexOf("[");
+          if (s === -1) throw new Error("AI 沒有回傳正確格式（缺少陣列）");
+          const e = cleaned.lastIndexOf("]");
+          // Normal case: a complete array is present.
+          if (e !== -1 && e > s) {
+            const jsonStr = cleaned.slice(s, e + 1).replace(/,\s*([}\]])/g, "$1");
+            try { return JSON.parse(jsonStr); }
+            catch (pe) {
+              try { const r = JSON.parse(repairJson(jsonStr)); if (Array.isArray(r)) return r; } catch (e2) {}
+            }
+          }
+          // Truncated/invalid: salvage every complete {...} object from the array body.
+          const body = cleaned.slice(s + 1);
+          const objs = [];
+          let depth = 0, start = -1, inStr = false, esc = false;
+          for (let i = 0; i < body.length; i++) {
+            const ch = body[i];
+            if (esc) { esc = false; continue; }
+            if (ch === "\\") { esc = true; continue; }
+            if (ch === '"') { inStr = !inStr; continue; }
+            if (inStr) continue;
+            if (ch === "{") { if (depth === 0) start = i; depth++; }
+            else if (ch === "}") { depth--; if (depth === 0 && start !== -1) {
+              const frag = body.slice(start, i + 1).replace(/,\s*([}\]])/g, "$1");
+              try { objs.push(JSON.parse(frag)); } catch (pe) { try { objs.push(JSON.parse(repairJson(frag))); } catch (e3) {} }
+              start = -1;
+            } }
+          }
+          if (objs.length) return objs;
+          throw new Error("題目解析失敗（回應可能被截斷）");
+        },
+
+        // Batch-generate one fill-in-the-blank question per due grammar point.
+        // Chunks the request (<=10 points/call) so token limits are respected, then
+        // maps each returned question back to its point_key. Returns an aligned array
+        // of { point_key, q, choices, answer, hint, explanation, type } (one per card
+        // that produced a usable question — cards without one are skipped).
+        _grammarGenQuestions: async function (cards) {
+          const chunks = [];
+          // Small chunks: gemini-2.5-flash spends output tokens on "thinking", and each
+          // question carries long furigana JSON — large batches get truncated → parse fail.
+          for (let i = 0; i < cards.length; i += 3) chunks.push(cards.slice(i, i + 3));
+          const byKey = {};
+          let done = 0;
+          this._lastGrammarGenError = "";
+          for (const chunk of chunks) {
+            const spec = chunk.map((c) => {
+              const card = (typeof GRAMMAR_CARDS !== "undefined" && GRAMMAR_CARDS[c.point_key]) || {};
+              return {
+                point_key: c.point_key,
+                point: c.point || card.point || "",
+                formation: c.formation || card.formation || "",
+                meaning: c.meaning || card.meaning || "",
+              };
+            });
+            const prompt = "You are a Japanese grammar quiz generator. For EACH grammar point below, write EXACTLY ONE fill-in-the-blank multiple-choice question that specifically TESTS that grammar point.\n\n"
+              + "GRAMMAR POINTS (each has point_key / point / formation(接続) / meaning):\n"
+              + JSON.stringify(spec)
+              + "\n\nRULES:\n"
+              + "- Return ONE question object per grammar point, and include its point_key verbatim so it can be matched back.\n"
+              + "- Each question: a natural Japanese sentence with a blank marked ___ whose correct filler hinges on THAT grammar point (its 接続/用法).\n"
+              + "- 4 answer choices. Exactly ONE is correct. The other three must be plausible but clearly wrong for the context. Do NOT prefix choices with A./B.\n"
+              + "- answer = 0-based index (0-3) of the correct choice inside choices. Double-check the index points at the grammatically correct string.\n"
+              + "- Exactly one choice may fit; add enough context so the other three are ruled out.\n"
+              + "- CHOICES MUST BE PURE JAPANESE, SELF-CONTAINED, AND DROP-IN. Each choice is a Japanese fragment that, placed into the ___ , makes the whole sentence grammatical WITHOUT overlapping words already printed around the blank. CRITICAL: if the sentence already shows text after the blank (e.g. '___なりません', '___。'), the choice must NOT repeat or collide with it. Put the ENTIRE tested form inside the blank: e.g. test 〜ておきます → sentence 'コピー___。' with choices ['しておきます','してしまいます','しています','しなければなりません']; test 〜なければなりません → sentence '出さ___。' with choices ['なければなりません','なくてもいいです','てはいけません','てもいいです'].\n"
+              + "- NEVER put Chinese, the meaning gloss, romaji, or a reading INTO a choice or the sentence. The meaning/formation given above are ONLY to guide you; they must not leak into q or choices as text. Choices contain Japanese kana/kanji only — no Chinese characters that are not real Japanese words, no parenthesised glosses.\n"
+              + "- FURIGANA (REQUIRED): in q AND in every choice, wrap each kanji word in <ruby>漢<rt>かん</rt></ruby> with its reading. The <rt> reading must be the TRUE kana reading of THAT kanji only — never put a different word, the Chinese meaning, or an adverb like あらかじめ inside <rt>. If unsure of a reading, use the kana form instead of guessing. Do NOT add furigana to ___ or to kana. The explanation needs no ruby.\n"
+              + "- SELF-CHECK each question before output: (1) read choices[answer]; (2) drop it into ___ and confirm the full sentence is natural, grammatical standard Japanese with no duplicated/Colliding words; (3) confirm every <rt> is the correct reading of the kanji it sits on. If any check fails, rewrite the question.\n"
+              + "- hint: a short Traditional-Chinese cue (<=12 chars, NO answer words) naming the point being tested, e.g. 提示：用て形.\n"
+              + "- explanation: brief Traditional-Chinese (繁體中文) rule explanation. Use single quotes, never the double-quote character, inside it.\n"
+              + "\nJSON SAFETY (or parsing fails):\n"
+              + "- Return ONLY a JSON array. No markdown fences, no text before/after.\n"
+              + "- NEVER use the double-quote character (\") inside any string value (q / choices / explanation / hint). Use 「」『』 or a single quote instead. Use \" only as the JSON delimiters.\n"
+              + "- Keep <ruby>…<rt>…</rt></ruby> tags exactly (they contain no double quotes).\n"
+              + "- Output on as few lines as possible; no raw line breaks inside string values; no trailing comma.\n"
+              + "\nFormat: [{\"point_key\":\"gp_01\",\"q\":\"ここで<ruby>写真<rt>しゃしん</rt></ruby>を___ことができます。\",\"choices\":[\"とる\",\"とって\",\"とった\",\"とり\"],\"answer\":0,\"type\":\"文法\",\"hint\":\"提示：辭書形接ことができます\",\"explanation\":\"～ことができます 前接動詞辭書形，故 'とる' 正確。\"}]";
+            this._setSrsStatus("AI が問題を生成中...（生成題目中 " + done + "/" + cards.length + "）");
+            let arr = null;
+            for (let attempt = 0; attempt < 2 && !arr; attempt++) {
+              try {
+                const raw = await this._geminiChat([
+                  { role: "system", content: "Return ONLY a valid JSON array. No markdown. No double-quote characters inside any string value — use 「」 or single quotes." },
+                  { role: "user", content: prompt }
+                ], 8192);
+                arr = this._parseGrammarQuiz(raw);
+              } catch (pe) {
+                this._lastGrammarGenError = (pe && pe.message) ? pe.message : String(pe);
+                console.warn("grammar quiz gen/parse failed (attempt " + (attempt + 1) + "):", this._lastGrammarGenError);
+              }
+            }
+            if (Array.isArray(arr)) {
+              arr.forEach((q) => { if (q && q.point_key && !byKey[q.point_key]) byKey[q.point_key] = q; });
+            }
+            done += chunk.length;
+          }
+          // Build an aligned list; keep only cards with a usable question.
+          const out = [];
+          cards.forEach((c) => {
+            const q = byKey[c.point_key];
+            if (q && Array.isArray(q.choices) && q.choices.length >= 2 && Number.isInteger(q.answer)
+                && q.answer >= 0 && q.answer < q.choices.length) {
+              out.push({
+                point_key: c.point_key,
+                q: q.q || "",
+                choices: q.choices,
+                answer: q.answer,
+                type: q.type || "文法 SRS",
+                hint: q.hint || "",
+                explanation: q.explanation || "",
+              });
+            }
+          });
+          return out;
+        },
+
+        // Start a review round over ALL due grammar points.
+        startGrammarSrs: async function () {
+          if (!this.dbClient) { alert("資料庫未連線！"); return; }
+          document.getElementById("minna-setup").classList.add("hidden");
+          document.getElementById("minna-quiz-area").classList.add("hidden");
+          document.getElementById("minna-result").classList.add("hidden");
+          document.getElementById("minna-srs-area").classList.remove("hidden");
+          document.getElementById("srs-result").classList.add("hidden");
+          document.getElementById("srs-question-wrap").classList.add("hidden");
+          const loadingEl = document.getElementById("srs-loading");
+          loadingEl.classList.remove("hidden");
+          this._setSrsStatus("今日の文法を選び中...（抽選今天的文法）");
+          try {
+            const due = await this.pickDailyGrammar();
+            this._grammarDue = due;
+            if (!due || due.length === 0) {
+              loadingEl.classList.add("hidden");
+              document.getElementById("srs-result").classList.remove("hidden");
+              document.getElementById("srs-score").textContent = "🎉";
+              document.getElementById("srs-score-pct").textContent = "";
+              document.getElementById("srs-grade").textContent = "沒有可練習的文法點 🎉";
+              return;
+            }
+            // If every point in today's locked set was already practised TODAY
+            // (updated_at is today), the daily task is done — don't let it re-count.
+            if (this._isGrammarDoneToday(due)) {
+              loadingEl.classList.add("hidden");
+              document.getElementById("srs-result").classList.remove("hidden");
+              document.getElementById("srs-score").textContent = "✅";
+              document.getElementById("srs-score-pct").textContent = "";
+              document.getElementById("srs-grade").textContent = "今日の 7 問は完了しました！また明日 🌙（今天已完成，明天再來）";
+              return;
+            }
+            if (!this.geminiApiKey) {
+              // No Gemini key → can't make quiz questions, but card review still works.
+              loadingEl.classList.add("hidden");
+              this.startGrammarCardReview(due, "未設定 Gemini API Key");
+              return;
+            }
+            const questions = await this._grammarGenQuestions(due);
+            if (!questions || questions.length === 0) {
+              // Gemini could not produce usable questions → fall back to card-review mode
+              // (show the full grammar card with self-rating) so the user can still study.
+              console.warn("grammar gen returned 0 questions; last error:", this._lastGrammarGenError);
+              loadingEl.classList.add("hidden");
+              this.startGrammarCardReview(due, this._lastGrammarGenError);
+              return;
+            }
+            this.grammarSrsState = { due: due, questions: questions, currentIdx: 0, score: 0 };
+            loadingEl.classList.add("hidden");
+            document.getElementById("srs-question-wrap").classList.remove("hidden");
+            this.renderGrammarSrsQuestion();
+          } catch (err) {
+            // Any error during question generation → fall back to card review if we have
+            // today's points; only show a hard error if we couldn't even pick points.
+            console.warn("startGrammarSrs error:", err && (err.message || err));
+            if (this._grammarDue && this._grammarDue.length) {
+              loadingEl.classList.add("hidden");
+              this.startGrammarCardReview(this._grammarDue, (err && (err.message || err)) || "generation error");
+            } else {
+              loadingEl.innerHTML =
+                "<div style=\"color:var(--danger-text)\">❌ 出題失敗：" + (err && (err.message || err)) + "<br><small>請確認已連線資料庫並設定 Gemini Key</small></div>"
+                + "<button onclick=\"app.srsBackSetup()\" class=\"btn-main\" style=\"margin-top:12px;\">← 返回</button>";
+            }
+          }
+        },
+
+        renderGrammarSrsQuestion: function () {
+          const st = this.grammarSrsState;
+          const q = st.questions[st.currentIdx];
+          if (!q) return;
+          document.getElementById("srs-q-num").textContent = "Q" + (st.currentIdx + 1) + " / " + st.questions.length;
+          document.getElementById("srs-q-progress-fill").style.width = ((st.currentIdx / st.questions.length) * 100) + "%";
+          document.getElementById("srs-q-type").textContent = q.type || "文法 SRS";
+          document.getElementById("srs-q-text").innerHTML = (q.q || "").replace(/___/g, '<span class="minna-blank">___</span>');
+          const hintEl = document.getElementById("srs-q-hint");
+          if (q.hint && String(q.hint).trim()) { hintEl.textContent = q.hint; hintEl.style.display = "block"; }
+          else { hintEl.textContent = ""; hintEl.style.display = "none"; }
+          document.getElementById("srs-explanation").classList.add("hidden");
+          document.getElementById("srs-card").classList.add("hidden");
+          document.getElementById("srs-next-btn").classList.add("hidden");
+          const choicesEl = document.getElementById("srs-choices");
+          const labels = ["A", "B", "C", "D", "E", "F"];
+          choicesEl.innerHTML = q.choices.map((c, i) =>
+            '<button class="minna-choice-btn" onclick="app.answerGrammarSrs(' + i + ')"><span class="minna-choice-label">' + labels[i] + '</span>' + c + '</button>'
+          ).join("");
+        },
+
+        answerGrammarSrs: async function (idx) {
+          const st = this.grammarSrsState;
+          const q = st.questions[st.currentIdx];
+          if (!q || q._answered) return;
+          q._answered = true;
+          const correct = q.answer;
+          const isCorrect = idx === correct;
+          if (isCorrect) st.score++;
+          document.querySelectorAll("#srs-choices .minna-choice-btn").forEach((btn, i) => {
+            btn.disabled = true;
+            if (i === correct) btn.classList.add("correct");
+            else if (i === idx && !isCorrect) btn.classList.add("wrong");
+          });
+          const expEl = document.getElementById("srs-explanation");
+          expEl.innerHTML = '<div class="minna-exp-icon">' + (isCorrect ? "✅" : "❌") + '</div>'
+            + '<div class="minna-exp-text">' + (q.explanation || "") + '</div>';
+          expEl.classList.remove("hidden");
+          // Reveal the full grammar card (接続 + 例文 + 意味 + メモ).
+          const cardEl = document.getElementById("srs-card");
+          cardEl.innerHTML = this._renderGrammarCardHtml(q.point_key);
+          cardEl.classList.remove("hidden");
+          document.getElementById("srs-next-btn").classList.remove("hidden");
+          // Persist the SRS update for this point.
+          try { await this.updateGrammarSrsCard(q.point_key, isCorrect); }
+          catch (e) { console.warn("grammar SRS update failed:", e); }
+        },
+
+        srsNext: function () {
+          const st = this.grammarSrsState;
+          // In card-review fallback mode, advance cards instead of questions.
+          if (st && st.cardMode) { this.srsCardNext(); return; }
+          st.currentIdx++;
+          if (st.currentIdx >= st.questions.length) this.showGrammarSrsResult();
+          else this.renderGrammarSrsQuestion();
+        },
+
+        // Fallback review mode: when Gemini can't make questions, show each grammar
+        // card and let the user self-rate (記得了 / 還不熟) to update SRS. No AI needed.
+        startGrammarCardReview: function (due, errMsg) {
+          this.grammarSrsState = { due: due, questions: due, currentIdx: 0, score: 0, cardMode: true };
+          document.getElementById("srs-loading").classList.add("hidden");
+          document.getElementById("srs-result").classList.add("hidden");
+          document.getElementById("srs-question-wrap").classList.remove("hidden");
+          // One-time notice that we fell back (why), shown above the first card.
+          if (errMsg) this.toast && this.toast("AI 出題暫時失敗，改用卡片複習模式。", "warning", { duration: 4000 });
+          this.renderGrammarCard();
+        },
+
+        renderGrammarCard: function () {
+          const st = this.grammarSrsState;
+          const row = st.questions[st.currentIdx];
+          if (!row) return;
+          document.getElementById("srs-q-num").textContent = "Q" + (st.currentIdx + 1) + " / " + st.questions.length;
+          document.getElementById("srs-q-progress-fill").style.width = ((st.currentIdx / st.questions.length) * 100) + "%";
+          document.getElementById("srs-q-type").textContent = "文法カード（複習）";
+          document.getElementById("srs-q-text").innerHTML = "この文法を<ruby>覚<rt>おぼ</rt></ruby>えていますか？（還記得這個文法嗎？）";
+          const hintEl = document.getElementById("srs-q-hint");
+          if (hintEl) { hintEl.textContent = ""; hintEl.style.display = "none"; }
+          document.getElementById("srs-explanation").classList.add("hidden");
+          // Show the full card immediately (study-first), then rate.
+          const cardEl = document.getElementById("srs-card");
+          cardEl.innerHTML = this._renderGrammarCardHtml(row.point_key);
+          cardEl.classList.remove("hidden");
+          document.getElementById("srs-next-btn").classList.add("hidden");
+          // Self-rating buttons in place of multiple-choice.
+          const choicesEl = document.getElementById("srs-choices");
+          choicesEl.innerHTML =
+            '<button class="minna-choice-btn" onclick="app.rateGrammarCard(true)" style="border-color:var(--success,#4ade80);"><span class="minna-choice-label">◯</span>覚えた（記得了）</button>'
+            + '<button class="minna-choice-btn" onclick="app.rateGrammarCard(false)" style="border-color:var(--danger-text,#ff6b6b);"><span class="minna-choice-label">✗</span>まだ（還不熟）</button>';
+        },
+
+        rateGrammarCard: async function (remembered) {
+          const st = this.grammarSrsState;
+          const row = st.questions[st.currentIdx];
+          if (!row || row._rated) return;
+          row._rated = true;
+          if (remembered) st.score++;
+          document.querySelectorAll("#srs-choices .minna-choice-btn").forEach((b) => { b.disabled = true; });
+          try { await this.updateGrammarSrsCard(row.point_key, remembered); }
+          catch (e) { console.warn("grammar SRS update failed:", e); }
+          document.getElementById("srs-next-btn").classList.remove("hidden");
+        },
+
+        // In card mode, "next" advances the card; reuse srsNext's completion logic.
+        srsCardNext: function () {
+          const st = this.grammarSrsState;
+          st.currentIdx++;
+          if (st.currentIdx >= st.questions.length) this.showGrammarSrsResult();
+          else this.renderGrammarCard();
+        },
+
+        showGrammarSrsResult: function () {
+          document.getElementById("srs-question-wrap").classList.add("hidden");
+          document.getElementById("srs-result").classList.remove("hidden");
+          const st = this.grammarSrsState;
+          const total = st.questions.length;
+          const pct = total ? Math.round((st.score / total) * 100) : 0;
+          const grade = pct >= 80 ? "🎉 優秀！" : pct >= 60 ? "👍 良好" : "💪 繼續加油！";
+          document.getElementById("srs-score").textContent = st.score + " / " + total;
+          document.getElementById("srs-score-pct").textContent = pct + "%";
+          document.getElementById("srs-grade").textContent = grade;
+          // Refresh cached due list + home reminder after the round.
+          this.updateGrammarDueReminder();
+        },
+
+        srsQuit: function () {
+          document.getElementById("minna-srs-area").classList.add("hidden");
+          this.initMinnaPage();
+        },
+
+        srsBackSetup: function () {
+          document.getElementById("minna-srs-area").classList.add("hidden");
+          this.initMinnaPage();
+          this.switchMinnaTab("srs");
+        },
+
+        // Build the full grammar-card HTML shown after an SRS answer.
+        _renderGrammarCardHtml: function (pointKey) {
+          const c = (typeof GRAMMAR_CARDS !== "undefined" && GRAMMAR_CARDS[pointKey]) || {};
+          // Explicit high-contrast colors for the app's dark theme (do NOT rely on
+          // injected CSS vars, which get overridden and wash out to low contrast).
+          const T = "#ECE7DF";   // main text (near-white)
+          const S = "#C9C1B4";   // secondary text (light warm grey, readable on dark)
+          const A = "#E0A458";   // amber accent
+          const BG = "#211E1B";  // card bg (slightly darker than surface for separation)
+          const LINE = "#3A3631";
+          const exs = Array.isArray(c.examples) ? c.examples : [];
+          const exHtml = exs.map((e) => {
+            const jp = (e && (e.jp || e[0])) || "";
+            const zh = (e && (e.zh || e[1])) || "";
+            return '<div style="margin-bottom:8px;"><div style="font-family:\'Noto Sans JP\',sans-serif;font-size:0.98rem;color:' + T + ';line-height:1.9;">' + jp
+              + '</div><div style="font-size:0.84rem;color:' + S + ';">' + zh + '</div></div>';
+          }).join("");
+          return '<div style="border-left:3px solid ' + A + ';background:' + BG + ';border-radius:8px;padding:14px 16px;">'
+            + '<div style="font-size:0.72rem;color:' + A + ';font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">' + (c.category || "") + ' · 文法カード</div>'
+            + '<div style="font-size:1.1rem;font-weight:700;color:' + T + ';margin-bottom:10px;font-family:\'Noto Sans JP\',sans-serif;">' + (c.point || pointKey) + '</div>'
+            + '<div style="font-size:0.88rem;color:' + T + ';margin-bottom:6px;line-height:1.6;"><b style="color:' + A + ';">接続</b>（接續）：' + (c.formation || "") + '</div>'
+            + '<div style="font-size:0.88rem;color:' + T + ';margin-bottom:12px;line-height:1.6;"><b style="color:' + A + ';">意味</b>（意思）：' + (c.meaning || "") + '</div>'
+            + '<div style="font-size:0.78rem;color:' + A + ';font-weight:700;margin-bottom:6px;">例文（例句）</div>'
+            + exHtml
+            + (c.note ? '<div style="margin-top:10px;font-size:0.82rem;color:' + T + ';background:rgba(224,164,88,0.12);border-radius:8px;padding:9px 11px;line-height:1.6;"><b style="color:' + A + ';">メモ</b>（筆記）：' + c.note + '</div>' : "")
+            + '</div>';
+        },
+
+        // Render the 文法カード一覧 overview: all GRAMMAR_CARDS grouped by category,
+        // each category collapsible, each point expandable to its full card.
+        renderGrammarCardList: function () {
+          const host = document.getElementById("minna-cards-list");
+          if (!host) return;
+          if (typeof GRAMMAR_CARDS === "undefined") { host.innerHTML = "<div style='color:#A69E90;'>資料なし</div>"; return; }
+          const C_TEXT = "#ECE7DF", C_SUB = "#A69E90", C_ACCENT = "#E0A458",
+                C_HEADBG = "#353129", C_CARDBG = "#2A2724", C_LINE = "#3A3631";
+          // Fixed pedagogical order (not alphabetical). Unknown categories fall to the end.
+          const CAT_ORDER = ["名詞・指示詞","形容詞","動詞：基本・可能形","動詞：て形","動詞：た形・過去","動詞：ない形","句型・推測・意志","助詞・疑問詞","副詞・接續"];
+          const gpNum = (k) => parseInt(String(k).replace(/[^0-9]/g, ""), 10) || 0;
+          const allKeys = Object.keys(GRAMMAR_CARDS);
+          // Update the total-count in the panel title.
+          const totalEl = document.getElementById("cards-total-count");
+          if (totalEl) totalEl.textContent = "全 " + allKeys.length;
+          const groups = {};
+          allKeys.forEach((k) => {
+            const cat = (GRAMMAR_CARDS[k].category || "その他").trim();
+            (groups[cat] = groups[cat] || []).push(k);
+          });
+          // Order categories: known order first, then any leftover categories.
+          const order = CAT_ORDER.filter((c) => groups[c]).concat(Object.keys(groups).filter((c) => CAT_ORDER.indexOf(c) === -1));
+          const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          let html2 = "";
+          order.forEach((cat, gi) => {
+            const items = groups[cat].slice().sort((a, b) => gpNum(a) - gpNum(b)); // stable by gp number
+            const pointsHtml = items.map((k) => {
+              const c = GRAMMAR_CARDS[k];
+              return '<div style="border-top:1px solid ' + C_LINE + ';">'
+                + '<div onclick="app.toggleGrammarCard(\'' + k + '\')" style="cursor:pointer;padding:10px 4px;display:flex;align-items:center;gap:8px;">'
+                + '<span style="color:' + C_ACCENT + ';font-size:0.8rem;">▸</span>'
+                + '<span style="font-size:0.95rem;color:' + C_TEXT + ';font-family:\'Noto Sans JP\',sans-serif;">' + esc(c.point || k) + '</span></div>'
+                + '<div id="gcard-' + k + '" class="hidden" style="padding:0 2px 10px;">' + this._renderGrammarCardHtml(k) + '</div>'
+                + '</div>';
+            }).join("");
+            html2 += '<div style="margin-bottom:10px;border:1px solid ' + C_LINE + ';border-radius:10px;overflow:hidden;background:' + C_CARDBG + ';">'
+              + '<div onclick="app.toggleGrammarCat(' + gi + ')" style="cursor:pointer;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;background:' + C_HEADBG + ';">'
+              + '<span style="font-weight:700;color:' + C_TEXT + ';">' + (gi + 1) + '. ' + esc(cat) + '<span style="color:' + C_SUB + ';font-weight:400;font-size:0.82rem;"> （' + items.length + '）</span></span>'
+              + '<span id="gcat-icon-' + gi + '" style="color:' + C_ACCENT + ';">▾</span></div>'
+              + '<div id="gcat-' + gi + '" class="hidden" style="padding:0 12px;">' + pointsHtml + '</div>'
+              + '</div>';
+          });
+          host.innerHTML = html2;
+        },
+
+        toggleGrammarCat: function (gi) {
+          const body = document.getElementById("gcat-" + gi);
+          const icon = document.getElementById("gcat-icon-" + gi);
+          if (!body) return;
+          const open = !body.classList.contains("hidden");
+          body.classList.toggle("hidden", open);
+          if (icon) icon.textContent = open ? "▾" : "▴";
+        },
+
+        // Expand/collapse a single grammar point's full card in the overview.
+        toggleGrammarCard: function (pointKey) {
+          const el = document.getElementById("gcard-" + pointKey);
+          if (el) el.classList.toggle("hidden");
+        },
+
+        // Update one grammar_srs row after an answer (stage / next_review / counts / mastered).
+        updateGrammarSrsCard: async function (pointKey, correct) {
+          if (!this.dbClient) return;
+          const rec = (this._grammarDue || []).find((r) => r.point_key === pointKey) || {};
+          const curStage = rec.stage || 0;
+          const curCorrect = rec.correct_count || 0;
+          const curWrong = rec.wrong_count || 0;
+          const nx = this.grammarSrsNext(curStage, correct);
+          const patch = {
+            stage: nx.stage,
+            next_review: nx.next_review,
+            mastered: nx.mastered,
+            correct_count: curCorrect + (correct ? 1 : 0),
+            wrong_count: curWrong + (correct ? 0 : 1),
+            updated_at: new Date().toISOString(),
+          };
+          const { error } = await this.dbClient.from("grammar_srs").update(patch).eq("point_key", pointKey);
+          if (error) throw error;
+          Object.assign(rec, patch);   // keep the cached row in sync
+        },
+
+        // Refresh the home-page "文法複習：今日 N 個到期" reminder (and cache the due list).
+        updateGrammarDueReminder: async function () {
+          const el = document.getElementById("grammar-srs-reminder");
+          const cntEl = document.getElementById("grammar-due-count");
+          if (!el) return;
+          if (!this.dbClient) { el.style.display = "none"; return; }
+          try {
+            const due = await this.pickDailyGrammar();
+            this._grammarDue = due;
+            if (cntEl) cntEl.textContent = due.length;
+            el.style.display = due.length > 0 ? "block" : "none";
+          } catch (e) { el.style.display = "none"; }
         },
 
         // ── Mobile quiz bar helpers ──────────────────────────
