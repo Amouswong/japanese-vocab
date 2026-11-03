@@ -6560,7 +6560,7 @@
           try {
             this._setDashboardSkeleton(true);
             // Load Gemini API key from localStorage
-            const storedKey = (localStorage.getItem("kaizen_gemini_key") || "").trim();
+            const storedKey = (localStorage.getItem("kaizen_gemini_key") || "").replace(/[^\x21-\x7E]/g, "");
             // Default key (hard-coded, private local use only). A key saved in the
             // settings box still takes priority; clearing it falls back to this default.
             const DEFAULT_GEMINI_KEY = "";   // ← 把你的 AIza... 金鑰貼在這裡
@@ -6859,7 +6859,7 @@
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 60000);
             try {
-              const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, { method: "POST", headers: { "x-goog-api-key": this.geminiApiKey,  "Content-Type": "application/json" }, body: JSON.stringify(body), signal: controller.signal }
+              const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, { method: "POST", headers: { "x-goog-api-key": String(this.geminiApiKey || "").replace(/[^\x21-\x7E]/g, ""),  "Content-Type": "application/json" }, body: JSON.stringify(body), signal: controller.signal }
               );
               clearTimeout(timeoutId);
               if (!res.ok) {
@@ -6887,13 +6887,13 @@
         },
 
         testGeminiKey: async function () {
-          const key = (document.getElementById("gemini-key-input").value || "").trim();
+          const key = (document.getElementById("gemini-key-input").value || "").replace(/[^\x21-\x7E]/g, "");
           const resultEl = document.getElementById("gemini-key-test-result");
           if (resultEl) resultEl.style.display = "block";
           if (!key) { resultEl.textContent = "❗ 請先輸入 API Key"; resultEl.style.color = "var(--warning)"; return; }
           resultEl.textContent = "🔄 測試中..."; resultEl.style.color = "var(--text-sub)";
           try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, { method: "POST", headers: { "x-goog-api-key": key,  "Content-Type": "application/json" },
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, { method: "POST", headers: { "x-goog-api-key": String(key || "").replace(/[^\x21-\x7E]/g, ""),  "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "hi" }] }], generationConfig: { maxOutputTokens: 10 } }) }
             );
             const data = await res.json();
@@ -6911,7 +6911,7 @@
         },
 
         saveGeminiKey: function () {
-          const key = document.getElementById("gemini-key-input").value.trim();
+          const key = document.getElementById("gemini-key-input").value.replace(/[^\x21-\x7E]/g, "");
           if (!key) { alert("請輸入 API Key！"); return; }
           localStorage.setItem("kaizen_gemini_key", key);
           this.geminiApiKey = key;
@@ -7154,11 +7154,12 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
             this.newsArticle = article;
             this.chatHistory = [];
             this._saveNewsToHistory(article);   // keep today's generated articles for history nav
+            { const eb = document.getElementById("news-error"); if (eb) eb.remove(); }
             this.renderNews();
             this.cleanOldNewsCache();
           } catch (err) {
             console.error("新聞生成失敗:", err);
-            document.getElementById("news-content").innerHTML =
+            app._newsErrorBox().innerHTML =
               `<div style="color:var(--danger-text);padding:16px;border-radius:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);">
                 ❌ 生成失敗：${err.message}<br>
                 <small style="color:var(--text-sub);">請確認 API Key 是否正確，或稍後再試。</small>
@@ -7312,15 +7313,27 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
           this.loadNews(true);
         },
 
+        _newsErrorBox: function () {
+          let eb = document.getElementById("news-error");
+          if (!eb) {
+            eb = document.createElement("div");
+            eb.id = "news-error";
+            eb.style.marginBottom = "12px";
+            const nc = document.getElementById("news-content");
+            if (nc) nc.insertBefore(eb, nc.firstChild); else document.body.appendChild(eb);
+          }
+          return eb;
+        },
+
         renderNews: function () {
           if (!this.newsArticle) return;
           const { title, article, translation, vocabulary, _source, _newsId } = this.newsArticle;
           const isMobile = window.innerWidth < 768;
 
-          document.getElementById("news-date-label").innerText = this.getTodayLocalDate() + "  ·  " + this.newsLevel;
-          document.getElementById("news-title").innerHTML = title || "";
-          document.getElementById("news-article").innerHTML = article || "";
-          document.getElementById("news-translation").innerHTML = translation || "";
+          (document.getElementById("news-date-label") || {}).innerText = this.getTodayLocalDate() + "  ·  " + this.newsLevel;
+          (document.getElementById("news-title") || {}).innerHTML = title || "";
+          (document.getElementById("news-article") || {}).innerHTML = article || "";
+          (document.getElementById("news-translation") || {}).innerHTML = translation || "";
 
           // NHK source link
           const linkEl = document.getElementById("news-source-link");
@@ -7338,7 +7351,7 @@ Return ONLY a raw JSON object, no markdown fences, no extra text:
           if (vocabulary && vocabulary.length > 0) {
             this.selectedVocabIndices = new Set();
             this.customVocab = [];
-            vocabEl.innerHTML = vocabulary.map((v, i) => {
+            if (vocabEl) vocabEl.innerHTML = vocabulary.map((v, i) => {
               const base = v.word || v.reading || "";
               const pos = v.pos || "";
               let polite = base;
